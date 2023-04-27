@@ -1,0 +1,3470 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl" lang="pl">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="../style_t2t.css" media="screen"/>
+<title>Rozszerzenia podstawowych poleceń NVDA 11.2</title>
+</head>
+<BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>Rozszerzenie podstawowych poleceń NVDA - Przewodnik Użytkownika</H1>
+<FONT SIZE="4">
+<I>Autor: paulber19</I><BR>
+</FONT></CENTER>
+
+<P>
+URL: <A HREF="mailto:paulber19@laposte.net">paulber19@laposte.net</A>
+</P>
+<P>
+<A HREF="https://github.com/paulber19/NVDAExtensionGlobalPlugin.git">Repozytorium GitHub: https://github.com/paulber19/NVDAExtensionGlobalPlugin.git</A>
+</P>
+<P>
+Pobierz:
+</P>
+<UL>
+<LI><A HREF="https://github.com/paulber007/AllMyNVDAAddons/raw/master/NVDAExtensionGlobalPlugin/NVDAExtensionGlobalPlugin-11.2.nvda-addon">Wersja stabilna 11.2</A>
+<LI><A HREF="https://github.com/paulber007/AllMyNVDAAddons/tree/master/NVDAExtensionGlobalPlugin/dev">Wersja rozwojowa</A>
+</UL>
+
+<P>
+Zgodność:
+</P>
+<UL>
+<LI>Minimalna obsługiwana wersja NVDA : 2020.4
+<LI>Ostatnia testowana wersja NVDA: 2022.1
+</UL>
+
+<P>
+Tłumaczenie: na podstawie automatycznego tłumaczenia z języka francuskiego
+</P>
+<A NAME="toc"></A>
+<H2>Spis Treści</H2>
+  <UL>
+
+  <LI><A HREF="#toc2">1. Wprowadzenie</A>
+    <UL>
+    <LI><A HREF="#toc3">1.1. Ogólne</A>
+    <LI><A HREF="#hdr-configurationMenu">1.2. Menu konfiguracji dodatku</A>
+    <LI><A HREF="#toc5">1.3. Pomoc kontekstowa</A>
+    <LI><A HREF="#hdr-update">1.4. aktualizacja</A>
+    <LI><A HREF="#toc7">1.5. Praca w trybie awaryjnym</A>
+    <LI><A HREF="#toc8">1.6. Kompatybilność</A>
+    <LI><A HREF="#toc9">1.7. Historia</A>
+    </UL>
+  <LI><A HREF="#hdr0">2. Funkcje</A>
+    <UL>
+    <LI><A HREF="#hdr0-1">2.1. Preambuła</A>
+      <UL>
+      <LI><A HREF="#toc12">2.1.1. Instalacja funkcji</A>
+      <LI><A HREF="#hdr0-2">2.1.2. Aktywacja skryptów</A>
+      <LI><A HREF="#toc14">2.1.3. Interpreter poleceń</A>
+      </UL>
+    <LI><A HREF="#hdr1">2.2. Wyświetlanie listy ikon w obszarze powiadomień oraz listy okien uruchomionych aplikacji</A>
+      <UL>
+      <LI><A HREF="#hdr1-1">2.2.1. Wyświetlanie listy ikon w obszarze powiadomień</A>
+      <LI><A HREF="#hdr1-2">2.2.2. Lista okien uruchomionych aplikacji</A>
+      <LI><A HREF="#hdr1-3">2.2.3. Wyświetlanie listy ikon obszaru powiadomień lub okien uruchomionych aplikacji</A>
+      </UL>
+    <LI><A HREF="#hdr3">2.3. Pomoc przy tworzeniu złożonych symboli</A>
+      <UL>
+      <LI><A HREF="#hdr3-1">2.3.1. Skrypt tworzenie złożonego symbolu, takiego jak akcentowana samogłoska, symbol matematyczny</A>
+      <LI><A HREF="#hdr3-2">2.3.2. Skrypt Wyświetla listę ostatnich złożonych symboli</A>
+      </UL>
+    <LI><A HREF="#hdr4">2.4. Informacja o aplikacji posiadającej fokus</A>
+      <UL>
+      <LI><A HREF="#hdr4-1">2.4.1. Ogłaszanie nazwy pliku aplikacji, nazwy wczytanego modułu python appModule oraz nazwy i statusu profilu konfiguracyjnego</A>
+      <LI><A HREF="#toc24">2.4.2. Ogłaszanie wersji aplikacji posiadającej fokus</A>
+      <LI><A HREF="#hdr4-2">2.4.3. Wyświetlanie informacji o aplikacji posiadającej fokus</A>
+      <LI><A HREF="#hdr4-3">2.4.4. Wyświetlanie nazwy i numeru wersji dodatku</A>
+      </UL>
+    <LI><A HREF="#hdr5">2.5. Ulepszenie funkcji wirtualnego bufora</A>
+      <UL>
+      <LI><A HREF="#hdr5-1">2.5.1. Nowe polecenia nawigacyjne</A>
+      <LI><A HREF="#hdr5-2">2.5.2. Nowe typy elementów dla skryptu "NVDA+f7"</A>
+      <LI><A HREF="#hdr5-3">2.5.3. Skrypty do tabel</A>
+      <LI><A HREF="#hdr5-4">2.5.4. Ogłaszanie adresu dokumentu</A>
+      <LI><A HREF="#hdr5-5">2.5.5. Nawigacja w pętli</A>
+      </UL>
+    <LI><A HREF="#hdr7">2.6. Ogłaszanie poleceń związanych z funkcjami edycji w stylu "kopiuj", "Wklej"</A>
+      <UL>
+      <LI><A HREF="#hdr7-1">2.6.1. Dodawanie zaznaczonego tekstu do schowka</A>
+      <LI><A HREF="#hdr7-2">2.6.2. Czytanie tekstu ze schowku Windows</A>
+      <LI><A HREF="#hdr7-3">2.6.3. Opróżnianie schowka</A>
+      </UL>
+    <LI><A HREF="#hdr8">2.7. Ogłaszanie wybranego folderu w oknach w stylu "Otwórz", "Zapisz", "Zapisz jako"</A>
+    <LI><A HREF="#hdr9">2.8. Dzienniki NVDA</A>
+      <UL>
+      <LI><A HREF="#hdr9-1">2.8.1. Zarządzanie dziennikami NVDA</A>
+      <LI><A HREF="#hdr9-2">2.8.2. Otwieranie dziennika NVDA</A>
+      </UL>
+    <LI><A HREF="#hdr10">2.9. Historia mowy</A>
+      <UL>
+      <LI><A HREF="#toc42">2.9.1. Ogłaszanie poprzedniego nagrania</A>
+      <LI><A HREF="#toc43">2.9.2. Ogłaszanie kolejnego nagrania</A>
+      <LI><A HREF="#toc44">2.9.3. Ponowne Ogłaszanie ostatniego ogłoszonego nagrania</A>
+      <LI><A HREF="#hdr10-1">2.9.4. Wyświetlanie historii mowy</A>
+      </UL>
+    <LI><A HREF="#hdr12">2.10. Zmiana nazwy klawiszy klawiatury</A>
+    <LI><A HREF="#hdr13">2.11. Ogłaszanie wybranych klawiszy poleceń</A>
+    <LI><A HREF="#hdr14">2.12. Minutnik</A>
+    <LI><A HREF="#hdr15">2.13. Ponowne uruchomienie NVDA</A>
+    <LI><A HREF="#hdr16">2.14. Wyświetlanie widocznych elementów obiektu na pierwszym planie</A>
+      <UL>
+      <LI><A HREF="#toc51">2.14.1. Wyświetlanie widocznych elementów aktualnie aktywnego obiektu</A>
+      <LI><A HREF="#toc52">2.14.2. Ogłaszanie lub wyświetlanie widocznych elementów aktualnie aktywnego obiektu</A>
+      </UL>
+    <LI><A HREF="#hdr17">2.15. Szybkie przełączanie profili głosowych</A>
+      <UL>
+      <LI><A HREF="#hdr17-1">2.15.1. Zarządzanie przełącznikami profili głosowych</A>
+      <LI><A HREF="#hdr17-2">2.15.2. Tryb "Przełączanie profili głosowych"</A>
+      <LI><A HREF="#hdr17-3">2.15.3. Wybór poprzedniego przełącznika profilu głosu</A>
+      <LI><A HREF="#hdr17-4">2.15.4. Wybór następnego przełącznika profilu głosowego</A>
+      <LI><A HREF="#hdr17-5">2.15.5. Wybór przełącznika profilu głosowego według numeru</A>
+      <LI><A HREF="#hdr17-6">2.15.6. Ogłasza lub wyświetla aktualne ustawienia mowy</A>
+      </UL>
+    <LI><A HREF="#hdr18">2.16. Trwałe klawisze modyfikujące NVDA</A>
+      <UL>
+      <LI><A HREF="#hdr18-1">2.16.1. Specjalne utrwalenie dla gmail.com</A>
+      </UL>
+    <LI><A HREF="#hdr19">2.17. Wyłączenie komputera</A>
+    <LI><A HREF="#hdr20">2.18. Zarządzanie gestami polecenia użytkownika</A>
+    <LI><A HREF="#hdr21">2.19. Regulacja głośności</A>
+      <UL>
+      <LI><A HREF="#hdr21-1">2.19.1. Ręcznie ustaw audio główne i audio NVDA</A>
+      <LI><A HREF="#hdr21-2">2.19.2. Wycisz lub ustaw głośność audio aktualnie aktywnej aplikacji</A>
+      <LI><A HREF="#hdr21-3">2.19.3. Zmień głośność audio aktualnie aktywnej aplikacji</A>
+      <LI><A HREF="#hdr21-4">2.19.4. Zmień główną głośność</A>
+      <LI><A HREF="#hdr21-5">2.19.5. Powrót do poprzedniego poziomu</A>
+      <LI><A HREF="#hdr21-6">2.19.6. Ogłaszanie zmian poziomu</A>
+      <LI><A HREF="#hdr21-7">2.19.7. Automatyczne przywracanie głównej głośności i głośności NVDA po załadowaniu rozszerzenia</A>
+      <LI><A HREF="#hdr21-8">2.19.8. Kopiuj datę i godzinę do schowka</A>
+      <LI><A HREF="#hdr21-9">2.19.9. Skrypt zastępujący skrypt bazowy "NVDA+f12"</A>
+      </UL>
+    <LI><A HREF="#hdr23">2.20. Skrypty do klikania w bieżącej pozycji obiektu przeglądarki</A>
+    <LI><A HREF="#hdr25">2.21. Emulacja klawisza "Aplikacje" (menu kontekstowe)</A>
+    <LI><A HREF="#hdr26">2.22. Zamknij wszystkie okna</A>
+    <LI><A HREF="#hdr27">2.23. Lista uruchomionych dodatków</A>
+    <LI><A HREF="#hdr22">2.24. Narzędzia programistyczne</A>
+      <UL>
+      <LI><A HREF="#toc79">2.24.1. Koncepcja</A>
+      <LI><A HREF="#hdr22-1">2.24.2. Utworzenie pliku buildVars.py</A>
+      <LI><A HREF="#hdr22-2">2.24.3. Zaktualizowana wersja dodatku</A>
+      <LI><A HREF="#hdr22-3">2.24.4. Zaktualizowano plik manifest.ini</A>
+      <LI><A HREF="#hdr22-4">2.24.5. Utworzenie pliku lokalizacyjnego "manifest.ini"</A>
+      <LI><A HREF="#hdr22-5">2.24.6. Tworzenie dokumentacji HTML</A>
+      <LI><A HREF="#hdr22-6">2.24.7. Tworzenie pliku katalogu</A>
+      <LI><A HREF="#hdr22-7">2.24.8. Przygotowanie dodatku</A>
+      <LI><A HREF="#hdr22-8">2.24.9. Przeglądanie folderu dodatku</A>
+      </UL>
+    <LI><A HREF="#hdr30">2.25. Zarządzanie konfiguracją użytkownika</A>
+      <UL>
+      <LI><A HREF="#toc89">2.25.1. Prezentacja</A>
+      <LI><A HREF="#hdr30-1">2.25.2. Zarządzaj folderami konfiguracji użytkownika</A>
+      <LI><A HREF="#toc91">2.25.3. Przykłady użycia</A>
+      </UL>
+    <LI><A HREF="#hdr31">2.26. Analiza tekstu</A>
+      <UL>
+      <LI><A HREF="#hdr31-1">2.26.1. Aktywacja lub dezaktywacja analizatora</A>
+      <LI><A HREF="#hdr31-2">2.26.2. Analiza konfiguracji</A>
+      <LI><A HREF="#hdr31-3">2.26.3. Skanowanie na żądanie</A>
+      </UL>
+    <LI><A HREF="#hdr32">2.27. Ogłaszanie pozycji kursora w polach edycji</A>
+    <LI><A HREF="#hdr33">2.28. Tymczasowe użycie urządzenia wyjściowego audio bez wpływu na konfigurację NVDA</A>
+      <UL>
+      <LI><A HREF="#hdr33-1">2.28.1. Tymczasowy menedżer urządzeń audio</A>
+      <LI><A HREF="#hdr33-2">2.28.2. Tymczasowa zmiana urządzenia audio</A>
+      <LI><A HREF="#hdr33-3">2.28.3. Ustawienie tymczasowego urządzenia audio</A>
+      <LI><A HREF="#hdr33-4">2.28.4. Ustaw lub zostaw tymczasowe urządzenie audio</A>
+      </UL>
+    <LI><A HREF="#hdr34">2.29. Orientacja wyjścia audio NVDA</A>
+    <LI><A HREF="#hdr35">2.30. Szybka aktywacja lub dezaktywacja rozszerzeń</A>
+    </UL>
+  <LI><A HREF="#toc104">3. Opcje</A>
+    <UL>
+    <LI><A HREF="#hdr100">3.1. Usunięcie ogłaszania opisu obiektów na wstążkach Windows</A>
+    <LI><A HREF="#hdr101">3.2. Ogłaszanie słowa posiadającego fokus, po usunięciu tego słowa</A>
+    <LI><A HREF="#hdr102">3.3. Automatyczna maksymalizacja okna</A>
+    <LI><A HREF="#hdr103">3.4. Ogłaszanie interpunkcji podczas poruszania się po słowie</A>
+    <LI><A HREF="#hdr302">3.5. Tytuły okien z nazwą dodatku</A>
+    <LI><A HREF="#hdr305">3.6. Zarządzanie Blokadą numeryczną</A>
+      <UL>
+      <LI><A HREF="#toc111">3.6.1. Ogłaszanie aktywacji blokady numerycznej przy uruchomieniu NVDA</A>
+      <LI><A HREF="#toc112">3.6.2. Automatyczna aktywacja/dezaktywacja podczas aktywacji profilu konfiguracji</A>
+      </UL>
+    <LI><A HREF="#hdr303">3.7. Konfiguracja opóźnienia oczekiwania na powtórzenie tego samego gestu polecenia</A>
+    <LI><A HREF="#hdr304">3.8. Standardowe użycie klawiatury numerycznej</A>
+    </UL>
+  <LI><A HREF="#toc115">4. Inne ulepszenia</A>
+    <UL>
+    <LI><A HREF="#hdr202">4.1. Eksploracja folderu konfiguracji użytkownika lub folderu programu nvda</A>
+    <LI><A HREF="#hdr203">4.2. Prezentacja formatowania tekstu</A>
+    <LI><A HREF="#hdr204">4.3. Ogłaszanie tekstu okien w stylu potwierdzenia</A>
+    <LI><A HREF="#hdr205">4.4. Uruchamianie skryptów w oknie dialogowym "Gesty poleceń"</A>
+    </UL>
+  <LI><A HREF="#toc120">5. Podsumowanie poleceń dostarczonych przez to rozszerzenie</A>
+    <UL>
+    <LI><A HREF="#toc121">5.1. Systematycznie instalowane gesty poleceń</A>
+    <LI><A HREF="#toc122">5.2. Polecenia interpretera</A>
+    <LI><A HREF="#toc123">5.3. gesty poleceń instalowane przez funkcjonalności</A>
+      <UL>
+      <LI><A HREF="#toc124">5.3.1. Wyświetlanie listy ikon w obszarze powiadomień i okien uruchomionych aplikacji</A>
+      <LI><A HREF="#toc125">5.3.2. Pomoc w tworzeniu złożonych symboli</A>
+      <LI><A HREF="#toc126">5.3.3. Informacje o aktualnie aktywnej aplikacji</A>
+      <LI><A HREF="#toc127">5.3.4. Rozszerzenie funkcjonalności bufora wirtualnego</A>
+      <LI><A HREF="#toc128">5.3.5. Ogłaszanie wstępnie wybranego folderu w oknach w stylu "Otwórz, zapisz, zapisz jako"</A>
+      <LI><A HREF="#toc129">5.3.6. Dzienniki NVDA</A>
+      <LI><A HREF="#toc130">5.3.7. Historia mowy</A>
+      <LI><A HREF="#toc131">5.3.8. Minutnik</A>
+      <LI><A HREF="#toc132">5.3.9. Ponowne uruchamianie NVDA</A>
+      <LI><A HREF="#toc133">5.3.10. Wyświetlanie widocznych elementów tworzących obiekt na pierwszym planie</A>
+      <LI><A HREF="#toc134">5.3.11. Przełączanie profili głosowych</A>
+      <LI><A HREF="#toc135">5.3.12. Dodatek - data i godzina</A>
+      </UL>
+    </UL>
+  </UL>
+
+<P></P>
+<P>
+w trakcie redakcji
+</P>
+<A NAME="toc2"></A>
+<H2>1. Wprowadzenie</H2>
+<A NAME="toc3"></A>
+<H3>1.1. Ogólne</H3>
+<P>
+Ten dodatek dodaje do globalnych poleceń NVDA następujące funkcje:
+</P>
+ <UL>
+ <LI><A HREF="#hdr1">Wyświetlanie listy ikon w obszarze powiadomień lub okien uruchomionych aplikacji</A>,
+ <LI><A HREF="#hdr3">Pomoc przy tworzeniu złożonych symboli</A> takich jak np. "e" w "o", odwrócony znak zapytania...,
+ <LI><A HREF="#hdr4">Ogłaszanie lub wyświetlanie informacji o aplikacji będącej przedmiotem zainteresowania, takich jak jej wersja lub aktywny profil konfiguracyjny</A>,
+ <LI><A HREF="#hdr5">Rozszerzenie funkcji wirtualnego bufora</A> dla przeglądarek Mozilla Firefox, Microsoft Internet Explorer, Microsoft Edge i Google Chrome:
+  <UL>
+  <LI>Nowe polecenia dla trybu nawigacji: akapit, podział, kotwica, główny region,
+  <LI>Nowe typy elementów prezentowane w formie listy w oknie, "Lista elementów" otwieranym przez NVDA+f7: (przycisk radiowy, akapit, ramka, pole wyboru...) 
+  oraz ogłaszanie liczby elementów odpowiadającej wybranemu typowi,
+  <LI>Ogłaszanie adresu (URL) dokumentu,
+  <LI>Możliwość przeglądania w pętli w poszukiwaniu następnego lub poprzedniego elementu,
+  <LI>Skrypty do tabel:
+   <UL>
+   <LI>Ogłaszanie pozycji aktualnej komórki,
+   <LI>Przejście do następnej lub poprzedniej kolumny/wiersza z odczytem składających się na nią komórek,
+   <LI>Przejście do pierwszej/ostatniej komórki wiersza/kolumny,
+   <LI>Ogłaszanie komórek aktualnej kolumny/wiersza,
+   </UL>
+  </UL>
+ <LI><A HREF="#hdr7">Ogłaszanie poleceń klawiaturowych związanych z funkcjami edycyjnymi</A>,
+ <LI><A HREF="#hdr8">Ogłaszanie wstępnie wybranego folderu w oknach takich jak "Otwórz, Zapisz", "Zapisz jako"</A>,
+ <LI><A HREF="#hdr9">Otwiera stary lub aktualny dziennik NVDA i kopiuje ścieżkę tego ostatniego do schowka</A>,
+ <LI><A HREF="#hdr10">Ogłasza ponownie lub wyświetla ostatnie komunikaty głosowe</A>,
+ <LI><A HREF="#hdr12">Zmiana nazwy klawiszy klawiatury</A>,
+ <LI><A HREF="#hdr13">Ogłaszanie wybranych klawiszy poleceń</A>,
+ <LI><A HREF="#hdr14">Prosty minutnik</A>,
+ <LI><A HREF="#hdr15">Ponowne uruchomienie NVDA na poziomie logowania "debugowania" prostym gestem</A>,
+ <LI><A HREF="#hdr16">Wyświetlanie widocznych elementów tworzących obiekt na pierwszym planie</A>,
+ <LI><A HREF="#hdr17">Szybkie przełączanie profilu głosowego</A>,
+ <LI><A HREF="#hdr18">Trwałe klawisze NVDA oraz modyfikacja specjalnego trwałego klawisza dla strony gmail.com</A>,
+ <LI><A HREF="#hdr19">Zamknij, uruchom ponownie lub hibernuj komputer</A>,
+ <LI><A HREF="#hdr20">Zarządzanie gestami poleceń skonfigurowanymi przez użytkownika</A>,
+ <LI><A HREF="#hdr21">Kontrola dźwięku</A> (tylko Windows 10):
+ <LI>Wyciszanie lub ustawianie audio aktualnie aktywnej aplikacji,
+  <UL>
+  <LI>Ustawianie ręczne lub automatyczne głównej głośności i głośności NVDA,
+  <LI>Modyfikacja poziomu głównej głośności lub głośności aktualnie aktywnej aplikacji,
+  <LI>Automatyczne przywracanie głównej głośności i głośności NVDA po załadowaniu rozszerzenia,
+  </UL>
+ <LI><A HREF="#hdr22">Narzędzia do tworzenia dodatków</A>,
+  <UL>
+  <LI>Utworzenie pliku buildVars.py z pliku manifest.ini dodatku,
+  <LI>Aktualizacja pliku manifestu.ini z informacji zawartych w pliku buildVars.py,
+  <LI>Utworzenie pliku lokalizacyjnego manifest.ini dla jednego lub wszystkich języków obsługiwanych przez dodatek,
+  <LI>Tworzenie dokumentacji HTML dla dodatku dla jednego lub wszystkich języków,
+  <LI>Przygotowanie dodatku,
+  <LI>Eksploracja pliku dodatku,
+  <LI><A HREF="#hdr21">Dodatek dotyczący daty i godziny:</A>,
+  <LI>Kopiowanie daty i godziny do schowka,
+  <LI>Ogłaszanie czasu na zegarze Windows w sekundach,
+  <LI>Ogłaszanie czasu niezależnego od poziomu interpunkcji,
+  </UL>
+ </UL>
+
+<UL>
+<LI><A HREF="#hdr23">Skrypty do kliknięcia w aktualnej pozycji obiektu przeglądarki</A>,
+ <UL>
+ <LI><A HREF="#hdr25">Skrypt emulujący klawisz "Aplikacje" (menu kontekstowe)</A>,
+ <LI><A HREF="#hdr26">Skrypt do zamykania wszystkich otwartych okien</A>,
+ <LI><A HREF="#hdr27">Skrypt do wyświetlania listy uruchomionych dodatków</A>,
+ <LI><A HREF="#hdr30">Zarządzanie konfiguracją użytkownika</A>,
+ </UL>
+<LI><A HREF="#hdr31">Analizator tekstu</A>,
+ <UL>
+ <LI><A HREF="#hdr32">Ogłaszanie pozycji kursora w polach edycyjnych</A>,
+ </UL>
+<LI><A HREF="#hdr33">Tymczasowe użycie urządzenia wyjściowego audio bez wpływu na konfigurację NVDA</A>,
+<LI><A HREF="#hdr34">Orientacja wyjścia audio NVDA</A>,
+<LI><A HREF="#hdr35">Szybka aktywacja lub dezaktywacja dodatków</A>,
+</UL>
+
+<UL>
+<LI>Opcje:
+ <UL>
+ <LI><A HREF="#hdr100">Usunięcie ogłaszania opisu obiektów na wstążkach Windows</A>,
+ <LI><A HREF="#hdr101">Ogłaszanie słowa posiadającego fokus, po usunięciu tego słowa (dla wersji NVDA przed 2020.3)</A>,
+ <LI><A HREF="#hdr102">automatyczna maksymalizacja okna</A>,
+ <LI><A HREF="#hdr103">systematyczne ogłaszanie znaków interpunkcyjnych podczas poruszania się po słowie</A>,
+ </UL>
+<LI>zaawansowane opcje:
+ <UL>
+ <LI><A HREF="#hdr300">Sygnalizacja dźwiękiem wpisu błędu w logu NVDA</A>,
+ <LI><A HREF="#hdr302">Tytuł okna dodatku z podsumowaniem dodatku</A>,
+ <LI><A HREF="#hdr303">konfiguracja opóźnienia czasu oczekiwania na powtórzenie tego samego gestu polecenia</A>,
+ <LI><A HREF="#hdr304">możliwe użycie klawiszy numerycznych w standardzie</A>.
+ </UL>
+<LI>inne ulepszenia:
+ <UL>
+ <LI><A HREF="#hdr202">menu do przeglądania folderu konfiguracji użytkownika lub folderu programu NVDA</A>,
+ <LI><A HREF="#hdr203">prezentacja informacji o formatowaniu tekstu w oknie zamiast dokumentu HTML</A>,
+ <LI><A HREF="#hdr204">Ogłaszanie tekstu okna z potwierdzeniem, nawet jeśli opis elementu jest wyłączony</A>.
+ </UL>
+</UL>
+
+<A NAME="hdr-configurationMenu"></A>
+<H3>1.2. Menu konfiguracji dodatku</H3>
+<P>
+W podmenu "Preferencje" NVDA dodano podmenu "Rozszerzenie podstawowych poleceń NVDA", które oferuje następujące opcje, w zależności od przypadku:
+</P>
+<UL>
+<LI>Systematyczne podmenu "Ogólne ustawienia", które otwiera okno przypominające okno "parametry" NVDA i które prezentuje następujące kategorie:
+ <UL>
+ <LI>"Instalacja funkcji": pozwala zobaczyć stan instalacji każdej funkcji dostarczanej przez dodatek i ewentualnie ją zmodyfikować.
+ <LI>"Ulepszenia NVDA": do konfiguracji opcji związanych z NVDA dostarczanych przez dodatek,
+ <LI>"Komputer": do konfiguracji opcji związanych z funkcjami związanymi z komputerem (system operacyjny Windows, regulacja głośności),
+ <LI>"Klawiatura": do konfiguracji opcji powiązanych z klawiaturą (pozostawanie klawiszy, użycie klawiatury numerycznej),
+ <LI>"Zaawansowane": opcje dla doświadczonych użytkowników,
+ <LI>"Aktualizacja": ustawienia kontrolujące aktualizację dodatku.
+ <P></P>
+ </UL>
+<LI>Systematyczne "ustawienia profilu bieżącej konfiguracji" podmenu, które otwiera okno przypominające "parametry". dialog NVDA, który prezentuje następujące kategorie:
+ <UL>
+ <LI>"Ulepszenia dla NVDA": aby skonfigurować opcje związane z NVDA dostarczane przez dodatek, 
+ <LI>"Analizator tekstu": aby zdefiniować opcje specyficzne dla analizatora tekstu.
+ </UL>
+<LI>"Zmiana nazw klawiszy klawiatury" (jeśli funkcjonalność jest zainstalowana): pozwala na zmianę nazw klawiszy klawiatury nadawanych domyślnie przez NVDA zgodnie z wymaganiami,
+<LI>"Ogłaszanie wybranych klawiszy klawiatury" (jeśli funkcjonalność jest zainstalowana): umożliwia wypowiadanie wybranych nazw klawiszy klawiatury w zależności od potrzeb,
+<LI>"Zresetuj konfigurację", aby przywrócić konfigurację do stanu początkowego podczas pierwszej instalacji dodatku.
+</UL>
+
+<P>
+Oprócz ostatniego menu, każdy jest powiązany ze skryptem bez gestu polecenia umożliwiającego jego aktywację. Za pomocą okna "gesty poleceń" NVDA można je przypisać.
+</P>
+<P>
+Oto następujące skrypty wiersza poleceń:
+</P>
+<UL>
+<LI>"Wyświetl okno ustawień dodatku": polecenie "f1",
+<LI>"Wyświetl okno konfiguracji dodatku dla bieżącego profilu konfiguracji": polecenie "KEY_PROFILE_SETTINGS",
+<LI>"Wyświetl okno zmiany nazwy klawiszy klawiatury": polecenie "f2",
+<LI>"Wyświetl okno konfiguracji Ogłaszanie eybranych klawiszy poleceń": polecenie "f2",
+</UL>
+
+<P>
+Ta konfiguracja jest zapisywana na dwa sposoby w zależności od funkcji lub opcji, której dotyczy:
+</P>
+<UL>
+<LI>w pliku "NVDAExtensionGlobalPluginAddon.ini" umieszczonym w folderze użytkownika "userConfig" NVDA dla używanej konfiguracji niezależnie od profilu konfiguracyjnego,
+<LI>w pliku NVDA.ini lub pliku profilu konfiguracyjnego wyzwalanego w momencie modyfikacji konfiguracji, która będzie używana tylko wtedy, gdy ten profil zostanie uruchomiony.
+</UL>
+
+<P>
+NVDA oferuje opcję "Zapisz konfigurację przy wychodzeniu" (patrz Podręcznik Użytkownika NVDA), która umożliwia automatyczne zapisanie konfiguracji NVDA podczas wychodzenia lub ponownego uruchamiania NVDA. Jeśli ta opcja nie jest zaznaczona, konfiguracja jest zapisywana tylko po akcji użytkownika lub po modyfikacji parametru, która wymaga ponownego uruchomienia NVDA.
+</P>
+<P>
+Ten dodatek podąża za tym trybem działania.
+</P>
+<P>
+Niektóre zmiany ustawień dodatków wymagają zapisania konfiguracji i ponownego uruchomienia NVDA. W takim przypadku użytkownikowi proponuje się zapisanie i natychmiastowe ponowne uruchomienie, tak jak robi to NVDA w przypadku zmiany języka.
+</P>
+<P>
+Podczas odinstalowywania dodatku jego plik konfiguracyjny jest usuwany, a konfiguracja dodatku jest usuwana ze wszystkich profili konfiguracyjnych.
+</P>
+<P>
+Podczas odinstalowywania funkcji jej konfiguracja, jeśli istnieje, jest całkowicie usuwana.
+</P>
+<P>
+W przypadku aktualizacji zainstalowanie dodatku daje możliwość zachowania (w miarę możliwości) poprzedniej konfiguracji lub nie.
+</P>
+<P>
+Korzystając z podmenu "Resetuj konfigurację" możliwe jest przywrócenie konfiguracji do stanu sprzed pierwszej instalacji dodatku, w tym zapisanego w profilach konfiguracyjnych.
+</P>
+<P>
+Pozwala to zacząć od zera bez konieczności odinstalowywania i ponownej instalacji dodatku w przypadku ewentualnych problemów.
+</P>
+<A NAME="toc5"></A>
+<H3>1.3. Pomoc kontekstowa</H3>
+<P>
+W większości okien rozszerzenia można użyć klawisza F1, aby otworzyć instrukcję obsługi rozszerzenia do odpowiedniego rozdziału.
+</P>
+<A NAME="hdr-update"></A>
+<H3>1.4. aktualizacja</H3>
+<P>
+Aktualizacja dodatku odbywa się domyślnie automatycznie krótko po uruchomieniu NVDA (od 20 do 600 sekund) i maksymalnie raz dziennie.
+Możliwe jest wyłączenie tej aktualizacji poprzez odznaczenie opcji "automatycznie sprawdzaj aktualizacje" w kategorii "Aktualizacja" w ustawieniach dodatku.
+Wersja dodatku może być:
+</P>
+<UL>
+<LI>stabilna wersja: jej numer wersji to na przykład "1.0".
+<LI>wersja rozwojowa: numer wersji to "1.0-dev1", "1.0-rc1" lub "1.0-beta2".
+</UL>
+
+<P>
+Domyślnie wersja stabilna jest aktualizowana do wersji stabilnej nowszej (wyższy numer wersji).Ale możliwe jest zaktualizowanie wersji stabilnej działającej z wersją rozwojową następnej stabilnej wersji. Wystarczy zaznaczyć opcję "Aktualizuj także wersję stabilną do wersji rozwojowych" znajdującą się w kategorii "Aktualizacja" w ustawieniach dodatku.
+</P>
+<P>
+Aktualizacja wersji rozwojowej:
+</P>
+<UL>
+<LI>z nowszą wersją rozwojową,
+<LI>ze stabilną wersją,
+<LI>lub z najnowszą stabilną wersją, jeśli poprzednia opcja nie jest zaznaczona.
+</UL>
+
+<P>
+Przycisk "Wyszukaj aktualizację" umieszczony w ustawieniach dodatku, pozycja menu "Aktualizuj", umożliwia natychmiastowe wyszukanie aktualizacji.
+</P>
+<P>
+Znajdujący się w tej samej kategorii przycisk "Wyświetl historię" umożliwia wyświetlenie historii aktualnej wersji w przeglądarce.
+</P>
+<P>
+W przypadku automatycznej aktualizacji i jeśli zostanie wykryta nowa wersja, zostanie wyświetlone okno "Aktualizuj", które zasugeruje:
+</P>
+<UL>
+<LI>natychmiastowa instalacja nowej wersji,
+<LI>lub odłoży aktualizację na później. W takim przypadku wyszukiwanie zostanie wznowione co najmniej godzinę później.
+</UL>
+
+<P>
+W przypadku aktualizacji do wersji stabilnej przycisk "Co nowego" oferuje możliwość otwarcia w przeglądarce historii dodatku, a tym samym poznania nowych funkcji proponowanej wersji.
+</P>
+<A NAME="toc7"></A>
+<H3>1.5. Praca w trybie awaryjnym</H3>
+<P>
+W tym trybie działanie dodatku jest pogorszone.
+</P>
+<P>
+Podobnie jak NVDA, nie ma możliwości zapisania zmian w konfiguracji.
+</P>
+<P>
+Niektóre funkcje nie są już dostępne, takie jak:
+</P>
+<UL>
+<LI>"Wyświetlanie listy ikon w obszarze powiadomień i okien uruchomionych aplikacji",
+<LI>"logi NVDA",
+<LI>"Narzędzia programistyczne".
+<LI>aktualizacja dodatku.
+</UL>
+
+<A NAME="toc8"></A>
+<H3>1.6. Kompatybilność</H3>
+<P>
+Po zmianie konfiguracji funkcji "Przełączanie profili głosowych" jest ona usuwana podczas aktualizacji z wersji dodatku starszej niż 9.0. Wszystkie przełączniki zostaną zwolnione, a powiązane profile głosowe usunięte.
+</P>
+<A NAME="toc9"></A>
+<H3>1.7. Historia</H3>
+<P>
+Historia wersji tego dodatku znajduje się w <A HREF="changes.html">pliku "changes.html"</A>
+</P>
+<A NAME="hdr0"></A>
+<H2>2. Funkcje</H2>
+<A NAME="hdr0-1"></A>
+<H3>2.1. Preambuła</H3>
+<A NAME="toc12"></A>
+<H4>2.1.1. Instalacja funkcji</H4>
+<P>
+Ten dodatek pozwala zainstalować lub nie zainstalować określonej funkcji.
+Stan instalacji każdej funkcji dodatku jest prezentowany w kategorii "Instalacja funkcji" w oknie "Ustawienia".
+</P>
+<P>
+Ten stan może być:
+</P>
+<UL>
+<LI>Nie instaluj: funkcja nie jest zainstalowana.
+<LI>Zainstaluj: funkcja jest zainstalowana. Jego skrypty mogą być używane za pomocą poleceń interpretera poleceń (patrz następny rozdział) i gestów poleceń dostarczanych domyślnie.
+<LI>Zainstaluj bez gestu polecenia: funkcja jest zainstalowana. Jego skrypty mogą być używane za pomocą poleceń interpretera poleceń (patrz następny rozdział), ale nie jest do nich przypisany żaden gest polecenia.
+</UL>
+
+<P>
+Domyślnie ten dodatek nie instaluje wszystkich funkcji.
+</P>
+<A NAME="hdr0-2"></A>
+<H4>2.1.2. Aktywacja skryptów</H4>
+<P>
+Ogólnie każdy skrypt można aktywować na dwa sposoby:
+</P>
+<UL>
+<LI>albo za pomocą klasycznego gestu polecenia,
+<LI>lub za pomocą interpretera poleceń dodatku (patrz następny rozdział).
+</UL>
+
+<P>
+W oknie "Zdarzenia Wejścia" NVDA, skrypty dostarczone przez dodatek są umieszczane w osobnej kategorii.
+</P>
+<P>
+Zdecydowana większość skryptów należy do kategorii: "Rozszerzenie podstawowych poleceń NVDA", "Przełączanie profilu głosu", "Konfiguracja", "Narzędzia" i Mowa.
+</P>
+<P>
+W przypadku skryptów, które można uruchomić za pomocą komendy interpretera, ta komenda jest wskazana po opisie skryptu.
+</P>
+<P>
+W zależności od wyboru instalacji funkcji ("Zainstaluj" lub "Zainstaluj bez gestu polecenia"), gesty poleceń dostarczane domyślnie są przypisane lub nie do skryptów tej funkcji.
+</P>
+<P>
+Domyślnie zdecydowana większość skryptów, które mogą być uruchamiane przez interpreter poleceń, nie jest przypisana do żadnych gestów poleceń.
+</P>
+<A NAME="toc14"></A>
+<H4>2.1.3. Interpreter poleceń</H4>
+<P>
+Rozpoczyna się to za pomocą gestu polecenia "NVDA+j". Następnie słychać sygnał dźwiękowy.
+</P>
+<P>
+Możliwe jest wtedy aktywowanie skryptów funkcjonalności za pomocą poleceń. Dziś tych poleceń nie można zmienić.
+</P>
+<P>
+Komenda "h" interpretera zawiera listę wszystkich skryptów zainstalowanych funkcjonalności dostępnych za pomocą komendy interpretera. Na tej liście możliwe jest uruchomienie wybranego skryptu przez naciśnięcie klawisza "Enter".
+</P>
+<P>
+Polecenie "g" interpretera otwiera podręcznik użytkownika dodatku.
+</P>
+<P>
+Interpreter poleceń zatrzymuje się albo:
+</P>
+<UL>
+<LI>naciskając klawisz "Esc",
+<LI>lub automatycznie po wpisaniu polecenia. Jeśli to polecenie nie pasuje do żadnego skryptu, zasygnalizuje to sygnał dźwiękowy.
+</UL>
+
+<A NAME="hdr1"></A>
+<H3>2.2. Wyświetlanie listy ikon w obszarze powiadomień oraz listy okien uruchomionych aplikacji</H3>
+<P>
+Ta funkcja jest domyślnie instalowana z gestami poleceń.
+</P>
+<P>
+Dodaje następujące skrypty:
+</P>
+<UL>
+<LI>Wyświetlanie listy ikon w obszarze powiadomień,
+<LI>Wyświetlanie listy okien uruchomionych aplikacji,
+<LI>Wyświetlanie listy ikon obszaru powiadomień lub okien uruchomionych aplikacji.
+</UL>
+
+<P>
+Skrypty te są umieszczane w kategorii "Rozszerzenie podstawowych poleceń NVDA" w oknie "Zdarzenia Wejścia" NVDA.
+</P>
+<A NAME="hdr1-1"></A>
+<H4>2.2.1. Wyświetlanie listy ikon w obszarze powiadomień</H4>
+<P>
+Ten skrypt początkowo stworzony przez Yannicka Maillota i Daniela Poirauda został zainstalowany przy użyciu niezależnego dodatku "ListIconesZoneNotification_v1.2.nvda-addon", który w związku z tym musi zostać odinstalowany.
+</P>
+<P>
+Jego opis to: "Pokazuje listę przycisków w zasobniku systemowym"
+</P>
+<P>
+Jest uruchamiany poleceniem "F11" interpretera poleceń. Jest to odpowiednik skryptu Jaws "Insert+f11".
+</P>
+<P>
+Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Wyświetla okno, które zawiera:
+</P>
+<UL>
+<LI>lista ikon w obszarze powiadomień,
+<LI>przycisk "Pojedyncze kliknięcie lewym przyciskiem" wyzwalający pojedyncze kliknięcie lewym przyciskiem myszy,
+<LI>przycisk "Pojedyncze kliknięcie prawym przyciskiem" wyzwalający pojedyncze kliknięcie prawym przyciskiem myszy,
+<LI>przycisk "Podwójne kliknięcie lewym przyciskiem" wyzwalający podwójne kliknięcie lewym przyciskiem myszy,
+<LI>przycisk "Anuluj", aby zamknąć okno i zakończyć skrypt.
+</UL>
+
+<P>
+Nawigacja w oknie odbywa się za pomocą "Tab" lub wielkich liter+Tab ", a na liście za pomocą strzałek w górę iw dół.
+</P>
+<P>
+Naciśnięcie klawisza "Esc" zamyka okno. 
+Na liście ikon naciśnięcie klawisza "Enter" powoduje naciśnięcie przycisku "Pojedyncze kliknięcie lewym przyciskiem".
+</P>
+<A NAME="hdr1-2"></A>
+<H4>2.2.2. Lista okien uruchomionych aplikacji</H4>
+<P>
+Opis tego skryptu to: "Wyświetl listę uruchomionych okien aplikacji z możliwością umieszczenia jednej z nich na pierwszym planie lub jej usunięcia ".
+</P>
+<P>
+Jest to odpowiednik skryptu Jaws "Insert+f10".
+</P>
+<P>
+Jest uruchamiany przez polecenie "F10" interpretera poleceń.
+</P>
+<P>
+Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Wyświetla okno, które zawiera:
+</P>
+<UL>
+<LI>listę wszystkich okien uruchomionych aplikacji,
+<LI>przycisk "Przełącz na", aby wysunąć wybrane okno na pierwszy plan,
+<LI>przycisk "Usuń" zamyka wybrane okno,
+<LI>przycisk "Usuń wszystko", aby zamknąć wszystkie okna,
+<LI>przycisk "Zamknij", aby zamknąć okno i zakończyć skrypt.
+</UL>
+
+<P>
+Nawigacja w oknie odbywa się za pomocą "Tab" lub "Shift+Tab", a na liście za pomocą strzałek w górę iw dół.
+Na liście można dokonać wyboru, wpisując początek tytułu żądanego okna.
+Naciśnięcie klawisza "Esc" zamyka okno.
+Na liście okna są oznaczone jako zmaksymalizowane lub zminimalizowane.
+Naciśnięcie przycisku "Przełącz na" lub klawisza "Enter", gdy jesteś na liście okien, zamyka okno i przenosi na pierwszy plan okno wybranej aplikacji, nadając mu fokus.
+Naciśnięcie przycisku "Usuń" zamyka okno wybranej aplikacji i przywraca fokus do zaktualizowanej listy okien aplikacji.
+Naciśnięcie przycisku "Usuń wszystko" zamyka wszystkie okna i okno.
+</P>
+<A NAME="hdr1-3"></A>
+<H4>2.2.3. Wyświetlanie listy ikon obszaru powiadomień lub okien uruchomionych aplikacji</H4>
+<P>
+Opis tego skryptu to: "Pokazuje listę przycisków w zasobniku systemowym. Dwukrotnie wyświetla listę uruchomionych okien aplikacji z możliwością umieszczenia jednego z ".
+</P>
+<P>
+Domyślnie jest do niego przypisany gest polecenia "NVDA+F11".
+</P>
+<P>
+Nie jest do niego przypisane żadne polecenie interpretera.
+</P>
+<P>
+Jedno naciśnięcie gestu polecenia "NVDA+F11" uruchamia skrypt "Wyświetlanie listy ikon w strefie powiadomień" (patrz wyżej).
+Dwukrotne naciśnięcie uruchamia skrypt "Wyświetlanie listy okien uruchomionych aplikacji" (patrz wyżej).
+</P>
+<A NAME="hdr3"></A>
+<H3>2.3. Pomoc przy tworzeniu złożonych symboli</H3>
+<P>
+Ta funkcja jest domyślnie instalowana bez gestu polecenia.
+</P>
+<P>
+Dodaje następujące dwa skrypty:
+</P>
+<UL>
+<LI>skrypt, którego opis brzmi: "Pozwól skopiować lub wpisać złożony symbol".
+<LI>skrypt, którego opis to: "Wyświetl listę ostatnio używanych symboli".
+</UL>
+
+<P>
+Skrypty te są przechowywane w sekcji "Rozszerzenie podstawowych poleceń NVDA" okna "Zdarzenia Wejścia" NVDA.
+</P>
+<A NAME="hdr3-1"></A>
+<H4>2.3.1. Skrypt tworzenie złożonego symbolu, takiego jak akcentowana samogłoska, symbol matematyczny</H4>
+<P>
+Ten skrypt jest uruchamiany:
+</P>
+<UL>
+<LI>poleceniem f4 "interpretera poleceń,
+<LI>lub za pomocą gestu polecenia "NVDA+shift+f4" przypisanego domyślnie.
+<P></P>
+Wyświetla okno "Pomoc do tworzenia złożonych symboli" składające się z:
+<LI>listy umożliwiającej wybór jednej z kategorii symboli,
+<LI>listy przedstawiającej symbole wybranej kategorii,
+<LI>przycisk "Wklej", aby wstawić wybrany symbol do bieżącego dokumentu,
+<LI>przycisk "Kopiuj do schowka", aby skopiować wybrany symbol do schowka,
+<LI>przycisk "Zarządzaj swoimi symbolami", aby dodać / usunąć własne kategorie lub symbole
+<LI>przycisk "Zamknij", zamyka okno.
+</UL>
+
+<P>
+W oknie poruszamy się klawiszami "Tab" lub "Shift+Tab".
+Naciśnięcie klawisza "Esc" zamyka okno.
+Gdy jesteś na liście kategorii, naciśnięcie klawisza "Enter" lub "Tab" przenosi fokus na listę symboli wybranej kategorii.
+Symbole te są wymienione w kolejności w pliku "symbolCategories.dic" (patrz poniżej).
+</P>
+<P>
+Z drugiej strony, jeśli jesteś na liście symboli i wybrany jest symbol, naciśnięcie klawisza "Enter" powoduje naciśnięcie przycisku "Wklej".
+Po ustawieniu na symbolu, naciśnięcie Klawisza "Spacji" powoduje, że kod symbolu jest wypowiadany w formularzu: kod dziesiętny, po którym następuje literowany kod szesnastkowy. Może to być przydatne, jeśli chcesz ręcznie skomponować symbol za pomocą polecenia Windows "Alt + 0" po którym następuje kod dziesiętny wybierany na klawiaturze numerycznej.
+Naciśnięcie jednego z trzech przycisków zamyka okno.
+Przycisk "Zarządzaj swoimi symbolami" przedstawia okno, które oferuje możliwość uzupełnienia podstawowych kategorii dodatku własnymi symbolami.
+</P>
+<P>
+To okno wyświetla:
+</P>
+<UL>
+<LI>spis wszystkich kategorii,
+<LI>lista symboli specyficznych dla użytkownika dla wybranej kategorii,
+<LI>przycisk "Dodaj symbol", aby dodać symbol w wybranej kategorii,
+<LI>przycisk "Usuń symbol" do usunięcia wybranego symbolu,
+<LI>przycisk "Dodaj kategorię",
+<LI>przycisk "Usuń kategorię" do usunięcia kategorii (kategorii podstawowych nie można usunąć)
+<LI>przycisk "Zapisz", zapisuje wszystkie dokonane modyfikacje i zamyka okno,
+<LI>przycisk "Anuluj", zamyka okno bez modyfikacji.
+<P></P>
+Dodane kategorie i symbole są przechowywane w pliku konfiguracyjnym dodatku (NVDAExtensionGlobalPluginAddon.ini znajdującym się w folderze konfiguracji użytkownika NVDA) w sekcji "Categories &amp; Symbols" oraz w podsekcji odpowiadającej językowi NVDA, w którym dokonano zmian.
+<P></P>
+Każda kategoria to sekcja zdefiniowana w następujący sposób:
+<LI>Nazwa Kategorii,
+<LI>lista symboli (symbol = jego opis)
+<P></P>
+Podstawowe kategorie dodatku wraz z ich symbolami są zdefiniowane w pliku "symbolCategories.dic" specyficznym dla każdego języka, który znajduje się w folderze "xxx" folderu "local" dodatku (xxx jest język identyfikatora, na przykład "pl" dla polskiego).
+Możesz dostosować ten dodatek i stworzyć własne podstawowe kategorie.
+Aby to zrobić, po prostu utwórz w folderze userConfig plik "symbolCategories-xxx.dic", zapisany w kodowaniu "utf-8", (xx to kod języka). W tym plikunazwa kategorii zostanie zdefiniowana w nawiasach kwadratowych i każdym symbolu w następujący sposób:
+<LI>symbol (pojedynczy znak),
+<LI>tabulacja (znak "Tab"),
+<LI>opis symbolu (ciąg znaków).
+</UL>
+
+<P>
+Akceptowane są puste wiersze lub wiersze komentarza (zaczynające się od "#").
+</P>
+<P>
+Pliki te są przechowywane podczas aktualizacji dodatku, nawet jeśli użytkownik prosi o nie zachowywanie własnych ustawień.
+Instalacja dodatku dodaje, dla każdego języka, wymowę pewnych symboli znajdujących się w podstawowych kategoriach, których NVDA nie posiada. 
+Plik "symbols y-xx.dic" w folderze userConfig jest albo utworzony, albo zmodyfikowany, aby dodać nowe wymowy.
+</P>
+<A NAME="hdr3-2"></A>
+<H4>2.3.2. Skrypt Wyświetla listę ostatnich złożonych symboli</H4>
+<P>
+Ten dodatek przechowuje 20 ostatnich wybranych symboli dla bieżącego profilu konfiguracji.
+</P>
+<P>
+Ten skrypt pozwala na ich wyświetlenie i ponowne utworzenie powszechnie używanego symbolu. Pozwala to uniknąć szukania go w jego kategorii z poprzednim skryptem.
+</P>
+<P>
+Ten skrypt jest uruchamiany poleceniem kontrol+f4 "interpretera poleceń. Domyślnie nie jest do niego przypisany żaden gest polecenia.
+Przedstawia ten sam rodzaj okna, co poprzedni skrypt, bez przycisku do zarządzania własnymi symbolami.
+Maksymalną liczbę ostatnich symboli można skonfigurować za pomocą opcji "Maksymalna liczba ostatnio zarejestrowanych symboli związków" umieszczonej w kategorii "Zaawansowane" w oknie "Ustawienia" dodatku.
+</P>
+<A NAME="hdr4"></A>
+<H3>2.4. Informacja o aplikacji posiadającej fokus</H3>
+<P>
+Ta funkcja jest instalowana domyślnie bez gestu polecenia.
+</P>
+<P>
+Instaluje, zgodnie ze stanem instalacji, następujące skrypty:
+</P>
+<UL>
+<LI>Ogłaszanie nazwy pliku aplikacji, nazwy wczytanego dodatku oraz nazwy i stanu profilu konfiguracyjnego,
+<LI>Ogłaszanie nazwy i numeru wersji aplikacji,
+<P></P>
+skrypt w każdym przypadku:
+<LI>Ogłaszanie nazwy pliku aplikacji, nazwy aktywnego dodatku oraz nazwy i stanu profilu konfiguracyjnego.
+<LI>wyświetlanie informacji o aplikacji.
+</UL>
+
+<P>
+Skrypty te są przechowywane w sekcji "Narzędzia" okna "Zdarzenia Wejścia" NVDA.
+</P>
+<A NAME="hdr4-1"></A>
+<H4>2.4.1. Ogłaszanie nazwy pliku aplikacji, nazwy wczytanego modułu python appModule oraz nazwy i statusu profilu konfiguracyjnego</H4>
+<P>
+Opis tego skryptu to: "Wypowiada nazwę pliku aktywnej aplikacji wraz z nazwą aktualnie załadowanego pliku python appModule. Dwukrotne naciśnięcie tego klawisza, wypowiada nazwę i stan bieżącego profilu konfiguracyjnego".
+</P>
+<P>
+Domyślnie przypisany jest do niego gest polecenia "NVDA+kontrol+F1". Pojedyncze naciśnięcie gestu polecenia wyzwala podstawowy skrypt NVDA, który ogłasza nazwę pliku aplikacji, a jeśli istnieje, nazwę załadowanego modułu aplikacji Pythona.
+</P>
+<P>
+Dwukrotne naciśnięcie informuje o nazwie profilu konfiguracyjnego i jego statusie.
+</P>
+<A NAME="toc24"></A>
+<H4>2.4.2. Ogłaszanie wersji aplikacji posiadającej fokus</H4>
+<P>
+Opis tego skryptu to: "informuj o nazwie i wersji aplikacji, która posiada fokus".
+</P>
+<P>
+Domyślnie jest do niego przypisany gest polecenia "NVDA+shift+f1".
+</P>
+<P>
+Gest polecenia powoduje wyświetlenie nazwy i wersji aplikacji posiadającej fokus.
+</P>
+<A NAME="hdr4-2"></A>
+<H4>2.4.3. Wyświetlanie informacji o aplikacji posiadającej fokus</H4>
+<P>
+Opis tego skryptu to: "Wyświetl informacje o wybranej aplikacji".
+</P>
+<P>
+Rozpoczyna się poleceniem "a" interpretera.
+</P>
+<P>
+Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Wyświetla okno "Rozszerzenie podstawowych poleceń NVDA — Informacje", które zawiera następujące informacje:
+</P>
+<UL>
+<LI>nazwę aktywnego pliku aplikacji i jego numer wersji,
+<LI>nazwa wyzwolonego profilu konfiguracyjnego.
+<LI>nazwę i numer wersji aktywnego dodatku,
+<LI>ścieżka aktywnego dodatku,
+<LI>nazwa załadowanego modułu Pythona, jeśli taki istnieje.
+</UL>
+
+<A NAME="hdr4-3"></A>
+<H4>2.4.4. Wyświetlanie nazwy i numeru wersji dodatku</H4>
+<P>
+Opis tego skryptu to: "Poinformuj o nazwie i numerze wersji dodatku aktywowanego dla aktualnie aktywnej aplikacji".
+</P>
+<P>
+Domyślnie nie jest do niego przypisany żaden gest polecenia ani żadne polecenie interpretera.
+</P>
+<A NAME="hdr5"></A>
+<H3>2.5. Ulepszenie funkcji wirtualnego bufora</H3>
+<P>
+Ta funkcja jest instalowana domyślnie.
+</P>
+<P>
+Dotyczy przeglądarek Mozilla Firefox, Microsoft Internet Explorer, Google Chrome, Microsoft Edge (częściowo) i zapewnia:
+</P>
+<A NAME="hdr5-1"></A>
+<H4>2.5.1. Nowe polecenia nawigacyjne</H4>
+<P>
+Ten dodatek dodaje następujące polecenia dla trybu przeglądania:
+</P>
+<UL>
+<LI>"p", aby przejść do następnego akapitu,
+<LI>Shift+p ", aby przejść do poprzedniego akapitu,
+<LI>"średnik", aby przejść do następnego głównego regionu,
+<LI>"shift+średnik", aby przejść do poprzedniego głównego regionu,
+<LI>"igrek", aby przejść do następnego podziału,
+<LI>"Shift+igrek", aby przejść do poprzedniego podziału,
+<LI>"Z", aby przejść do następnej kotwicy,
+<LI>"Shift+Z", aby przejść do poprzedniej kotwicy,
+<LI>"dwukropek", aby przejść do następnego klikalnego elementu,
+<LI>"shift+dwukropek", aby przejść do poprzedniego klikalnego elementu.
+<P></P>
+Z wyjątkiem pierwszych czterech, te polecenia nie są zaimplementowane w przeglądarce Microsoft Edge.
+</UL>
+
+<A NAME="hdr5-2"></A>
+<H4>2.5.2. Nowe typy elementów dla skryptu "NVDA+f7"</H4>
+<P>
+Skrypt zintegrowany z NVDA i uruchamiany gestem polecenia "NVDA+f7" umożliwia wyświetlenie okna "Lista elementów" przedstawiającego listę niektórych elementów znalezionych na stronie WWW.
+Ten dodatek zwiększa liczbę typów elementów, które można wybrać i wyświetlić w tytule okna, wybranego typu.
+</P>
+<P>
+Lista tych typów przedstawia:
+</P>
+<P>
+Podstawowe typy:
+</P>
+<UL>
+<LI>Link,
+<LI>Tytuł,
+<LI>Pole formularza,
+<LI>Przycisk,
+<LI>Region.
+</UL>
+
+<P>
+Typy dodane przez dodatek:
+</P>
+<UL>
+<LI>Przycisk radiowy,
+<LI>Akapit,
+<LI>Ramka (nie w Microsoft Edge),
+<LI>Podział (nie w Microsoft Edge),
+<LI>Pola wyboru,
+<LI>pole kombi,
+<LI>Tabela,
+<LI>Cytat (nie w Microsoft Edge),
+<LI>Edycja,
+<LI>Lista,
+<LI>Element listy,
+<LI>Kotwica (nie w Microsoft Edge),
+<LI>Grafika,- Wbudowany obiekt (nie w Microsoft Edge),
+<LI>separator,
+<LI>klikalny (nie w Internet Explorerze ani Microsoft Edge).
+</UL>
+
+<P>
+Te typy są prezentowane jako lista zamiast przycisku radiowego (w wersji podstawowej).
+</P>
+<P>
+Typ można uzyskać, wpisując pierwszą literę jego etykiety.
+</P>
+<P>
+Przy każdej zmianie typu ogłaszana jest liczba znalezionych elementów lub jeśli nie znaleziono żadnego elementu, ogłaszana jest sygnalizacja głosowa "brak elementu".
+</P>
+<P>
+Podczas wyszukiwania elementów słychać powtarzający się sygnał dźwiękowy.
+</P>
+<P>
+Dla zaznaczonych pól sygnalizowany jest status "zaznaczone" lub niezaznaczone.
+</P>
+<P>
+Typ "edycja" podaje listę stref edycji dokumentu, a każdy element jest prezentowany głosowo w następujący sposób:
+</P>
+<UL>
+<LI>Ogłaszanie etykiety strefy, jeśli występuje lub "bez etykiety" w innym przypadku,
+<LI>Ogłaszanie "strefy edycji",
+<LI>Ogłaszanie zawartości pola redakcyjnego.
+</UL>
+
+<P>
+Podobnie każde pole formularza jest prezentowane głosowo zgodnie z jego typem.
+</P>
+<A NAME="hdr5-3"></A>
+<H4>2.5.3. Skrypty do tabel</H4>
+<P>
+W przypadku przeglądarek Microsoft Internet Explorer, Microsoft Edge, Mozilla Firefox, GoogleChrome jest to możliwe, gdy kursor znajduje się w komórce tabeli zawierającej:
+</P>
+<UL>
+<LI>ogłaszanie pozycji bieżącej komórki (gest polecenia NVDA+alt+numpad5 na komputerze, NVDA+alt+średnik na laptopie),
+<LI>ogłaszanie Wiersza aktualnej komórki (gest polecenia "NVDA+alt+j"),
+<LI>ogłaszanie komórki aktualnej kolumny (gest polecenia "NVDA+alt+l"),
+<LI>przesuń kursor do komórki następnego wiersza, tej samej kolumny i odczytaj komórki tego wiersza (gest polecenia "NVDA+alt+strzałka w dół"),
+<LI>przesuń kursor do komórki poprzedniego wiersza, tej samej kolumny i odczytaj komórki tego wiersza (gest polecenia "NVDA+strzałka w górę"),
+<LI>przesuń kursor do komórki następnej kolumny, tego samego wiersza i odczytaj komórki tej kolumny (gest polecenia "NVDA+alt+strzałka w prawo"),
+<LI>przesuń kursor do komórki poprzedniej kolumny, tego samego wiersza i odczytaj komórki tej kolumny (gest polecenia "NVDA+alt+strzałka w lewo").
+<LI>przejdź do pierwszej komórki wiersza (gest polecenia kontrol+alt+shift+strzałka w lewo),
+<LI>przejdź do ostatniej komórki wiersza (gest polecenia kontrol+alt+shift+strzałka w prawo)
+<LI>przejdź do pierwszej komórki kolumny (gest polecenia kontrol+alt+shift+strzałka w górę), 
+<LI>przejdź do ostatniej komórki kolumny (gest polecenia kontrol+alt+shift+strzałka w dół).
+</UL>
+
+<P>
+Wszystkie te skrypty są przechowywane w kategorii "Tabela" w widoku drzewa okna "Zdarzenia Wejścia" NVDA.
+</P>
+<P>
+Ten dodatek przenosi również skrypty bazowe NVDA, które kiedyś znajdowały się w kategorii "Różne" do tej kategorii. To są:
+</P>
+<UL>
+<LI>przejdź do poprzedniej kolumny: "NVDA+Kontrol+strzałka w lewo",
+<LI>przejdź do następnej kolumny: "NVDA+Kontrol+strzałka w prawo",
+<LI>przejdź do poprzedniego wiersza: poprzedni "NVDA+Kontrol+strzałka w górę",
+<LI>przejdź do następnego wiersza: "NVDA+Kontrol+strzałka w dół",
+</UL>
+
+<A NAME="hdr5-4"></A>
+<H4>2.5.4. Ogłaszanie adresu dokumentu</H4>
+<P>
+Gest polecenia "NVDA+a" (komputer stacjonarny) lub "NVDA+shift+a" (laptop) wpisany w przeglądarkach Mozilla FireFox, Microsoft Internet Explorer, Microsoft Edge lub Gooble Chrome,podaje adres (URL) dokumentu. Po dwukrotnym naciśnięciu ten adres jest kopiowany do schowka.
+</P>
+<A NAME="hdr5-5"></A>
+<H4>2.5.5. Nawigacja w pętli</H4>
+<P>
+W trybie przeglądania wyszukiwanie następnego lub poprzedniego elementu zatrzymuje się na końcu lub na początku dokumentu.
+</P>
+<P>
+Dodatek ten dodaje opcjonalnie możliwość cyklicznego przeglądania dokumentu, czyli:
+</P>
+<UL>
+<LI>poszukiwanie kolejnego elementu jest kontynuowane, malejąco od początku dokumentu, jeśli znaleziono koniec dokumentu,
+<LI>wyszukiwanie poprzedniego elementu jest kontynuowane przez przejście do końca dokumentu, jeśli zostanie znaleziony początek dokumentu.
+</UL>
+
+<P>
+Przejście przez początek lub koniec dokumentu sygnalizowane jest dźwiękiem i komunikatem głosowym.
+</P>
+<P>
+Opcja "Nawigacja w pętli" w kategorii "Dodatki NVDA" w oknie "Ustawienia" dodatku umożliwia włączenie lub wyłączenie tej operacji.
+</P>
+<P>
+Ta opcja jest wyświetlana tylko wtedy, gdy zainstalowano funkcję "Rozszerz funkcjonalność bufora wirtualnego".
+</P>
+<P>
+Domyślnie ta opcja nie jest zaznaczona. Zachowana jest podstawowa obsługa NVDA.
+</P>
+<A NAME="hdr7"></A>
+<H3>2.6. Ogłaszanie poleceń związanych z funkcjami edycji w stylu "kopiuj", "Wklej"</H3>
+<P>
+Ta funkcja jest instalowana domyślnie.
+</P>
+<P>
+Funkcje uruchamiane skrótami "kontrol+v", "kontrol+c", "kontrol+x", "kontrol+z" nie są wywoływane przez NVDA, ten dodatek się nimi zajmuje.
+</P>
+<P>
+Nie przeprowadza się kontroli wyniku działania funkcji.
+</P>
+<P>
+Ale dla skrótów "control+c", "control+x" brak zaznaczenia tekstu jest wskazany w drzewach i na listach.
+</P>
+<P>
+Jeśli zainstalowany jest dodatek fakeClipboardAnnouncement (który pełni tę samą funkcję), należy go odinstalować.
+</P>
+<A NAME="hdr7-1"></A>
+<H4>2.6.1. Dodawanie zaznaczonego tekstu do schowka</H4>
+<P>
+Ta funkcja dodaje skrypt, który pozwala dodać wybrany tekst do schowka.
+</P>
+<P>
+Ten skrypt jest instalowany bez gestu polecenia, ale można go przypisać za pomocą okna "Zdarzenia Wejścia" NVDA. Jego opis to "Dodaj zaznaczony tekst do schowka" i znajduje się w kategorii "Rozszerzenie podstawowych poleceń NVDA".
+</P>
+<P>
+Wszystkie parametry używane w skrypcie znajdują się w grupie "Schowek" kategorii "Klawiatura" w oknie dodatku, w którym prezentowane są ustawienia bieżącego Profilu.
+</P>
+<P>
+Jest uruchamiany za pomocą polecenia interpretera "KEY_ADDING_TO_CLIP".
+</P>
+<P>
+Po wykonaniu polecenia zaznaczony tekst jest dodawany do zawartości schowka, po lub przed, w zależności od stanu pola wyboru "Dodaj do schowka przed".
+</P>
+<P>
+Możliwe jest umieszczenie tekstu separatora pomiędzy blokami tekstu. Tekst ten można skonfigurować za pomocą pola Edytuj tekst używanego jako separator między zawartością dodaną do schowka ".
+</P>
+<P>
+Prośba o potwierdzenie zostanie wyświetlona przed kontynuowaniem dodawania, jeśli zaznaczone jest pole wyboru "Pytaj o potwierdzenie przed dodaniem do schowka".
+</P>
+<P>
+Uwaga: ten skrypt pochodzi z dodatku "ClipContentsDesigner" (Autorzy Noelia, Abdel), który zapewnia również inne interesujące funkcje dotyczące schowka. 
+Został on umieszczony w tym dodatku na życzenie użytkowników, którzy chcieli jednocześnie ogłaszania funkcji "kopiuj" i "wklej".
+</P>
+<A NAME="hdr7-2"></A>
+<H4>2.6.2. Czytanie tekstu ze schowku Windows</H4>
+<P>
+Ten skrypt zastępuje podstawowy skrypt NVDA ("NVDA+c"), aby uzupełnić go, informując użytkownika, który uruchomił polecenie, że:
+</P>
+<UL>
+<LI>schowek jest pusty,
+<LI>w przypadku braku tekstu w schowku (schowek nie może być pusty).
+</UL>
+
+<P>
+liczba odczytanych znaków nie jest już ograniczona do 1024.
+</P>
+<P>
+Tę maksymalną liczbę można skonfigurować za pomocą opcji "Maksymalna liczba ogłaszanych znaków" w grupie "Schowek" kategorii "Ulepszenia NVDA".
+</P>
+<A NAME="hdr7-3"></A>
+<H4>2.6.3. Opróżnianie schowka</H4>
+<P>
+Ten skrypt jest instalowany bez gestu wejściowego, ale można go przypisać za pomocą okna dialogowego "Gesty wejściowe" NVDA.
+</P>
+<P>
+Jego opis to "Opróżnij schowek" i znajduje się w kategorii "Stan systemu".
+</P>
+<P>
+Jego funkcją jest całkowite usunięcie zawartości schowka Windows. Uwaga!: nie dotyczy to historii schowka Windows.
+</P>
+<P>
+Jest uruchamiany za pomocą polecenia interpretera "KEY CLEAR CLIP".
+</P>
+<A NAME="hdr8"></A>
+<H3>2.7. Ogłaszanie wybranego folderu w oknach w stylu "Otwórz", "Zapisz", "Zapisz jako"</H3>
+<P>
+Ta funkcja jest instalowana domyślnie bez gestu polecenia.
+</P>
+<P>
+Dodaje, dla okien stylu "Otwórz", "Zapisz", "Zapisz jako", "Znajdź w", skrypty, które pozwalają poznać nazwę i ścieżkę wybranego folderu w celu zdefiniowania lokalizacji, w której plik zostanie przeszukany i gdzie zostanie zapisany.
+</P>
+<P>
+Skrypty te są umieszczane w kategorii "Rozszerzenie podstawowych poleceń NVDA" w oknie "Zdarzenia Wejścia" NVDA.
+Są to:
+</P>
+<UL>
+<LI>"Ogłasza nazwę aktualnie wybranego folderu w oknie Otwórz lub Zapisz. Dwa razy: Ogłasza pełną ścieżkę": gest polecenia "NVDA+o", który jest do niego przypisany domyślnie.
+<LI>"Ogłasza nazwę aktualnie wybranego folderu w oknie Otwórz lub Zapisz": " o" polecenie z interpretera.
+<LI>"Ogłasza pełną ścieżkę aktualnie wybranego folderu w oknie Otwórz lub Zapisz": "kontrol+o"polecenie z interpretera.
+<P></P>
+Żaden gest polecenia nie jest powiązany z dwoma ostatnimi skryptami, ale możliwe jest powiązanie jednego z nich za pomocą okna "gesty poleceń" NVDA.
+Należy pamiętać, że te skrypty działają tylko w oknach zgodnych ze standardem Windows.
+</UL>
+
+<A NAME="hdr9"></A>
+<H3>2.8. Dzienniki NVDA</H3>
+<P>
+Ta funkcja jest domyślnie instalowana bez gestu polecenia.
+</P>
+<P>
+Dodaje skrypty:
+</P>
+<UL>
+<LI>zarządzanie dziennikami NVDA,
+<LI>Otwiera dziennik NVDA.
+<P></P>
+Skrypty te są przechowywane w kategorii "Narzędzia" okna "Zdarzenia Wejścia" NVDA.
+</UL>
+
+<A NAME="hdr9-1"></A>
+<H4>2.8.1. Zarządzanie dziennikami NVDA</H4>
+<P>
+Opis tego skryptu to: "Otwórz okno do zarządzania dziennikami NVDA".
+</P>
+<P>
+Jest uruchamiany za pomocą polecenia "j" interpretera. 
+Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Ten skrypt wyświetla okno "Zarządzanie dziennikami NVDA" pokazujące:
+</P>
+<UL>
+<LI>przycisk otwórz aktualny dziennik NVDA,
+<LI>przycisk otwórz stary dziennik NVDA,
+<LI>przycisk kopiuj ścieżki aktualnego dziennika NVDA do schowka,
+<LI>przycisk "Zamknij", aby zamknąć okno.
+<P></P>
+Dziennik otwiera się w programie powiązanym z dodatkiem .log. Jeśli nie ma jeszcze skojarzenia programu z tym dodatkiem, będziesz musiał go zdefiniować (wybierz np. Notatnik).
+</UL>
+
+<A NAME="hdr9-2"></A>
+<H4>2.8.2. Otwieranie dziennika NVDA</H4>
+<P>
+Opis tego skryptu to: "Otwórz bieżący plik dziennika NVDA. 
+Dwukrotne naciśnięcie klawisza powoduje otwarcie starego pliku dziennika NVDA. 
+Trzykrotne naciśnięcie powoduje skopiowanie bieżącej ścieżki dziennika do schowka".
+</P>
+<P>
+Skrypt jest uruchamiany za pomocą gestu polecenia "NVDA+shift+j", który jest do niego domyślnie przypisany.
+</P>
+<P>
+Jedno naciśnięcie powoduje otwarcie aktualnego dziennika NVDA.
+Dwukrotne naciśnięcie otwiera stary dziennik.
+Trzykrotne naciśnięcie, kopiuje ścieżkę bieżącego dziennika do schowka.
+</P>
+<P>
+Dziennik otwiera się w programie powiązanym z dodatkiem .log. Jeśli nie ma jeszcze skojarzenia programu z tym dodatkiem, będziesz musiał go zdefiniować (wybierz np. Notatnik).
+</P>
+<A NAME="hdr10"></A>
+<H3>2.9. Historia mowy</H3>
+<P>
+Ta funkcja jest instalowana domyślnie bez gestu polecenia.
+Aby móc odsłuchiwać zapowiedzi głosowe, które są słabo zrozumiane lub źle słyszane, dodatek ten rejestruje ograniczoną historię ciągów mowy wysyłanych do syntezatora.
+Liczba rekordów jest ograniczona do 200.
+</P>
+<P>
+Aby ponownie odsłuchać te nagrania, ta funkcja zapewnia następujące skrypty, umieszczone w kategorii "Mowa" w oknie "Zdarzenia Wejścia" NVDA:
+</P>
+<A NAME="toc42"></A>
+<H4>2.9.1. Ogłaszanie poprzedniego nagrania</H4>
+<P>
+Ten skrypt jest uruchamiany za pomocą gestu polecenia "NVDA+kontrol+f8" przypisanego domyślnie.
+</P>
+<P>
+Gest polecenia uruchamia Ogłaszanie poprzedniego nagrania w porównaniu z ostatnim ogłoszonym nagraniem i kopiuje je do schowka.
+</P>
+<A NAME="toc43"></A>
+<H4>2.9.2. Ogłaszanie kolejnego nagrania</H4>
+<P>
+Ten skrypt jest uruchamiany za pomocą gestu polecenia "NVDA+kontrol+f10" przypisanego domyślnie.
+</P>
+<P>
+Gest polecenia uruchamia Ogłaszanie następnego nagrania w porównaniu z ostatnim ogłoszonym nagraniem i kopiuje je do schowka
+</P>
+<A NAME="toc44"></A>
+<H4>2.9.3. Ponowne Ogłaszanie ostatniego ogłoszonego nagrania</H4>
+<P>
+Opis tego skryptu to: "Ogłasza aktualny zapis historii mowy i kopiuje go do schowka. Dwukrotnie: wyświetla historię mowy".
+</P>
+<P>
+Ten skrypt jest uruchamiany za pomocą gestu polecenia "NVDA+kontrol+f9" przypisanego domyślnie.
+</P>
+<P>
+Jedno naciśnięcie wyzwala Ogłaszanie ostatniego nagranego nagrania i jego kopię do schowka
+Podwójne naciśnięcie wyświetla całą historię.
+</P>
+<A NAME="hdr10-1"></A>
+<H4>2.9.4. Wyświetlanie historii mowy</H4>
+<P>
+Opis tego skryptu to: "wyświetl nagraną historię mowy".
+Ten skrypt jest uruchamiany za pomocą polecenia interpretera "f9". Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Przedstawia okno "Historia mowy", w którym wymienione są te nagrania w porządku malejącym według ich wieku. Przycisk służy do kopiowania wybranego nagrania do schowka.
+</P>
+<P>
+Domyślnie:
+</P>
+<UL>
+<LI>nagrania są ponumerowane. Numerację tę można wyłączyć za pomocą opcji "Numeruj nagrania" w grupie "Historia mowy" w kategorii "Ulepszenia NVDA" w oknie "Ustawienia".
+<LI>nagrania prezentowane są w porządku malejącym. Opcja "Wyświetl zapisy w kolejności rosnącej" dla tej samej grupy umożliwia wyświetlanie ich w odwrotnej kolejności.
+</UL>
+
+<A NAME="hdr12"></A>
+<H3>2.10. Zmiana nazwy klawiszy klawiatury</H3>
+<P>
+Ta funkcja jest instalowana domyślnie.
+</P>
+<P>
+Zezwala na zmianę nazwy niektórych klawiszy na "Capslock" lub "Numlock" za pomocą okna, które przedstawia:
+</P>
+<UL>
+<LI>Listę klawiszy wraz z ich etykietą zdefiniowaną w NVDA,
+<LI>Przycisk "Modyfikuj", który umożliwia modyfikację etykiety klawisza wybranego na liście i wprowadzenie podpisu zastępczego za pomocą klasycznego okna polecenia danych.
+<P></P>
+Gdy dla wybranego klawisza zdefiniowana jest etykieta zastępcza, pole edycji tylko do odczytu, dostępne za pomocą "Tab", wyświetla tę etykietę zastępczą. Ta etykieta jest ogłaszana, gdy klawisz jest w fokusie.
+Przycisk "Usuń" umożliwia usunięcie tej etykiety zastępczej.
+Można również usunąć tę etykietę, wprowadzając pusty lub pełny ciąg w polu polecenia.
+Przycisk "Usuń wszystkie" umożliwia usunięcie wszystkich etykiet zastępczych, aby powrócić do podstawowych etykiet dostarczanych przez NVDA.
+Przycisk "OK" służy do zastosowania zastąpień i zapisania klawiszy oraz ich etykiety zastępczej w pliku konfiguracyjnym dodatku w sekcji "RedefinedKeyLabels" i odpowiedniej podsekcji języka NVDA (na przykład "pl" dla języka polskiego). Dzięki temu możliwe są zmiany nazw klawiszy dla różnych języków.
+<P></P>
+Aby wyświetlić to okno są trzy możliwości:
+<LI>wybierz i aktywuj pozycję "Zmiana nazwy klawiszy klawiatury" z podmenu "Rozszerzenie podstawowych poleceń NVDA",
+<LI>Polecenie "f2" interpretera,
+<LI>za pomocą skryptu "Wyświetl okno zmiany nazwy klawiszy klawiatury", dostarczanego bez gestu polecenia. Gest można do niego przypisać za pomocą okna "gest polecenia" NVDA.
+<P></P>
+Można nie instalować tej funkcji, wybierając w kategorii "Zainstalowane funkcje" i dla funkcji "Zmiana nazwy klawiszy klawiatury" stan "Nie instaluj".
+</UL>
+
+<A NAME="hdr13"></A>
+<H3>2.11. Ogłaszanie wybranych klawiszy poleceń</H3>
+<P>
+Ta funkcja jest instalowana domyślnie.
+</P>
+<P>
+NVDA umożliwia głosowe wypowiadanie klawiszy poleceń za pomocą opcji "Ogłaszaj klawisze poleceń" znajdującej się w kategorii "Klawiatura" w oknie "Ustawienia" NVDA lub za pomocą gestu polecenia "NVDA+4".
+</P>
+<P>
+Funkcjonalność ta zapewnia, poprzez konfigurację i użycie okna, możliwość:
+</P>
+<UL>
+<LI>nie wypowiadanie niektórych klawiszy poleceń, gdy zaznaczona jest opcja "Wypowiadaj klawisze poleceń",
+<LI>ogłaszania określonych klawiszy poleceń, gdy opcja "Wypowiadaj klawisze poleceń" nie jest zaznaczona.
+<P></P>
+Aby wyświetlić to okno są trzy możliwości:
+<LI>oznacz i aktywuj pozycję "Ogłaszanie wybranych klawiszy poleceń" w podmenu "Rozszerzenie podstawowych poleceń NVDA",
+<LI>za pomocą polecenia interpretera "f3",
+<LI>za pomocą skryptu Wyświetl okno powiadomień "Ogłaszanie wybranych klawiszy poleceń", dostarczanego bez gestu polecenia. gest polecenia można do niego przypisać za pomocą okna "gesty poleceń" NVDA.
+<P></P>
+Okno przedstawia:
+<LI>pole wyboru dla trybu, do którego skonfigurowano klawisze,
+<LI>lista możliwych klawiszy,
+<LI>lista możliwych kombinacji klawiszy modyfikujących z dodatkowymi klawiszami "NVDA", "Alt", "Kontrol", "Shift", "Windows".
+<P></P>
+Naciśnięcie spacji sprawdza lub usuwa zaznaczenie wybranego klawisza lub kombinacji.
+Jeśli pole "Ogłaszaj klawisze poleceń" w oknie nie jest zaznaczone, to zaznaczenie klawisza spowoduje, że ten klawisz będzie mimo to ogłaszany, gdy NVDA jest skonfigurowany tak, aby ich nie ogłaszać.
+Lista kombinacji klawiszy modyfikujących jest wtedy dostępna, a wszystkie elementy na tej liście są domyślnie zaznaczone.
+Aby klawisz wpisany z konkretną kombinacją nie był ogłaszany, wystarczy odznaczyć tę kombinację.
+Jeśli zaznaczona jest pozycja "brak" na liście kombinacji, klawisz zostanie ogłoszony nawet w przypadku naciśnięcia bez kombinacji klawiszy modyfikujących.
+Z drugiej strony, jeśli pole wyboru "Wypowiadaj klawisze poleceń" jest zaznaczone, zaznaczenie klawisza zapobiega ogłaszaniu tego klawisza, gdy NVDA jest skonfigurowany do ich ogłaszania.
+Lista kombinacji klawiszy modyfikujących jest wtedy dostępna, a wszystkie elementy tej listy są domyślnie oznaczone. Oznacza to, że klawisz wpisany z lub bez kombinacji nie zostanie ogłoszony.
+Akcja odznaczenia kombinacji umożliwia następnie Ogłaszanie klawisza z tą kombinacją.
+Element "brak" na liście kombinacji umożliwia nieogłaszanie tego samego klawisza bez kombinacji klawiszy modyfikujących.
+Przyciski "Odznacz wszystko" i "Zaznacz wszystko" umożliwiają odznaczenie lub zaznaczenie wszystkich elementów na liście kombinacji klawiszy modyfikujących.
+<P></P>
+Pierwsza pozycja "dowolny klawisz z kombinacją klawiszy modyfikujących" na liście klawiszy pozwala, bez wskazywania konkretnego klawisza, wybrać zestaw kombinacji klawiszy modyfikujących. Każdy klawisz wpisany z jedną z tych kombinacji będzie ogłaszany lub nie, w zależności od wybranego trybu konfiguracji.
+Przycisk "OK" zapisuje wybory dokonane dla bieżącego profilu konfiguracji, a przycisk "Anuluj" je zapomina.
+<P></P>
+Na listach klawisz "F2" i kombinacja klawiszy "shift+F2" umożliwiają przejście odpowiednio do następnego lub poprzedniego zaznaczonego elementu.
+Istnieje możliwość nieinstalowania tej funkcjonalności poprzez zaznaczenie w kategorii "Zainstalowane funkcjonalności" oraz dla funkcjonalności "Ogłaszanie wybranych klawiszy poleceń" status "Nie instaluj".
+</UL>
+
+<A NAME="hdr14"></A>
+<H3>2.12. Minutnik</H3>
+<P>
+Ta funkcja jest instalowana domyślnie.
+</P>
+<P>
+Pozwala na uruchomienie minutnika na zaprogramowany czas.
+Po wygaśnięciu minutnika pojawia się okno wyświetlające programowalny komunikat i emitowany dzwonek.
+</P>
+<P>
+Instaluje skrypt, który jest uruchamiany:
+</P>
+<UL>
+<LI>przez polecenie "f12" interpretera poleceń,
+<LI>lub za pomocą domyślnie przypisanego gestu polecenia "NVDA+shift+f12".
+</UL>
+
+<P>
+Jeśli minutnik jest zatrzymany, skrypt wyświetla okno "Uruchom licznik czasu", który przedstawia:
+</P>
+<UL>
+<LI>wejście do edycji czasu działania minutnika (w minutach),
+<LI>strefa edycji komunikatu wyświetlanego na końcu minutnika,
+<LI>lista do wyboru czasu ostrzeżenia przed wygaśnięciem minutnika,
+<LI>przycisk "Opcje dzwonka", aby skonfigurować liczbę dzwonków i czas między dzwonkami.
+</UL>
+
+<P>
+Czas trwania, komunikat i czas ostrzeżenia przed wygaśnięciem minutnika są rejestrowane przy każdym uruchomieniu minutnika i wyświetlane domyślnie przy następnym uruchomieniu minutnika.
+Jeśli odliczanie jest w toku, skrypt wyświetla okno "Czas w toku", umożliwiające poznanie pozostałego czasu trwania odliczania i ewentualne zatrzymanie odliczania.
+Czas trwania jest odświeżany co 5 sekund i ogłaszany, gdy fokus znajduje się w strefie edycji (tylko do odczytu), w której jest wyświetlany.
+To okno zamyka się automatycznie po upływie czasu.
+</P>
+<A NAME="hdr15"></A>
+<H3>2.13. Ponowne uruchomienie NVDA</H3>
+<P>
+Ta funkcja nie jest domyślnie instalowana.
+Instaluje skrypt, który umożliwia ponowne uruchomienie NVDA na poziomie rejestrowania debugowania bez modyfikowania konfiguracji NVDA.
+</P>
+<P>
+Opis tego skryptu jest następujący: "Uruchom ponownie NVDA. Dwukrotnie: uruchom ponownie z poziomem dziennika ustawionym na debugowanie".
+Jest on umieszczony w kategorii "Różne" w oknie "Zdarzenia Wejścia" NVDA.
+</P>
+<P>
+Gest polecenia "NVDA+kontrol+f4" jest do niego domyślnie przypisany.
+Jedno naciśnięcie tego gestu powoduje ponowne uruchomienie NVDA z poziomem logowania skonfigurowanym w ogólnych preferencjach.
+Dwukrotne naciśnięcie tego gestu polecenia ponownie uruchamia NVDA z poziomem rejestrowania debugowania bez zmiany poziomu rejestrowania skonfigurowanego w ogólnych preferencjach NVDA.
+</P>
+<A NAME="hdr16"></A>
+<H3>2.14. Wyświetlanie widocznych elementów obiektu na pierwszym planie</H3>
+<P>
+Domyślnie ta funkcja jest instalowana z gestem polecenia.
+</P>
+<P>
+Instaluje dwa skrypty przechowywane w kategorii "Funkcja systemu" w oknie "Zdarzenia Wejścia" NVDA:
+</P>
+<A NAME="toc51"></A>
+<H4>2.14.1. Wyświetlanie widocznych elementów aktualnie aktywnego obiektu</H4>
+<P>
+Opis tego skryptu to: "Wyświetl widoczne elementy listy tworzące bieżący obiekt pierwszego planu".
+</P>
+<P>
+Skrypt jest uruchamiany za pomocą komendy "b" interpretera.
+Nie jest mu przypisywany żaden gest polecenia.
+Skrypt rozpocznie wyszukiwanie tych elementów. Może to zająć dużo czasu. Podczas tego wyszukiwania co dwie sekundy emitowany jest sygnał dźwiękowy.
+</P>
+<P>
+Aby ograniczyć ten czas wyszukiwania, wprowadzono ograniczenia dla niektórych typów elementów:
+</P>
+<UL>
+<LI>maksymalna ilość wierszy w tabeli jest ustawiona na 40,
+<LI>liczba elementów konstrukcji drzewiastej jest ustalona na 40,- maksymalna liczba elementów na liście jest ustalona na 40,
+<LI>nie uwzględnia się elementów składających się na dokument, tabeli, struktury drzewa i listy, w której liczba elementów przekracza 500.
+<P></P>
+Po zakończeniu wyszukiwania elementy są wyświetlane w oknie "Lista widocznych elementów tworzących obiekt pierwszego planu" zgodnie z ich typem.
+<P></P>
+To okno przedstawia:
+<LI>pole wyboru, elementy bez etykiety lub opisu mają być brane pod uwagę, czy nie (domyślnie elementy bez etykiety nie są brane pod uwagę),
+<LI>lista dostępnych rodzajów elementów,
+<LI>lista elementów dla wybranego typu,
+<LI>przycisk umożliwiający kliknięcie lewym przyciskiem myszy na wybrany element (domyślny przycisk, gdy jesteś na liście obiektów),
+<LI>przycisk do kliknięcia prawym przyciskiem myszy na wybranym elemencie,
+<LI>przycisk przenoszący obiekt przeglądarki NVDA i wskaźnik myszy na wybrany element,
+<LI>przycisk wyjścia z okna.
+<P></P>
+Lista elementów umożliwia zmianę typu obiektów na liście bez opuszczania listy:
+<LI>za pomocą strzałek kierunkowych w lewo lub w prawo,
+<LI>lub wpisując "kontrol+shift+pierwsza litera żądanego typu obiektu".
+<P></P>
+Również na tej liście możliwe jest dotarcie do elementu poprzez wpisanie pierwszych liter jego etykiety.
+<P></P>
+Dla elementu typu:
+<LI>przycisk lub pole wyboru: wskazywany jest stan elementu.
+<LI>pole edycji: wskazywany jest status tylko do odczytu.
+</UL>
+
+<A NAME="toc52"></A>
+<H4>2.14.2. Ogłaszanie lub wyświetlanie widocznych elementów aktualnie aktywnego obiektu</H4>
+<P>
+Opis tego skryptu to: "Odczytuje wszystkie kontrolki w aktywnym oknie. Dwukrotne naciśnięcie: wyświetla widoczne elementy listy, które ją tworzą".
+</P>
+<P>
+Skrypt jest uruchamiany za pomocą gestu polecenia "NVDA+b", który jest do niego domyślnie przypisany.
+Jedno naciśnięcie uruchamia podstawowy skrypt NVDA, który ogłasza wszystkie obiekty obiektu na pierwszym planie.
+Dwukrotne naciśnięcie uruchamia poprzedni skrypt "Wyświetlanie widocznych elementów obiektu na pierwszym planie".
+</P>
+<A NAME="hdr17"></A>
+<H3>2.15. Szybkie przełączanie profili głosowych</H3>
+<P>
+Ta funkcja jest instalowana domyślnie bez gestu polecenia.
+</P>
+<P>
+Pozwala na szybką zmianę profilu głosowego dając możliwość zapamiętania do 8 profili głosowych i szybkiego wyboru jednego z tych profili głosowych.
+</P>
+<P>
+Profil głosowy jest zdefiniowany przez:
+</P>
+<UL>
+<LI>zastosowany syntezator mowy i jego konfiguracja parametrów głosu (takich jak "głos", "głośność", "szybkość", ...),
+<LI>Parametry konfiguracji głosu NVDA (takie jak "Poziom interpunkcji i symboli", "mów wielka po wielkiej literze", ...).
+<P></P>
+Instaluje następujące skrypty w kategorii "Przełączanie profilu głosu" w oknie "Zdarzenia Wejścia" NVDA:
+</UL>
+
+<A NAME="hdr17-1"></A>
+<H4>2.15.1. Zarządzanie przełącznikami profili głosowych</H4>
+<P>
+Opis tego skryptu to: "Wyświetl okno do zarządzania przełącznikami profili głosowych".
+</P>
+<P>
+Można go aktywować:
+</P>
+<UL>
+<LI>za pomocą polecenia "v" interpretera,- lub za pomocą gestu polecenia "nvda+shift+kontrol+m", który jest do niego domyślnie przypisany.
+<P></P>
+Ten skrypt wyświetla okno, "Zarządzanie przełącznikami profili głosu, w profilu konfiguracyjnym NazwaProfilu" (gdzie NazwaProfilu jest nazwą wyzwolonego profilu konfiguracyjnego).
+To okno służy do zarządzania powiązaniem przełącznika z profilem głosowym i przedstawia:
+<LI>pole wyboru "Użyj skojarzone przełączniki w normalnym profilu konfiguracji",
+<LI>lista "przełączników",
+<LI>przycisk "Aktywuj",
+<LI>przycisk "Powiąż profil głosu",
+<LI>przycisk "Edytuj profil głosu",
+<LI>przycisk "Zwolnij przełącznik",
+<LI>przycisk "zwolnij wszystkie przełączniki",
+<LI>przycisk "Informacje o profilu głosowym",
+<LI>przycisk "Zamknij".
+<P></P>
+Lista "przełączników" pokazuje listę wolnych przełączników lub tych powiązanych z profilem głosowym. Powiązane przełączniki to:
+<LI>przełączniki, które zostały skojarzone w ramach aktualnego profilu konfiguracyjnego (jego nazwa jest podana w tytule okna),
+<LI>przełączniki, które zostały powiązane w normalnym profilu konfiguracyjnym, jeśli zaznaczone jest pole wyboru "Użyj powiązanych przełączników w normalnym profilu konfiguracyjnym". 
+Wskazana jest wówczas "normalna konfiguracja" dla tych przełączników.
+<P></P>
+Gdy przełącznik jest oznaczony jako "wolny", przycisk "Powiąż profil głosu" umożliwia powiązanie bieżącego profilu głosu z tym przełącznikiem. Ten przycisk otwiera okno, w którym możesz nadać nazwę temu profilowi ​​głosu. Proponowana jest nazwa domyślna. Przycisk "Domyślny" umożliwia powrót do tej propozycji.
+<P></P>
+Gdy przełącznik jest już powiązany z profilem głosowym, możliwe jest:
+<LI>aktywowanie tego profilu głosowego za pomocą przycisku "Aktywuj profil głosowy": profil staje się aktualnym profilem głosowym i okno się zamyka.
+<LI>powiązanie aktualnego profilu z przełącznikiem za pomocą przycisku "skojarz profil głosowy". Ten profil zastępuje następnie profil głosowy powiązany z tym przełącznikiem,
+<LI>modyfikacja nazwy profilu głosowego przyciskiem "Modyfikuj profil głosowy",
+<LI>zwolnij powiązanie między przełącznikiem a profilem głosowym za pomocą przycisku "Zwolnij przełącznik".
+<LI>zwolnij wszystkie powiązania przyciskiem "Zwolnij wszystkie przełączniki".
+</UL>
+
+<P>
+Jeśli wybrany przełącznik jest przełącznikiem powiązanym w ramach normalnego profilu konfiguracji, nie można go zwolnić, ale można go skojarzyć z bieżącym profilem.
+Można zwolnić tylko przełączniki powiązane z bieżącym profilem konfiguracji.
+Aby szybko zmienić profil głosowy, skonfigurowany jest tryb "Przełączanie profili głosowych".
+Aby aktywować lub dezaktywować ten tryb, należy użyć polecenia "p" interpretera.
+Ten tryb jest włączony, strzałki w prawo lub w lewo służą do przejścia do pierwszego następnego lub poprzedniego przełącznika skojarzonego z profilem głosowym, a tym samym zdefiniowania profilu głosowego skojarzonego z tym przełącznikem jako bieżącego profilu głosowego. Ustawione przełączniki są przełącznikami z listy "przełączników", które są powiązane z profilem głosowym.
+</P>
+<A NAME="hdr17-2"></A>
+<H4>2.15.2. Tryb "Przełączanie profili głosowych"</H4>
+<P>
+Opis tego skryptu to: "Włącz lub wyłącz tryb przełączania profili głosowych".
+</P>
+<P>
+Aby szybko zmienić profil głosowy, skonfigurowany jest tryb "Przełączanie profili głosowych", a do jego aktywacji lub dezaktywacji używany jest skrypt.
+</P>
+<P>
+Aby uruchomić ten skrypt, są dwie możliwości:
+</P>
+<UL>
+<LI>przez wpisanie komendy "p" z interpretera,
+<LI>lub za pomocą gestu polecenia "nvda+Shift+control+p" (nie jest instalowany domyślnie).
+<P></P>
+Gdy ten tryb jest włączony, strzałki w prawo lub w lewo służą do przejścia do pierwszego następnego lub poprzedniego przełącznika skojarzonego z profilem głosowym, a tym samym zdefiniowanie profilu głosowego skojarzonego z tym przełącznikiem jako bieżący profil głosowy.
+Ustawione przełączniki są przełącznikami z listy "przełączników", które są powiązane z profilem głosowym.
+</UL>
+
+<A NAME="hdr17-3"></A>
+<H4>2.15.3. Wybór poprzedniego przełącznika profilu głosu</H4>
+<P>
+Opis tego skryptu brzmi: "Przejdź wstecz do pierwszego przełącznika związanego z profilem głosowym i ustaw ten profil głosowy jako bieżący profil głosowy". 
+Skrypt jest uruchamiany za pomocą gestu polecenia "nvda+shift+kontrol+strzałka w lewo", który jest do niego domyślnie przypisany.
+Skrypt wyszukuje na liście "przełączniki" pierwszy przełącznik poprzedzający bieżący przełącznik powiązany z profilem głosowym. Następnie ustawia ten profil głosowy jako bieżący profil głosowy.
+</P>
+<A NAME="hdr17-4"></A>
+<H4>2.15.4. Wybór następnego przełącznika profilu głosowego</H4>
+<P>
+Opis tego skryptu brzmi: "Przejdź do pierwszego przełącznika powiązanego z profilem głosowym i ustaw ten profil głosowy jako bieżący profil głosowy".
+</P>
+<P>
+Skrypt jest uruchamiany za pomocą gestu polecenia "nvda+shift+kontrol+strzałka w prawo", który jest do niego domyślnie przypisany.
+</P>
+<P>
+Skrypt wyszukuje na liście "przełączniki" pierwszy przełącznik profilu głosowego następujący po bieżącym przełączniku powiązanym z profilem głosowym. 
+Następnie ustawia ten profil głosowy jako bieżący profil głosowy.
+</P>
+<A NAME="hdr17-5"></A>
+<H4>2.15.5. Wybór przełącznika profilu głosowego według numeru</H4>
+<P>
+Zainstalowanych jest 8 skryptów.
+Opis tych skryptów to: "Ustaw przełącznik x jako bieżący przełącznik i Ustawia, jeśli to możliwe, skojarzenie profilu głosowego jako bieżący profil głosowy" (gdzie x to numer przełącznika).
+</P>
+<P>
+Każdy skrypt jest uruchamiany za pomocą domyślnie przypisanego gestu polecenia "nvda+shift+kontrol+numer selectora".
+</P>
+<P>
+Skrypt wybiera przełącznik x i jeśli jest powiązany z profilem głosowym, ustawia ten profil głosowy jako bieżący profil głosowy.
+</P>
+<A NAME="hdr17-6"></A>
+<H4>2.15.6. Ogłasza lub wyświetla aktualne ustawienia mowy</H4>
+<P>
+Poniższe 3 skrypty pozwalają poznać aktualne ustawienia mowy bez konieczności korzystania z menu NVDA "Mowa".
+</P>
+<P>
+Są one przechowywane w kategorii "Mowa" w oknie "Zdarzenia Wejścia" NVDA i są instalowane, nawet jeśli funkcja "Przełączanie profilu głosu" nie jest zainstalowana.
+</P>
+<P>
+Nie jest z nimi powiązany żaden gest polecenia, ale można przypisać po jednym do każdego.Ich opisy to:
+</P>
+<UL>
+<LI>"Ogłasza aktualne ustawienia mowy": jest uruchamiane poleceniem "z" z interpretera poleceń.
+<LI>"Wyświetla bieżące ustawienia mowy": jest uruchamiane poleceniem "control+z" z interpretera poleceń.
+<LI>"Ogłasza aktualne ustawienia mowy. Dwukrotne naciśnięcie": "wyświetla je": żadne polecenie interpretera nie jest z nim powiązane.
+</UL>
+
+<A NAME="hdr18"></A>
+<H3>2.16. Trwałe klawisze modyfikujące NVDA</H3>
+<P>
+Ta funkcja nie jest domyślnie instalowana.
+</P>
+<P>
+Pozwala na to, aby klawisze NVDA ("Insert" normalnej lub rozszerzonej klawiatury numerycznej, "Caps Lock") oraz klawisze modyfikatorów ("shift", "kontrol", "lewy Alt", "prawy Alt", "Windows"), stały się trwałe.
+</P>
+<P>
+Celem jest możliwość użycia tylko jednego palca, na przykład do utworzenia gestu polecenia wymagającego naciśnięcia kilku klawiszy.
+</P>
+<P>
+Umieszcza grupę "Klawisze Trwałe" w kategorii "Klawiatura" w oknie "Ustawienia" dodatku.
+</P>
+<P>
+Aby aktywować lub dezaktywować klawisze trwałe, wystarczy wybrać jedną z następujących sekwencji klawiszy:
+</P>
+<UL>
+<LI>"Prawy shift", "Prawy kontrol", "Prawy shift", 
+<LI>"lewy shift", "lewy kontrol", "lewy shift".
+<P></P>
+Trwałe klawisze można włączyć automatycznie podczas startu NVDA poprzez zaznaczenie pola wyboru "Aktywuj trwałe klawisze na starcie NVDA" w grupie "Trwałe klawisze". Aktywacja lub dezaktywacja jest sygnalizowana głosem.
+<P></P>
+Gdy trwałe klawisze są aktywne, naciśnięcie jednego z klawiszy NVDA lub modyfikatora powoduje wygaszenie limitu czasu i zapamiętywanie klawisza.
+To opóźnienie czasowe można skonfigurować za pomocą pola kombi "Opóźnienie utrwalenia (w milisekundach)" w grupie "Trwałe klawisze".
+<P></P>
+Możliwe jest również ograniczenie utrwalenia do pojedynczego klawisza "NVDA" poprzez zaznaczenie pola wyboru "Tylko klawisz NVDA jest trwały" znajdującego się w tej samej grupie. Domyślnie to pole nie jest zaznaczone, a wszystkie klawisze modyfikujące są przyklejone.
+<P></P>
+Początek i koniec tego utrwalenia jest sygnalizowany sygnałem dźwiękowym, który można dezaktywować za pomocą następujących pól wyboru w kategorii "Trwałe klawisze":
+<LI>"Odtwórz dźwięk na początku utrwalenia",
+<LI>"Odtwórz dźwięk na końcu utrwalenia".
+</UL>
+
+<P>
+Są one domyślnie zaznaczone.
+</P>
+<P>
+Podczas tego opóźnienia każde kolejne naciśnięcie jednego z tych klawiszy ponownie uruchamia opóźnienie i ten nowy klawisz jest również zapamiętywany, ale nie jest emitowany sygnał dźwiękowy.
+</P>
+<P>
+Naciśnięcie dowolnego innego klawisza na klawiaturze powoduje wykonanie gestu polecenia składającego się z kombinacji wszystkich klawiszy zapamiętanych z tym ostatnim klawiszem.
+</P>
+<P>
+Za każdym razem, gdy ten ostatni klawisz zostanie ponownie naciśnięty podczas limitu czasu, gest polecenia zostanie wykonany ponownie.
+</P>
+<P>
+Jeśli ten klawisz zostanie wpisany poza czasem, zostanie wykonany samodzielnie, a zapamiętane klawisze zostaną zapomniane.
+</P>
+<P>
+Ostrzeżenie:
+Musisz poczekać do końca utrwalenia, aby każdy nowy klawisz był traktowany indywidualnie. Na przykład: "Alt", aby wyświetlić menu, a następnie rozwinąć pozycje menu.
+</P>
+<P>
+Możliwe jest jednak zatrzymanie utrwalenia przed końcem opóźnienia czasowego poprzez ponowne wpisanie ostatniego klawisza trwałego.
+</P>
+<A NAME="hdr18-1"></A>
+<H4>2.16.1. Specjalne utrwalenie dla gmail.com</H4>
+<P>
+To utrwalenie jest specjalnie skonfigurowane dla witryny gmail.com i jest aktywne tylko na stronie "<A HREF="https://mail.google.com/mail/#i">https://mail.google.com/mail/#i</A>".
+</P>
+<P>
+Domyślnie nie jest aktywny. W grupie "Trwałe klawisze" znajduje się pole wyboru "Specjalne utrwalenie dla Gmail.com".
+</P>
+<P>
+Na tej stronie można wpisywać skróty do uruchamiania poleceń, ale niektóre z nich łączą dwie litery. W szczególności po literach "g", "h", "*" musi następować inna litera.
+Ta sekwencja musi być wystarczająco szybka, aby wywołać wykonanie powiązanego polecenia.
+Jest to problematyczne dla osób, które nie mają wystarczającej zręczności.
+</P>
+<P>
+Celem tego utrwalania jest zatem zachowanie pierwszej litery w oczekiwaniu na naciśnięcie drugiej.
+</P>
+<P>
+Po naciśnięciu pierwszej litery uruchamiane jest opóźnienie czasowe (słychać przytłumiony sygnał dźwiękowy) i litera zostaje zapisana.
+</P>
+<P>
+Wpisanie drugiej litery w ramach skonfigurowanego opóźnienia utrwalenia spowoduje wysłanie obu liter do przeglądarki i zatrzymanie limitu czasu. Jeśli nie zostanie wprowadzona żadna nowa litera, pierwsza litera zostanie wysłana do przeglądarki pod koniec limitu czasu (wysoka tonacja słyszalny jest sygnał dźwiękowy).
+</P>
+<P>
+Aby NVDA mógł wysyłać listy do przeglądarki, należy najpierw przejść do trybu formularzy.
+</P>
+<A NAME="hdr19"></A>
+<H3>2.17. Wyłączenie komputera</H3>
+<P>
+Tej funkcji nie można odinstalować.
+</P>
+<P>
+Instaluje skrypt, którego opis to: "Wyświetl okno, aby zamknąć, ponownie uruchomić lub hibernować komputer".
+</P>
+<P>
+Jest uruchamiany za pomocą polecenia "r" interpretera.
+Ten skrypt wyświetla okno składające się z następujących elementów:
+</P>
+<UL>
+<LI>przycisk wyłącz komputer,
+<LI>przycisk uruchom ponownie komputer,
+<LI>przycisk hibernuj komputer,
+<LI>pole wyboru, jeśli jest zaznaczone (stan domyślny), żądania zamknięcia bez ostrzeżenia wszystkich aplikacji uruchomionych po naciśnięciu jednego z pierwszych dwóch przycisków,
+<LI>pole edycyjne do określenia opóźnienia przed wyłączeniem lub ponownym uruchomieniem komputera.
+</UL>
+
+<P>
+Ta funkcja instaluje również skrypty odpowiadające funkcjom trzech przycisków.
+</P>
+<P>
+Wszystkie skrypty są umieszczone w kategorii "Rozszerzenie podstawowych poleceń NVDA" okna "Zdarzenia Wejścia" NVDA, ale żadne gesty nie są do nich przypisane.
+</P>
+<A NAME="hdr20"></A>
+<H3>2.18. Zarządzanie gestami polecenia użytkownika</H3>
+<P>
+Tej funkcji nie można odinstalować.
+</P>
+<P>
+Zasadniczo NVDA umożliwia dodawanie lub usuwanie gestów poleceń za pomocą okna "gesty poleceń". Ale nie ma sposobu, aby dowiedzieć się, które gesty są dodawane lub usuwane przez użytkownika.
+</P>
+<P>
+To właśnie ta funkcjonalność to spełnia.
+</P>
+<P>
+Aby to zrobić, dodaje skrypt, którego opis to "Wyświetla okno do zarządzania gestami poleceń skonfigurowanymi przez użytkownika" i umieszczony w kategorii "Rozszerzenie podstawowych poleceń NVDA" w oknie "gesty poleceń" NVDA.
+</P>
+<P>
+Jest uruchamiany za pomocą polecenia interpretera "u". Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Ten skrypt wyświetla okno stylu "gesty poleceń" NVDA, wybierając tylko gesty poleceń usunięte lub zmodyfikowane przez użytkownika.
+</P>
+<P>
+okno przedstawia:  
+</P>
+<UL>
+<LI>klasyczna struktura drzewa prezentująca gesty poleceń według kategorii i każdy skrypt według jego opisu,
+<LI>przycisk "Usuń" (aktywny po wybraniu gestu) do anulowania dodania lub usunięcia wybranego gestu,
+<LI>przycisk do anulowania wszystkich dodawania lub usuwania gestów poleceń.
+</UL>
+
+<P>
+Gesty polecenia usunięte z kategorii są wyświetlane z opisem: "Gesty polecenia usunięte".
+</P>
+<P>
+Ponieważ nie jest możliwe poznanie kategorii i opisu usuniętego gestu polecenia lub dodanego gestu polecenia związanego ze skryptem dodatku, który nie jest aktywowany lub nie jest zainstalowany w momencie wyświetlania dialogu, ten gest przedstawia się tak:
+</P>
+<UL>
+<LI>kategoria nosi nazwę: "nazwa modułu Pythona". Nazwa klasy Pythona "(na przykład: appModules.notepad++.editWindow.EditWindow),
+<LI>opis dodanych gestów poleceń nosi nazwę: "nazwa skryptu Pythona" (na przykład: goToPreviousBookmark).
+</UL>
+
+<P>
+Jeśli chodzi o klasyczne okno "gestów polecenia", tylko naciśnięcie przycisku "OK" spowoduje, że wszystkie usunięcia gestów zostaną uwzględnione.
+</P>
+<P>
+Anulowanie wszystkich zmian za pomocą przycisku "Usuń wszystko" wymaga potwierdzenia. Po akceptacji wszystkie zmiany zostają anulowane, a dialog zamyka się.
+</P>
+<A NAME="hdr21"></A>
+<H3>2.19. Regulacja głośności</H3>
+<P>
+Domyślnie ta funkcja jest instalowana bez gestu polecenia.
+</P>
+<P>
+Może działać tylko w systemie operacyjnym Windows 10.
+Jeśli jest zainstalowany z gestem polecenia lub bez niego, umieszcza grupę "Regulacja głośności" w kategorii "Komputer" w oknie "Ustawienia".
+Instaluje następujące skrypty przechowywane w kategorii "Regulacja głośności" w oknie "Zdarzenia Wejścia" NVDA:
+</P>
+<A NAME="hdr21-1"></A>
+<H4>2.19.1. Ręcznie ustaw audio główne i audio NVDA</H4>
+<P>
+Ten skrypt jest uruchamiany:
+</P>
+<UL>
+<LI>za pomocą polecenia "kontrol+s" interpretera,
+<LI>lub za pomocą gestu polecenia "nvda+shift+Escape" przypisanego domyślnie.
+</UL>
+
+<P>
+Ustawia głośność główną i NVDA, wymusza poziomy każdej z wartości oraz przywraca poziomy skonfigurowanych w grupie "Regulacja głośności" kategorii "Komputer" ustawień dodatków.
+</P>
+<A NAME="hdr21-2"></A>
+<H4>2.19.2. Wycisz lub ustaw głośność audio aktualnie aktywnej aplikacji</H4>
+<P>
+Ten skrypt jest uruchamiany:
+</P>
+<UL>
+<LI>za pomocą polecenia "s" z interpretera poleceń,
+<LI>lub za pomocą gestu polecenia "nvda+shift+pauza" przypisanego domyślnie.
+</UL>
+
+<P>
+To polecenie wycisza głośność audio aktywnej aplikacji, jeśli jest ona ustawiona, lub przywraca ją, jeśli jest wyciszona.
+</P>
+<A NAME="hdr21-3"></A>
+<H4>2.19.3. Zmień głośność audio aktualnie aktywnej aplikacji</H4>
+<P>
+Skrypty te służą do zwiększania, zmniejszania lub naprawiania głośności audio aktywnej aplikacji.
+</P>
+<P>
+Są instalowane bez gestów poleceń. Ale można je przypisać za pomocą okna "Zdarzenia Wejścia".
+</P>
+<P>
+Są uruchamiane za pomocą następujących poleceń interpretera:
+</P>
+<UL>
+<LI>"strzałka w górę" lub "strzałkaw dół", aby zwiększyć lub zmniejszyć głośność,- "page up" lub "page down", aby zmaksymalizować lub zminimalizować głośność.
+<LI>liczba od 1 do 9, aby ustawić poziom głośności na 10%, 20%, 30%, ..., 90% głównej głośności.
+</UL>
+
+<P>
+Te polecenia, w przeciwieństwie do innych poleceń interpretera, można powtarzać bez konieczności ponownego uruchamiania interpretera. interpreter jest zawsze aktywny.
+Gdy poziom głośności zostanie osiągnięty, naciśnij klawisz "Escape", aby wyjść z interpretera.
+</P>
+<P>
+Zwiększanie lub zmniejszanie głośności odbywa się krokowo. Wielkość tych kroków można dostosować w parametrach dodatku w kategorii "Komputer" w grupie "Regulacja głośności", wybierając wielkość kroku.
+</P>
+<P>
+Rozmiar 1 to najmniejszy stopień, rozmiar 20 to największy stopień. Rozmiar jest domyślnie ustawiony na 5.
+</P>
+<P>
+Należy jednak rozumieć, że ten skok odpowiada procentowemu wzrostowi lub spadkowi w stosunku do głównej głośności.
+</P>
+<P>
+Jeśli więc główna głośność wynosi 100, wzrost głośności aplikacji o krok 5 będzie wynosił 5 kroków na poziomie miksera Windows.
+</P>
+<P>
+Natomiast jeśli główna objętość głośności wynosi 60, krok 5 zwiększy objętość aplikacji o 3 stopnie.
+</P>
+<P>
+Poziom głośności aplikacji nie może przekraczać głównego poziomu głośności.
+</P>
+<A NAME="hdr21-4"></A>
+<H4>2.19.4. Zmień główną głośność</H4>
+<P>
+Skrypty te pozwalają na zwiększenie, zmniejszenie lub naprawę głównej głośności.
+</P>
+<P>
+Są instalowane bez gestów poleceń. Ale można je przypisać za pomocą okna "Zdarzenia Wejścia" NVDA.
+</P>
+<P>
+Są uruchamiane za pomocą następujących poleceń interpretera:
+</P>
+<UL>
+<LI>"kontrol+strzałka w górę" lub "kontrol+strzałka w dół", aby zwiększyć lub zmniejszyć głośność,
+<LI>"kontrol+page up" lub "kontrol+page down", aby zmaksymalizować lub zminimalizować głośność,
+<LI>"Kontrol+cyfra od 1 do 9" do ustawienia głównego poziomu głośności na 10, 20, 30, ..., 90,
+</UL>
+
+<P>
+Te polecenia, w przeciwieństwie do innych poleceń interpretera, można powtarzać bez konieczności ponownego uruchamiania interpretera. interpreter jest zawsze aktywny.
+</P>
+<P>
+Gdy poziom głośności zostanie osiągnięty, naciśnij klawisz "Escape", aby wyjść z interpretera.
+</P>
+<P>
+Zwiększanie lub zmniejszanie głośności odbywa się etapami. Istnieje możliwość dostosowania rozmiaru tych kroków w ustawieniach dodatku w kategorii "Komputer" grupującej "Kontrola dźwięku", wybierając rozmiar kroku.
+Rozmiar 1 to najmniejszy stopień, rozmiar 20 to największy stopień. Domyślnie rozmiar jest ustawiony na 5, co odpowiada 5 krokom zmiany głośności w mikserze Windows.
+</P>
+<P>
+Wolumin podstawowy nie może spaść poniżej skonfigurowanego progu odzyskiwania.
+</P>
+<A NAME="hdr21-5"></A>
+<H4>2.19.5. Powrót do poprzedniego poziomu</H4>
+<P>
+Podczas korzystania z poprzednich poleceń poziom głośności jest rejestrowany przed wykonaniem każdego polecenia, dla głównego woluminu i dla każdej aplikacji.
+</P>
+<P>
+Aby powrócić do tego poziomu, dostępne są następujące polecenia:
+</P>
+<UL>
+<LI>"control+backspace": resetuje poziom głośności głównej do poprzedniego poziomu.
+<LI>"backspace": resetuje poziom głośności aplikacji posiadającej fokus do poprzedniego poziomu.
+</UL>
+
+<P>
+Poprzedni poziom jest również zapisywany, gdy te polecenia są wykonywane.Te zapisy nie są przechowywane po ponownym uruchomieniu NVDA.
+</P>
+<A NAME="hdr21-6"></A>
+<H4>2.19.6. Ogłaszanie zmian poziomu</H4>
+<P>
+Zmiany poziomu głośności są ogłaszane domyślnie. Istnieje jednak możliwość dezaktywacji tego komunikatu za pomocą opcji "Ogłoś zmiany głośności" w grupie "Zmiana głośności" w kategorii "Komputer".
+</P>
+<P>
+Jeśli chodzi o ilość aplikacji, można to powiedzieć:
+</P>
+<UL>
+<LI>albo jako procent objętości głównej,
+<LI>lub w wartości bezwzględnej (jak w mikserze Windows).
+</UL>
+
+<P>
+Wyboru dokonuje się za pomocą opcji "Ogłoś poziom głośności aplikacji w procentach" w grupie "Zmiana głośności" w kategorii "Komputer".
+</P>
+<A NAME="hdr21-7"></A>
+<H4>2.19.7. Automatyczne przywracanie głównej głośności i głośności NVDA po załadowaniu rozszerzenia</H4>
+<P>
+Ta funkcja służy do przywracania, podczas ładowania tego rozszerzenia, woluminu głównego i woluminu NVDA oraz ustawienia poziomu każdego woluminu na wartość określoną przez konfigurację, jeśli jest ona niższa niż minimalny próg określony przez konfigurację.
+</P>
+<P>
+W tym celu grupa "Kontrola dźwięku" kategorii "Komputer" okna "Parametry" rozszerzenia przedstawia następujące elementy konfiguracji:
+</P>
+<UL>
+<LI>pole wyboru "Automatycznie ustaw dźwięk główny i NVDA podczas ładowania rozszerzenia", które włącza lub wyłącza tę opcję,
+<LI>próg przywrócenia głośności głównej, poniżej którego jego poziom zostanie automatycznie przywrócony,
+<LI>poziom głośności głównej do przywrócenia,
+<LI>próg odzyskiwania wolumenu NVDA, poniżej którego zostanie przywrócony jego poziom,
+<LI>poziom głośności NVDA do przywrócenia.
+<P></P>
+Po uruchomieniu to rozszerzenie sprawdza, czy wolumin podstawowy i wolumin NVDA przekraczają skonfigurowany dla każdego z nich próg odzyskiwania.
+<P></P>
+Jeśli tak nie jest, to rozszerzenie ustala poziom głośności do wartości skonfigurowanego poziomu do przywrócenia.
+<P></P>
+Podczas instalacji tego rozszerzenia podczas ustawiania wartości poziomów do przywrócenia uwzględniane są aktualne poziomy głośności głównej i NVDA.
+</UL>
+
+<A NAME="hdr21-8"></A>
+<H4>2.19.8. Kopiuj datę i godzinę do schowka</H4>
+<P>
+Opis tego skryptu to: "Kopiuj datę i godzinę do schowka".
+</P>
+<P>
+Ten skrypt jest przechowywany w kategorii "Status systemu" okna "Zdarzenia Wejścia" NVDA.
+</P>
+<P>
+Jest uruchamiany za pomocą polecenia interpretera "c".
+</P>
+<P>
+Nie jest mu przypisywany żaden gest polecenia.
+</P>
+<P>
+Jak wskazuje jego opis, umożliwia skopiowanie daty i godziny do schowka.
+</P>
+<A NAME="hdr21-9"></A>
+<H4>2.19.9. Skrypt zastępujący skrypt bazowy "NVDA+f12"</H4>
+<P>
+Rozszerzenie instaluje skrypt, którego opis to: "Ogłaszaj aktualny czas. Dwukrotnie ogłaszaj aktualną datę. Trzykrotnie: kopiuje datę i godzinę do schowka".
+</P>
+<P>
+Ten skrypt jest przechowywany w kategorii "Stan systemu" w oknie "Zdarzenia Wejścia" NVDA.
+</P>
+<P>
+Nie jest z nim powiązane żadne polecenie interpretera.
+</P>
+<P>
+Jeśli stan instalacji rozszerzenia to "Instaluj", ten skrypt zastępuje skrypt NVDA i jest uruchamiany za pomocą gestu polecenia "NVDA+f12".
+</P>
+<P>
+W przeciwnym razie nie jest do niego przypisany żaden gest poleceń, ale można go przypisać za pomocą okna "Zdarzenia wejścia" NVDA.
+</P>
+<P>
+Ten skrypt umożliwia:
+</P>
+<UL>
+<LI>Jedno naciśnięcie: ogłasza aktualną godzinę.
+<LI>dwukrotne naciśnięcie: Ogłasza aktualną datę.
+<LI>trzykrotne naciśnięcie: kopiuje aktualną datę i godzinę do schowka.
+</UL>
+
+<H5>2.19.9.1. Ogłaszanie godziny niezależnie od poziomu interpunkcji</H5>
+<P>
+Podstawowy gest komendy "NVDA+f12" podaje czas za pomocą prostego wciśnięcia, ale czas nie jest ogłaszany w ten sam sposób w zależności od Poziomu interpunkcji i symboli wybranych w parametrach głosu.
+</P>
+<P>
+Ten skrypt koryguje tę małą wadę, ogłaszając czas z Poziomem interpunkcji i symboli ustawionym na "Brak" bez modyfikowania poziomu zdefiniowanego w parametrach kategorii "Mowa".
+</P>
+<H5>2.19.9.2. Ogłaszanie czasu w sekundach</H5>
+<P>
+Domyślnie gest polecenia NVDA "nvda+f12" ogłasza czas bez sekund.
+</P>
+<P>
+Skrypt ten oferuje możliwość ogłaszania czasu w sekundach.
+</P>
+<P>
+Wszystko, co musisz zrobić, to zaznaczyć pole wyboru "Raportuj zegar systemu Windows z sekundami" w kategorii "Komputer" w oknie Ustawienia dodatku. Ta opcja nie jest domyślnie zaznaczona.
+</P>
+<P>
+Ta opcja nie jest dostępna, jeśli stan instalacji funkcji jest "Nie instaluj".
+</P>
+<A NAME="hdr23"></A>
+<H3>2.20. Skrypty do klikania w bieżącej pozycji obiektu przeglądarki</H3>
+<P>
+Skrypty te umożliwiają wykonanie za pomocą prawego lub lewego przycisku myszy pojedynczego lub podwójnego kliknięcia w bieżącej pozycji obiektu nawigatora.
+</P>
+<P>
+W rzeczywistości łączą dwa rodzaje skryptów NVDA:
+</P>
+<UL>
+<LI>skrypt "Przenosi wskaźnik myszy do bieżącego obiektu nawigatora": "NVDA+/ klawiatury numerycznej" (komputer stacjonarny) lub "NVDA+Shift+m" (laptop),
+<LI>oraz skrypty do kliknięcia przyciskiem myszy:
+ <UL>
+ <LI>kliknięcie lewym przyciskiem myszy: "/ z klawiatury numerycznej" (komputer stacjonarny) lub "NVDA +[" (laptop).
+ <LI>kliknięcie prawym przyciskiem myszy: "* z klawiatury numerycznej" (komputer stacjonarny) lub "NVDA +]" (laptop).
+ </UL>
+</UL>
+
+<P>
+Gesty poleceń tych skryptów to:
+</P>
+<UL>
+<LI>"nvda+przecinek": wystarczy kliknąć lewym przyciskiem myszy na pozycji obiektu nawigatora. Drugie naciśnięcie powoduje podwójne kliknięcie.
+<LI>"nvda+Shift+przecinek":wykonaj proste kliknięcie prawym przyciskiem myszy na pozycji obiektu nawigatora. Drugie naciśnięcie powoduje podwójne kliknięcie.
+<P></P>
+Te gesty poleceń można zmienić i można je znaleźć w kategorii "Mysz" w oknie "gesty poleceń" NVDA.
+</UL>
+
+<A NAME="hdr25"></A>
+<H3>2.21. Emulacja klawisza "Aplikacje" (menu kontekstowe)</H3>
+<P>
+Aby zrekompensować brak klawisza "Aplikacje" na niektórych komputerach i nie wiedzieć, czy skrót "Shift+f10" spełnia tę samą funkcję, dodatek instaluje skrypt bez gestu polecenia w kategorii polu "Emulowane klawisze Systemowe" z opisem "Emuluj naciśnięcie klawisza: aplikacje".
+</P>
+<P>
+Aby z niego skorzystać, wystarczy przypisać mu gest polecenia lub klawisz klawiatury, który jest rzadko używany, taki jak klawisz "print screen", klawisz "Pause".
+</P>
+<A NAME="hdr26"></A>
+<H3>2.22. Zamknij wszystkie okna</H3>
+<P>
+Dodatek instaluje skrypt zamykający wszystkie otwarte okna.
+</P>
+<P>
+Skrypt ten znajduje się w kategorii skryptów dodatkowych i pod opisem "Zamknij wszystkie otwarte okna".
+</P>
+<P>
+Jest uruchamiany poleceniem "K" z interpretera poleceń. Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<A NAME="hdr27"></A>
+<H3>2.23. Lista uruchomionych dodatków</H3>
+<P>
+Menedżer dodatków wyświetla listę zainstalowanych dodatków i ich status: Włączony lub Wyłączony.
+</P>
+<P>
+Ale nawet jeśli jest włączony, dodatek może nie zostać załadowany przez NVDA. Zwykle ogłasza NVDA, ale nie w Menedżerze rozszerzeń.
+</P>
+<P>
+W pewnym momencie może być interesujące, aby wiedzieć, który dodatek jest aktualnie uruchomiony.
+</P>
+<P>
+W tym celu dodatek instaluje skrypt pod opisem "Wyświetl listę uruchomionych dodatków" w kategorii dodatku w oknie "Zdarzenia Wejścia".
+</P>
+<P>
+Ten skrypt jest uruchamiany poleceniem "e" interpretera poleceń. Nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+dodatki są wymienione według typu:
+</P>
+<UL>
+<LI>globalny typ dodatku: jest to dodatek, który zapewnia dodatkową dostępność niezależnie od wybranej aplikacji.
+<LI>typ dodatku do aplikacji: jest to dodatek, który zapewnia dodatkową dostępność dla określonej aplikacji.
+<LI>typ dodatku sterownika syntezy mowy: jest to dodatek, który instaluje sterownik syntezy mowy.
+<LI>Typ dodatku sterownika monitora brajlowskiego: jest to dodatek, który instaluje sterownik monitora brajlowskiego.
+<LI>mieszany typ dodatków: jest to dodatek, który łączy różne poprzednie typy dodatków.
+</UL>
+
+<A NAME="hdr22"></A>
+<H3>2.24. Narzędzia programistyczne</H3>
+<P>
+Ta funkcja nie jest domyślnie instalowana.
+</P>
+<P>
+Instaluje skrypt, którego opis to, "Wyświetl okno narzędzi dla rozwijania dodatków".
+</P>
+<P>
+Ten skrypt jest przechowywany w kategorii "Narzędzia" okna "Zdarzenia Wejścia" NVDA.
+</P>
+<P>
+Ten skrypt jest uruchamiany za pomocą komendy "t" interpretera. Nie jest do niego przypisany żaden gest polecenia.
+</P>
+<P>
+Aktywacja tego skryptu powoduje wyświetlenie okna prezentującego:
+</P>
+<UL>
+<LI>lista zainstalowanych dodatków,
+<LI>przycisk do aktualizacji, dla wybranego dodatku, wersji zdefiniowanej w pliku buildVars.py,
+<LI>przycisk do aktualizacji pliku "manifest.ini" wybranego dodatku o informacje z jego pliku "buildVars.py",
+<LI>przycisk do utworzenia dla wybranego dodatku pliku katalogu (.pot),
+<LI>przycisk do przygotowania wybranego dodatku (wykonuje kilka akcji na raz),
+<LI>lista języków obsługiwanych przez wybrany dodatek,
+<LI>przycisk do tworzenia,dla wybranego dodatku plik lokalizacyjny "manifest.ini" dla jednego lub wszystkich obsługiwanych przez niego języków,
+<LI>przycisk do tworzenia, dla wybranego dodatku, jego plików dokumentacji w formacie HTML,
+<LI>przycisk do utworzenia dla wybranego dodatku pliku "buildVars.py" z informacji zawartych w jego pliku manifest.ini,
+<LI>przycisk otwierający folder wybranego dodatku w eksploratorze.
+</UL>
+
+<A NAME="toc79"></A>
+<H4>2.24.1. Koncepcja</H4>
+<P>
+Aby spakować dodatek (utworzyć plik instalacyjny dodatku), zalecamy użycie "szablonu nvda adon scons".
+Model ten wykorzystuje plik "buildVars.py", który definiuje, dla dodatku, wszystkie niezbędne informacje, takie jak: jego nazwa wewnętrzna, jego wersja, jego nazwa i opis, które mają być przetłumaczone na każdy obsługiwany przez niego język.
+Ten model jest również używany, aby umożliwić tłumaczenie dodatkowych ciągów za pomocą systemu tłumaczenia utworzonego przez społeczność "NVDA-addon.org".
+</P>
+<P>
+Celem tego modelu jest, gdy dodatek został opracowany, za pomocą prostego polecenia i po poinformowaniu pliku "buildVars.py" o:
+</P>
+<UL>
+<LI>utwórz plik manifest.ini ",
+<LI>utwórz wszystkie pliki lokalizacyjne "manifest.ini",
+<LI>skompiluj wszystkie pliki .po,
+<LI>tworzenie plików dokumentacji html,
+<LI>na koniec utwórz plik instalacyjny dodatku .nvda-addon.
+</UL>
+
+<P>
+Kiedy tworzymy dodatek, nie ma nic. Musisz samodzielnie utworzyć plik "manifest.ini", prawdopodobnie plik lokalizacji "manifest.ini" i plik dokumentacji. Cel tych narzędzi jest umieszczony w tym warunku i jest:
+</P>
+<UL>
+<LI>z jednej strony, aby zbliżyć się do "szablonu adon scons" tak, aby w łatwy sposób można było spakować dodatek, który już ukończyliśmy,
+<LI>z drugiej strony, aby przetestować całość lub część przed użyciem modelu do stworzenia dodatku.
+</UL>
+
+<A NAME="hdr22-1"></A>
+<H4>2.24.2. Utworzenie pliku buildVars.py</H4>
+<P>
+Pierwszym krokiem jest utworzenie pliku "buildVars.py" z informacji zawartych w pliku "manifest.ini", który utworzyliśmy na potrzeby rozwoju dodatku.
+</P>
+<P>
+Przycisk "Utwórz plik buildVars.py" uruchamia tę operację.
+</P>
+<P>
+Tylko ten plik będziemy następnie modyfikować, aby zaktualizować plik "manifest.ini" (np. zmiana wersji lub opisu).
+</P>
+<P>
+Aby użyć go z "szablonem adon scons", należy go wypełnić, wypełniając informacje, których nie ma w pliku "manifest.ini".
+</P>
+<A NAME="hdr22-2"></A>
+<H4>2.24.3. Zaktualizowana wersja dodatku</H4>
+<P>
+Przycisk "Aktualizuj wersję dodatku" umożliwia modyfikację wersji zdefiniowanej w pliku buildVars.py wybranego dodatku.
+</P>
+<P>
+Przedstawia okno zawierające strefę edycji zainicjowaną bieżącą wersją pliku.
+</P>
+<P>
+Naciśnięcie przycisku "OK" zapisuje nową wersję w pliku.
+</P>
+<A NAME="hdr22-3"></A>
+<H4>2.24.4. Zaktualizowano plik manifest.ini</H4>
+<P>
+Plik "manifest.ini" musi zostać zaktualizowany zaraz po zmodyfikowaniu pliku "buildVars.py".
+</P>
+<P>
+W tym celu użyj przycisku "Aktualizuj plik manifest.ini".
+</P>
+<A NAME="hdr22-4"></A>
+<H4>2.24.5. Utworzenie pliku lokalizacyjnego "manifest.ini"</H4>
+<P>
+Wszelkie modyfikacje informacji "addon_summary" lub "addon_description" w "buildVars".py" wymaga przetłumaczenia tego opisu na każdy język obsługiwany przez rozszerzenie (uwzględnione w pliku nvda.po i kompilacji tego pliku) .
+</P>
+<P>
+Aby menedżer dodatków mógł wyświetlać te informacje użytkownikowi dla języka wybranego dla NVDA, musisz utworzyć lub zaktualizować plik lokalizacji "manifest.ini" dla tego języka.
+</P>
+<P>
+Umożliwia to przycisk "Utwórz plik manifest.ini lokalizacji". Istnieje możliwość aktualizacji pliku dla wybranego języka lub dla wszystkich języków.
+</P>
+<A NAME="hdr22-5"></A>
+<H4>2.24.6. Tworzenie dokumentacji HTML</H4>
+<P>
+Pliki dokumentacji dodatków mogą być w formacie "markdown" (.Md) lub "txt2tags" (.t2t).
+</P>
+<P>
+Aby były prezentowane użytkownikowi w przeglądarce, pliki te muszą zostać przekonwertowane na HTML.
+</P>
+<P>
+Jest to możliwe po prostu za pomocą przycisku "Utwórz pliki dokumentacji HTML" po wybraniu dodatku na liście dodatków i wybraniu języka lub wszystkich języków z listy języków.
+</P>
+<P>
+Otwarte w przeglądarce pliki HTML wymagają plików stylów (style.css dla plików Markdown i style_t2t.css dla plików txt2tags) umieszczonych w folderze "doc" dodatku.
+</P>
+<A NAME="hdr22-6"></A>
+<H4>2.24.7. Tworzenie pliku katalogu</H4>
+<P>
+Przycisk "Utwórz plik POT" służy do tworzenia pliku katalogu dla wybranego dodatku.
+</P>
+<P>
+Po utworzeniu plik ten jest umieszczany w folderze "locale\en" dodatku i nosi nazwę "nazwa-wersji.pot", gdzie "nazwa" to nazwa rozszerzenia, a "wersja" to jego wersja.
+</P>
+<A NAME="hdr22-7"></A>
+<H4>2.24.8. Przygotowanie dodatku</H4>
+<P>
+Przycisk "Przygotuj dodatek" uruchamia dla wybranego dodatku wykonanie następujących akcji:
+</P>
+<UL>
+<LI>aktualizacja jego pliku "manifest.ini" z pliku "buildVars.py",
+<LI>stworzenie pliku lokalizacyjnego "manifest.ini" dla każdego obsługiwanego języka,
+<LI>tworzenie plików dokumentacji HTML,
+<LI>utworzenie pliku katalogu.
+</UL>
+
+<A NAME="hdr22-8"></A>
+<H4>2.24.9. Przeglądanie folderu dodatku</H4>
+<P>
+Przycisk "Eksploruj folder dodatków" otwiera Eksploratora Windows w wybranym folderze dodatków.
+</P>
+<A NAME="hdr30"></A>
+<H3>2.25. Zarządzanie konfiguracją użytkownika</H3>
+<A NAME="toc89"></A>
+<H4>2.25.1. Prezentacja</H4>
+<P>
+Celem tej funkcji jest umożliwienie użytkownikowi ponownego uruchomienia NVDA z wybraną przez siebie konfiguracją użytkownika.
+W tym celu opiera się na możliwości, że NVDA oferuje użytkownikowi wskazanie ścieżki katalogu konfiguracyjnego w wierszu poleceń, które uruchamia NVDA.
+</P>
+<P>
+Wszystkie parametry konfiguracyjne zapisywane są w określonym folderze na dysku twardym i domyślnie znajduje się w tym folderze:
+</P>
+<UL>
+<LI>dla zainstalowanego NVDA, w folderze "c:\Users\UserName\AppData\Roaming" i nosi nazwę "nvda".
+<LI>dla kopii przenośnej: w folderze programu tej kopii i nazywa się "userConfig".
+<P></P>
+Ale ten folder konfiguracji może mieć inną nazwę i znajdować się w innym miejscu na dysku twardym lub dysku USB.
+<P></P>
+Aby poprosić NVDA o jego użycie, po prostu wskaż to, uruchamiając NVDA z wiersza poleceń:
+nvda.exe -c "ścieżka_katalogu"
+<P></P>
+Jeśli katalog nie istnieje, NVDA tworzy go podczas uruchamiania i inicjalizuje tak, jak przy pierwszym uruchomieniu po instalacji.
+<P></P>
+W przeciwnym razie NVDA zacznie używać ustawień w tym folderze konfiguracyjnym.
+Dlatego możliwe jest posiadanie kilku konfiguracji użytkownika z tym samym NVDA.
+Pozwala to na przykład na posiadanie, oprócz konfiguracji podstawowej, albo konfiguracji testowej do wypróbowania nowych rozszerzeń, albo konfiguracji z bardzo precyzyjnym ustawieniem dla konkretnej sytuacji.
+<P></P>
+Funkcjonalność ta zapewnia zatem środki do:
+<LI>zdefiniowania konfiguracji użytkownika, które będą używane,
+<LI>zainicjowania nowej konfiguracji poprzez import parametrów z innej konfiguracji,
+<LI>uruchomienia NVDA z wybraną konfiguracją bez konieczności używania wiersza poleceń.
+</UL>
+
+<A NAME="hdr30-1"></A>
+<H4>2.25.2. Zarządzaj folderami konfiguracji użytkownika</H4>
+<P>
+Przede wszystkim musisz zdefiniować konfiguracje, które będą używane.
+</P>
+<P>
+W tym celu rozszerzenie instaluje skrypt "Wyświetl okno do zarządzania konfiguracjami użytkownika", który jest uruchamiany za pomocą polecenia interpretera "KEY_USER_CONFIG_MANAGEMENT".
+</P>
+<P>
+Żadne gesty poleceń nie są do niego przypisane, ale można to zrobić za pomocą okna "Zdarzenia wejścia" NVDA.
+</P>
+<P>
+To polecenie służy do wyświetlenia okna "Zarządzanie konfiguracją użytkownika", które przedstawia:
+</P>
+<UL>
+<LI>listę dostępnych folderów konfiguracyjnych,
+<LI>przycisk "Uruchom ponownie NVDA z tym folderem konfiguracji",
+<LI>przycisk "Zmodyfikuj lub przygotuj ten plik",
+<LI>przycisk "Dodaj nowy folder",
+<LI>przycisk "Dodaj istniejący folder",
+<LI>przycisk "Usuń ten folder",
+<LI>przycisk "Opróżnij ten folder",
+<LI>przycisk "Przeglądaj ten folder",
+<LI>przycisk "Zamknij", zamyka okno.
+<P></P>
+Lista zawiera wszystkie foldery dodane przez użytkownika i te dodane automatycznie przez rozszerzenie.
+Aktywny folder konfiguracyjny jest sygnalizowany głosem oraz symbolem zaznaczenia przed jego nazwą.
+Gdy to okno jest wyświetlane po raz pierwszy, rozszerzenie automatycznie umieszcza je na liście i zapisuje.
+W przypadku tego folderu przyciski "Usuń ten folder" i "Opróżnij ten folder" nie są dostępne.Nowo dodany folder, który nie jest jeszcze folderem konfiguracyjnym, jest oznaczony znakiem zapytania.
+<P></P>
+Folder konfiguracyjny NVDA charakteryzuje się zawartością. Musi zawierać w szczególności następujące elementy:
+<LI>folder "dodatki",
+<LI>folder "profile",
+<LI>folder "aktualizacje",
+<LI>plik "nvda.ini".
+<P></P>
+Przycisk "modyfikuj ten folder" nie jest obecny, jeśli wybrany folder jest aktywnym folderem konfiguracji.
+</UL>
+
+<A NAME="hdr30-1-1"></A>
+<H5>2.25.2.1. Dodawanie folderu</H5>
+<P>
+Przyciski "Dodaj nowy folder" i "Dodaj istniejący folder" umożliwiają dodanie folderu do listy folderów konfiguracyjnych.
+</P>
+<P>
+Naciśnięcie pierwszego przycisku powoduje wyświetlenie okna "Dodaj nowy folder", które pokazuje:
+</P>
+<UL>
+<LI>strefę edycji do wprowadzenia identyfikatora folderu,
+<LI>strefę edycji do wprowadzenia ścieżki lokalizacji folderu,
+<LI>przycisk "Przeglądaj…", aby znaleźć lokalizację folderu,
+<LI>przycisk "Dodaj", aby zatwierdzić i dodać folder na liście,
+<LI>przycisk "Anuluj".
+<P></P>
+Identyfikator folderu jest używany do nazwania folderu w następujący sposób: "nvdaUserConfig-identifier".
+Pod tą nazwą folder pojawia się na liście i na dysku twardym lub dysku USB.
+Naciśnięcie drugiego przycisku powoduje wyświetlenie okna "Dodaj istniejący folder", które zawiera:
+<LI>strefę edycji do wprowadzenia pełnej ścieżki istniejącego folderu,
+<LI>przycisk "Przeglądaj…", aby znaleźć ten folder,
+<LI>przycisk "Dodaj" w celu zatwierdzenia wpisu,
+<LI>przycisk "Anuluj".
+</UL>
+
+<A NAME="hdr30-1-2"></A>
+<H5>2.25.2.2. Usuwanie folderu</H5>
+<P>
+Przycisk "Usuń ten folder" umożliwia usunięcie wybranego folderu z listy i skasowanie go z dysku.
+</P>
+<P>
+Ten przycisk nie jest dostępny, jeśli folder jest folderem aktywnej konfiguracji.
+Zostaniesz poproszony o potwierdzenie usunięcia tej akcji.
+</P>
+<A NAME="hdr30-1-3"></A>
+<H5>2.25.2.3. Przygotowanie lub modyfikacja folderu</H5>
+<P>
+W zależności od tego, czy folder jest folderem konfiguracyjnym, czy nie, okno pokazuje odpowiednio:
+</P>
+<UL>
+<LI>przycisk "Modyfikuj folder",
+<LI>lub przycisk "Przygotuj folder".
+<P></P>
+Jego celem jest dostarczenie narzędzi do importowania ustawień z innego folderu konfiguracyjnego.
+Aktywacja tych przycisków powoduje wyświetlenie własnego okna, które różni się tylko tytułem.
+<P></P>
+W tych oknach znajdziemy:
+<LI>lista folderów, z których zostanie wykonany import (przedstawione są tylko foldery konfiguracyjne),
+<LI>przycisk "Importuj dodatki",
+<LI>przycisk "Importuj słowniki mowy",
+<LI>przycisk "Importuj wymowy symbolu lub interpunkcji",
+<LI>przycisk "Importuj zmiany gestów wprowadzania",
+<LI>przycisk "Importuj profile konfiguracyjne",
+<LI>przycisk "Importuj parametry NVDA (konfiguracja normalna)",
+<LI>przycisk "Importuj całą konfigurację",
+<LI>przycisk "Zamknij", aby zakończyć dialog.
+<P></P>
+Nazwa folderu, który zostanie zmodyfikowany, jest wskazana w tytule okien.
+Akcja każdego przycisku dotyczy zawartości folderu wybranego na liście.
+W przypadku importu dodatków,możliwe jest zaimportowanie wszystkich lub części dodatków z wybranego folderu oraz zachowanie lub nie w celu modyfikacji dodatków już zawartych w folderze. To samo dotyczy importowania profili.
+Importowanie całej konfiguracji umożliwia całkowite zduplikowanie wybranego folderu, a tym samym uzyskanie identycznej kopii konfiguracji tego folderu.
+</UL>
+
+<A NAME="hdr30-1-4"></A>
+<H5>2.25.2.4. Ponowne uruchomienie NVDA z inną konfiguracją</H5>
+<P>
+Przycisk "Uruchom ponownie NVDA z tym folderem" umożliwia ponowne uruchomienie NVDA z konfiguracją wybranego folderu.
+</P>
+<P>
+Ten folder może być:
+</P>
+<UL>
+<LI>kompletnym folderem konfiguracyjnym: NVDA uruchomi się ponownie z ustawieniami z tego folderu.
+<LI>lub niekompletnym folderem (oznaczonym znakiem zapytania): NVDA uruchomi się ponownie, inicjując ten folder i używając parametrów, które zostały w nim zawarte podczas importu.
+<P></P>
+Aby ta inna konfiguracja korzystała z tej samej możliwości ponownego uruchomienia, ten dodatek musi być również tam zainstalowany.
+W takim przypadku nie będzie konieczne ponowne dodawanie folderu konfiguracyjnego. Dodatek wznowi wcześniej zapisane foldery.
+<P></P>
+Ta rejestracja odbywa się w pliku "NVDAExtensionGlobalPlugin-userConfigs.ini" przechowywanym w:
+<LI>folderze programu NVDA, jeśli jest to kopia przenośna,
+<LI>folderze użytkownika "AppData\Roaming", jeśli jest to zainstalowany NVDA.
+</UL>
+
+<A NAME="hdr30-1-5"></A>
+<H5>2.25.2.5. Przeglądanie pliku konfiguracyjnego</H5>
+<P>
+Przycisk "Przeglądaj ten folder" otwiera folder konfiguracyjny wybrany w eksploratorze.
+</P>
+<A NAME="toc91"></A>
+<H4>2.25.3. Przykłady użycia</H4>
+<H5>2.25.3.1. Uruchamianie NVDA z nową pustą konfiguracją</H5>
+<UL>
+<LI>naciśnij "NVDA+j", a następnie "n", wyświetla okno.
+<LI>naciśnij przycisk "Dodaj nowy folder".
+<LI>wprowadź identyfikator pliku konfiguracyjnego (np. myTestConfig),
+<LI>wybierz lokalizację folderu konfiguracyjnego: domyślnie jest to folder programu NVDA, ale może znajdować się w innym miejscu na dysku twardym, a nawet na dysku USB.
+<LI>naciśnij przycisk "Dodaj": folder pojawi się na liście ze znakiem zapytania i zostanie wybrany.
+<LI>kliknij "Uruchom ponownie NVDA z tym folderem".
+<P></P>
+NVDA uruchamia się ponownie i inicjalizuje konfigurację, tak jak podczas uruchamiania po instalacji.
+</UL>
+
+<H5>2.25.3.2. Uruchom NVDA z identyczną konfiguracją</H5>
+<P>
+Po pierwszych 5 krokach:
+</P>
+<UL>
+<LI>naciśnij przycisk "Przygotuj folder", wyświetli okno.
+<LI>naciśnij przycisk "Importuj całą konfigurację" i poczekaj, bo to trochę potrwa.
+<LI>naciśnij przycisk "Uruchom ponownie NVDA z tym folderem".
+</UL>
+
+<H5>2.25.3.3. Uruchom NVDA z istniejącą konfiguracją</H5>
+<UL>
+<LI>naciśnij "NVDA+j", a następnie "n", wyświetli okno.
+<LI>naciśnij przycisk "Dodaj istniejący folder".
+<LI>wybierz ścieżkę folderu konfiguracyjnego: może być nawet na dysku USB.
+<LI>naciśnij przycisk "Dodaj": folder pojawi się na liście i zostanie wybrany.
+<LI>naciśnij "Uruchom ponownie NVDA z tym folderem".
+</UL>
+
+<A NAME="hdr31"></A>
+<H3>2.26. Analiza tekstu</H3>
+<P>
+Ta funkcja jest obecnie testowana.
+</P>
+<P>
+Podczas edytowania lub korygowania dokumentu przy użyciu wyłącznie mowy często można pominąć niespójności, takie jak niedopasowane nawiasy, niezamierzone zmiany formatowania, dodatkowe spacje oraz fałszywe lub nieoddzielone znaki interpunkcyjne.
+</P>
+<P>
+Funkcja "Analiza tekstu" instaluje narzędzie (analizator), które ostrzega o tych nieprawidłowościach za pomocą wiadomości głosowej lub pliku WAV przy odtwarzaniu słowem lub wierszem.
+Możesz skonfigurować analizator, aby ogłaszał te nieprawidłowości według numeru, opisu lub dźwięku.
+</P>
+<P>
+Analiza została podzielona na trzy grupy badawcze:
+</P>
+<UL>
+<LI>wyszukiwanie niezgodności między symbolami,
+<LI>szukaj anomalii: wiele ciągłych spacji, spacja lub tabulacja na końcu wiersza, izolowane lub źle rozmieszczone znaki interpunkcyjne, brakujące lub niewłaściwie umieszczone wielkie litery, brakujące lub nieoczekiwane spacje przed lub po interpunkcji.
+<LI>wyszukiwanie zmian formatowania: nazwa czcionki, kolor, rozmiar, atrybuty, styl.
+</UL>
+
+<P>
+Istnieje możliwość dezaktywacji grupy wyszukiwania, jak również, indywidualnie, każdej akcji grupy.
+W tym celu w oknie ustawień rozszerzenia dodawana jest kategoria "Analiza tekstu".
+Ustawienia w tej kategorii są specyficzne dla aktywnego profilu, który jest ogłaszany po wybraniu kategorii.
+</P>
+<A NAME="hdr31-1"></A>
+<H4>2.26.1. Aktywacja lub dezaktywacja analizatora</H4>
+<P>
+Analizator można włączyć lub wyłączyć na trzy sposoby:
+</P>
+<UL>
+<LI>za pomocą polecenia interpretera "KEY_TEXT_ANALYZER",
+<LI>za pomocą pola wyboru "Aktywuj analizator tekstu" znajdującego się w kategorii "Analiza tekstu" w oknie ustawień rozszerzenia,
+<LI>za pomocą skryptu "Aktywuj lub dezaktywuj analizator tekstu": nie jest do niego przypisany żaden gest polecenia, ale można to zrobić za pomocą okna "Zdarzenia wejścia" NVDA.
+</UL>
+
+<P>
+Włączenie i wyłączenie analizatora ma wpływ tylko na aktywny profil konfiguracji.
+Pole wyboru "Aktywuj analizator tekstu podczas uruchamiania rozszerzenia" w kategorii "Analiza tekstu" naprawia dla każdego profilu stan aktywacji analizatora tekstu po uruchomieniu rozszerzenia. 'rozbudowa.
+</P>
+<P>
+Analizator włączony, jest analizowany za każdym razem, gdy kursor jest przesuwany od słowa do słowa lub od wiersza do wiersza w strefach edycji tekstu.
+</P>
+<P>
+Wynik analizy jest wskazywany zgodnie z dokonanym wyborem przez:
+</P>
+<UL>
+<LI>sygnał dźwiękowy: można skonfigurować częstotliwość i długość sygnału dźwiękowego.
+<LI>komunikat głosowy: domyślnie jest to "Alert", ale można to zmienić.
+<LI>dźwięk wybrany z listy.
+<LI>komunikat głosowy podający liczbę znalezionych nieprawidłowości.
+<LI>komunikat głosowy szczegółowo opisujący stwierdzone nieprawidłowości.
+<P></P>
+Aby zapoznać się z konfiguracją alertów, zobacz grupę "Alert" w kategorii "Analiza tekstu".+++ Analizuj konfigurację +++
+</UL>
+
+<A NAME="hdr31-2"></A>
+<H4>2.26.2. Analiza konfiguracji</H4>
+<A NAME="hdr31-2-1"></A>
+<H5>2.26.2.1. Sprawdzanie niezgodności symboli</H5>
+<P>
+Jest domyślnie włączony.
+</P>
+<P>
+Niektóre symbole, takie jak nawiasy, nawiasy klamrowe zwykle występują parami: symbol otwierający, symbol zamykający.
+Badanie to polega na weryfikacji tej zgodności.Możliwe symbole są wymienione na liście "symbole" grupy "Zgodność symboli" kategorii "Analiza tekstu".
+Każdy symbol może, ale nie musi być częścią wyszukiwania, w zależności od tego, czy jest zaznaczony, czy odznaczony na liście.
+Symbole na liście zależą od języka wybranego dla NVDA. Są one zdefiniowane w pliku "textAnalyzer.ini" umieszczonym w folderze skojarzonym z językiem folderu "locale".
+</P>
+<A NAME="hdr31-2-2"></A>
+<H5>2.26.2.2. Znajdowanie anomalii</H5>
+<P>
+Jest domyślnie włączony.
+</P>
+<P>
+Lista anomalii do wyszukania znajduje się w grupie "Anomalie" kategorii "Analiza tekstu".
+</P>
+<P>
+Są to:
+</P>
+<UL>
+<LI>Wiele przylegających do siebie przestrzeni,
+<LI>spacja lub zakładka na końcu,
+<LI>Izolowana lub niespacja interpunkcyjna,
+<LI>Brakujące lub odwrócone wielkie litery,
+<LI>obowiązkowa spacja przed symbolem,
+<LI>obowiązkowa spacja po symbolu,
+<LI>nieoczekiwana spacja przed symbolem,
+<LI>nieoczekiwana spacja po symbolu,
+<P></P>
+Na liście są to pola zaznaczone. Domyślnie wszystkie są zaznaczone. Odznaczenie pola nie spowoduje, że weryfikacja go dotyczy.
+W przypadku anomalii dotyczących spacji wokół symbolu, zaangażowane symbole są oznaczone jako zaznaczone na liście zawierającej wszystkie dostarczone symbole. W zależności od potrzeb istnieje możliwość zaznaczenia lub odznaczenia danego symbolu. Symbole zaznaczone domyślnie są zdefiniowane dla każdego wymagającego tego języka NVDA w pliku "textAnalysis.ini" umieszczonym w folderze językowym folderu "locale".
+</UL>
+
+<A NAME="hdr31-2-3"></A>
+<H5>2.26.2.3. Wyszukiwanie zmian formatowania</H5>
+<P>
+Domyślnie jest wyłączona.
+Zmiany formatowania mogą być sygnalizowane przez analizator w zależności od stanu pola wyboru "Ogłaszaj zmiany" w grupie "Formatowanie" kategorii "Analiza tekstu".
+</P>
+<P>
+Zmiany formatowania dotyczą:
+</P>
+<UL>
+<LI>nazwy czcionki,
+<LI>wielkości czcionki,
+<LI>atrybuty czcionki,
+<LI>kolor,
+<LI>styl.
+<P></P>
+Można je włączać lub wyłączać pojedynczo z wyszukiwania, zaznaczając lub odznaczając je na liście "Typy" tej samej grupy.
+</UL>
+
+<A NAME="hdr31-3"></A>
+<H4>2.26.3. Skanowanie na żądanie</H4>
+<P>
+Rozszerzenie instaluje skrypty do analizy tekstu w pozycji kursora na żądanie. Nie są do nich przypisane żadne gesty poleceń, ale można to zrobić za pomocą okna "Zdarzenia wejścia" NVDA.
+</P>
+<P>
+Te skrypty to:
+</P>
+<UL>
+<LI>"Analizuj słowo pod kursorem": polecenie interpretera "Shift+f8",
+<LI>"Analizuj linię pod kursorem": polecenie interpretera "control+f8",
+<LI>"Analizuj zdanie pod kursorem": polecenie interpretera "windows+f8".
+</UL>
+
+<A NAME="hdr32"></A>
+<H3>2.27. Ogłaszanie pozycji kursora w polach edycji</H3>
+<P>
+Skrypt "Przełącz raportowanie aktualnej pozycji kursora w polu edycji" umożliwia ogłaszanie lub nieogłaszanie pozycji kursora, gdy znajduje się on w strefie edycji.
+</P>
+<P>
+Ta pozycja odnosi się do początku wiersza, na którym znajduje się kursor.
+Aktywacja lub dezaktywacja tego ogłaszania jest specyficzna dla bieżącego profilu.
+</P>
+<P>
+Skrypt jest instalowany bez gestu polecenia, ale z poleceniem interpretera "KEY_POSITION_REPORT".
+W razie potrzeby, Okno "Zdarzenia wejścia" NVDA umożliwia przypisanie do niego gestu polecenia.
+</P>
+<A NAME="hdr33"></A>
+<H3>2.28. Tymczasowe użycie urządzenia wyjściowego audio bez wpływu na konfigurację NVDA</H3>
+<P>
+Ta funkcja jest instalowana domyślnie.
+</P>
+<P>
+Pozwala na tymczasową zmianę bieżącego urządzenia wyjściowego audio na inne urządzenie wyjściowe audio bez wpływu na konfigurację NVDA dla wszystkich profili konfiguracyjnych.
+Każdy profil konfiguracji zachowa ustawienia skonfigurowane w kategorii "Mowa" używanej przez NVDA, w tym jego urządzenie wyjściowe audio.
+Nazwiemy to urządzenie "Tymczasowe urządzenie audio".
+Gdy tymczasowe urządzenie audio jest aktywne, dźwięk audio (wiadomości głosowe i tony) emitowany przez NVDA zostanie wysłany do tego urządzenia niezależnie od urządzenia wyjściowego audio w aktywnym profilu konfiguracji.
+Dźwięki emitowane przez system są nadal przesyłane do urządzenia wyjściowego audio wybranego w ustawieniach systemu Windows.
+Ponieważ nic się nie zmienia w konfiguracji NVDA, automatyczna lub ręczna rejestracja NVDA nie zachowuje żadnego śladu po tym urządzeniu.
+Aby powrócić do normalnego działania, tj. korzystania z urządzeń wyjściowych audio profili konfiguracyjnych, wystarczy zrezygnować z tymczasowego urządzenia audio.
+Aby to wszystko osiągnąć, rozszerzenie instaluje kilka skryptów.
+</P>
+<A NAME="hdr33-1"></A>
+<H4>2.28.1. Tymczasowy menedżer urządzeń audio</H4>
+<P>
+Ten skrypt ma opis "Wyświetl tymczasowego menedżera urządzeń audio" i jest umieszczony w kategorii "Mowa" w oknie "Zdarzenia wejścia" NVDA.
+</P>
+<P>
+Żaden gest polecenia nie jest do niego przypisany, ale można go przypisać za pomocą okna "Zdarzenia wejścia".
+</P>
+<P>
+Skrypt jest uruchamiany za pomocą polecenia "KEY_TEMPORARY_AUDIO_DEVICE_MANAGER" interpretera poleceń.
+</P>
+<P>
+W odpowiedzi na to polecenie zostanie wyświetlone okno "Tymczasowy menedżer urządzeń audio", które przedstawia:
+</P>
+<UL>
+<LI>pole tekstowe "Aktualne tymczasowe urządzenie audio": wskazuje aktywne tymczasowe urządzenie audio.
+<LI>rozwijana lista zawierająca listę urządzeń wyjściowych audio systemu.
+<LI>przycisk "Ustaw jako tymczasowe urządzenie audio",
+<LI>przycisk "Porzuć tymczasowe urządzenie audio",
+<LI>przycisk "Zamknij".
+</UL>
+
+<P>
+Na liście ruch odbywa się za pomocą strzałek "w górę" i "w dół".
+Po wybraniu urządzenia peryferyjnego rozlega się podwójny sygnał dźwiękowy na jego wyjściu, aby umożliwić sprawdzenie jego prawidłowego działania lub połączenia i tym samym nie aktywować go.
+Przełączanie na wybrane urządzenie odbywa się poprzez naciśnięcie przycisku "Ustaw jako tymczasowe urządzenie audio" (przycisk domyślny) lub, jeśli fokus znajduje się na liście, za pomocą klawisza "Enter".
+To urządzenie staje się tymczasowym urządzeniem audio.
+Dźwięk z NVDA jest następnie kierowany na wyjście tego urządzenia.
+</P>
+<P>
+Aby nie skończyć z urządzeniem, które nie emituje dźwięku, rozszerzenie pyta użytkownika, czy potwierdza korzystanie z tego urządzenia.
+To żądanie jest wysyłane po przełączeniu awaryjnym do tego urządzenia po upływie limitu czasu.
+Można temu zapobiec, korzystając z opcji "Zapytaj o potwierdzenie" w grupie "Tymczasowe urządzenie audio" kategorii "Komputer" w oknie "Ustawienia globalne" rozszerzenia. 
+To żądanie potwierdzenia polega na wyświetleniu okna przez ograniczony czas i poproszeniu użytkownika o zaakceptowanie użycia nowego urządzenia wyjściowego audio.
+</P>
+<P>
+Czas wyświetlania tego okna można również skonfigurować za pomocą listy rozwijanej "Maksymalny czas oczekiwania na potwierdzenie" znajdującej się w tej samej grupie, co poprzednia opcja.
+Naciśnięcie przycisku "OK" lub klawisza "Enter" zatwierdza akceptację.
+Po zakończeniu opóźnienia bez naciśnięcia przycisku "OK" lub klawisza "Enter" okno zamyka się, a dźwięk powraca do poprzedniego urządzenia wyjściowego audio.
+Aby powrócić do normalnego działania, tj. bez tymczasowego urządzenia audio, wystarczy zrestartować skrypt i aktywować przycisk "Pozostaw tymczasowe urządzenie audio" lub, bardziej gwałtownie, zrestartować NVDA.
+Na liście urządzeń wyjściowych audio możliwe jest zaznaczenie określonych urządzeń. 
+Urządzenia te zostaną wykorzystane w skrypcie "Ustaw jako tymczasowe urządzenie audio następujące urządzenie z listy zaznaczonych urządzeń menedżera tymczasowego urządzenia audio". (patrz poniżej).
+</P>
+<A NAME="hdr33-2"></A>
+<H4>2.28.2. Tymczasowa zmiana urządzenia audio</H4>
+<P>
+Urządzenie można zmienić na dwa sposoby:
+</P>
+<UL>
+<LI>albo uruchamiając poprzedni skrypt i wybierając inne urządzenie,
+<LI>lub za pomocą skryptu, który pozwala na pętlę między zaznaczonymi urządzeniami z listy "urządzeń" tymczasowego menedżera urządzeń audio (patrz niżej).
+</UL>
+
+<P>
+Ten skrypt ma opis "Ustaw jako tymczasowe urządzenie audio następujące urządzenie na liście zaznaczonych urządzeń menedżera tymczasowego urządzenia audio" i jest umieszczony w kategorii "Mowa" w oknie "Zdarzenia wejścia".
+</P>
+<P>
+Nie jest do niego przypisany żaden gest polecenia. Ale można to zrobić za pomocą okna "Zdarzenia wejścia".
+Jest uruchamiany za pomocą polecenia "KEY_SET_TEMPORARY_AUDIO_DEVICE" z interpretera poleceń.
+Za każdym razem, gdy skrypt jest uruchamiany, nowe urządzenie wyjściowe audio jest ustawiane jako tymczasowe urządzenie audio.
+</P>
+<P>
+To urządzenie jest wybierane spośród urządzeń, które zostały wcześniej zaznaczone na liście urządzeń wyjściowych audio w oknie "menedżera Tymczasowego urządzenia audio" (patrz powyżej). Wybrane jest to, które znajduje się na liście, bieżących urządzeń wyjściowych audio.
+Po zmianie urządzenia pojawi się żądanie potwierdzenia czasowego (opcjonalne) (patrz rozdział "Tymczasowy menedżer urządzeń audio").
+</P>
+<A NAME="hdr33-3"></A>
+<H4>2.28.3. Ustawienie tymczasowego urządzenia audio</H4>
+<P>
+Ten skrypt ma opis "Ustaw tymczasowe urządzenie audio" i jest umieszczony w kategorii "Mowa" w oknie "Zdarzenia wejścia".
+</P>
+<P>
+Nie jest do niego przypisany żaden gest polecenia. Ale można to zrobić za pomocą okna "Zdarzenia wejścia".
+Skrypt jest uruchamiany za pomocą polecenia "KEY_LEAVEUP_TEMPORARY_AUDIO_DEVICE" z interpretera poleceń.
+Skrypt nie działa, jeśli żadne tymczasowe urządzenie audio nie jest aktywne.
+W przeciwnym razie wyjście audio NVDA jest kierowane do urządzenia wyjściowego audio aktywnego profilu konfiguracji.
+</P>
+<A NAME="hdr33-4"></A>
+<H4>2.28.4. Ustaw lub zostaw tymczasowe urządzenie audio</H4>
+<P>
+Ten skrypt ma opis "Ustaw jako tymczasowe urządzenie audio następujące urządzenie na liście zaznaczonych urządzeń menedżera tymczasowego urządzenia audio" 
+i jest umieszczone w kategorii "Mowa" w oknie "Zdarzenia wejścia".
+</P>
+<P>
+Nie jest do niego przypisany żaden gest polecenia. Ale można to zrobić za pomocą okna "Zdarzenia wejścia".
+Nie jest do niego również przypisane żadne polecenie interpretera.
+</P>
+<P>
+Ten skrypt łączy dwa poprzednie skrypty w jednym skrypcie.
+Pierwsze naciśnięcie gestu polecenia uruchamia skrypt "Ustaw jako tymczasowe urządzenie audio następujące urządzenie na liście zaznaczonych urządzeń menedżera tymczasowego urządzenia audio".
+Drugie naciśnięcie w krótkim czasie uruchamia skrypt "Zostaw tymczasowe urządzenie audio".
+</P>
+<A NAME="hdr34"></A>
+<H3>2.29. Orientacja wyjścia audio NVDA</H3>
+<P>
+Ta funkcja umożliwia oddzielenie dźwięku NVDA od dźwięku uruchomionych aplikacji audio, a tym samym słyszenie jednym uchem dźwięku NVDA, a drugim dźwiękiem innych aplikacji audio.
+</P>
+<P>
+Jest instalowany domyślnie.
+</P>
+<P>
+Technicznie rzecz biorąc, jest to zerowanie poziomu głośności prawego lub lewego kanału audio NVDA i aplikacji.
+</P>
+<P>
+NVDA jest aplikacją monofoniczną, więc na obu kanałach odtwarzany jest ten sam dźwięk. Zerowanie kanału nie powoduje utraty dźwięku fonicznego.
+</P>
+<P>
+Ale tak nie jest w przypadku zastosowań stereofonicznych.
+</P>
+<P>
+Aby zorientować dźwięk NVDA, rozszerzenie instaluje następujące skrypty:
+</P>
+<UL>
+<LI>Słuchaj NVDA po prawej stronie, a aplikację pod kursorem po lewej (polecenie: KEY_SPLIT_RIGHT_FOCUS),
+<LI>Słuchaj NVDA po prawej stronie, a wszystkie aplikacje po lewej (polecenie: KEY_SPLIT_RIGHT_ALL),
+<LI>Słuchaj NVDA po lewej stronie, a zaznaczoną aplikację po prawej (polecenie: KEY_SPLIT_LEFT_FOCUS),
+<LI>Słuchaj NVDA po lewej stronie, a wszystkie aplikacje po prawej (polecenie: KEY_SPLIT_LEFT_ALL),
+<LI>Słuchaj NVDA i aplikację pod kursorem w środku (polecenie: KEY_SPLIT_CENTER_FOCUS),
+<LI>Słuchaj NVDA i wszystkie aplikacje w środku (polecenie: KEY_SPLIT_CENTER_ALL)
+<LI>Słuchaj aplikację pod kursorem w środku (polecenie: KEY_CENTER_FOCUSED_APP)
+<LI>Wyświetl menedżera dźwięku NVDA i aktywne aplikacje (polecenie: KEY_SOUND_SPLIT_MANAGER)
+</UL>
+
+<P>
+Żaden gest wejściowy nie jest do nich przypisany. Ale nadal można to zrobić za pomocą okna "Gesty wprowadzania" NVDA. Skrypty te można znaleźć w kategorii "Sound Control" w oknie NVDA "Input Gestures".
+</P>
+<P>
+Polecenie "KEY_CENTER_FOCUSED_APP" działa nawet wtedy, gdy funkcja nie jest zainstalowana, aby możliwe było ponowne zrównoważenie dźwięku niektórych aplikacji, które pozostały niezrównoważone po odinstalowaniu funkcji.
+</P>
+<P>
+Okno "Menedżer dźwięku NVDA i aktywne aplikacje" pozwala również na zorientowanie dźwięku NVDA, ale także ustawienie poziomu głośności dwóch kanałów audio NVDA i aplikacji.
+Wprowadza :
+</P>
+<UL>
+<LI>lista aplikacji audio,
+<LI>potencjometr do zmiany głośności wybranej aplikacji,
+<LI>pole zaznaczone, aby zmienić stan "wyciszenia" wybranej aplikacji,
+<LI>potencjometry do modyfikacji poziomów lewego i prawego kanału wybranej aplikacji.
+</UL>
+
+<P>
+Gdy lista jest aktywna, dozwolone są następujące polecenia:
+</P>
+<UL>
+<LI>słuchaj wybraną aplikację po prawej: strzałka w prawo,
+<LI>słuchaj wybraną aplikację po lewej: strzałka w lewo,
+<LI>słuchaj wybraną aplikację w środku: spacja,
+<LI>słuchaj NVDA po prawej stronie a wybraną aplikację po lewej: "shift + strzałka w prawo",
+<LI>słuchaj NVDA po lewej stronie, a wybraną aplikację po prawej: "shift + strzałka w lewo",
+<LI>słuchaj NVDA i wybraną aplikację w środku: "shift + spacja",
+<LI>słuchaj NVDA po prawej stronie, a wszystkie aplikacje po lewej: "kontrol + strzałka w prawo",- Odsłuchaj NVDA po lewej stronie i wszystkie aplikacje po prawej: "sterowanie + strzałka w lewo",
+<LI>słuchaj NVDA i wszystkie aplikacje w środku: "kontrol + spacja",
+<LI>zwiększanie lub zmniejszanie głośności aplikacji o jeden krok: "kontrol + strzałka w górę lub w dół",
+<LI>zwiększanie lub zmniejszanie o dwa kroki głośności aplikacji: "kontrol + PageDown lub PageUp",
+<LI>maksymalizacja lub minimalizacja głośności mapowania: "kontrol + Home lub End",
+<LI>zwiększanie lub zmniejszanie głośności główneje o jeden krok: "sterowanie +shift + strzałka w górę lub w dół",
+<LI>zwiększanie lub zmniejszanie głośności głównej o dwa kroki: "kontrol + shift + PageDown lub PageUp",
+<LI>maksymalizacja lub minimalizacja głośności głównej: "kontrol + shift + Home or End".
+</UL>
+
+<P>
+Zmiany kanałów lub zmiany poziomu głośności są stosowane natychmiast po każdym poleceniu.
+</P>
+<P>
+Domyślnie poziom głośności aplikacji nie może być większy niż główny poziom głośności. Ale opcja "W razie potrzeby zwiększ głośność" pozwala wyłączyć to ograniczenie. Tę opcję można znaleźć w grupie "Modyfikacja głośności" w kategorii "Komputer" w oknie "Ustawienia" rozszerzenia.
+</P>
+<P>
+Zapewniona jest ochrona, aby uniknąć jednoczesnego zerowania poziomu kanałów audio NVDA i obniżenia poziomu głośności niż skonfigurowany próg przywracania.
+</P>
+<P>
+Po wybraniu aplikacji ogłaszany jest stan balansu kanałów wraz ze stanem wyciszenia.
+</P>
+<P>
+Po ponownym uruchomieniu NVDA, NVDA jest ponownie słyszalny na obu kanałach audio, podczas gdy aplikacje pozostają w swoim stanie (zapamiętywane przez Windows). Użyj polecenia, aby wznowić nasłuchiwanie na obu kanałach dla aplikacji pod kursorem lub dla wszystkich uruchomionych aplikacji.
+</P>
+<P>
+Uwaga: Aby zapewnić prawidłowe działanie, aplikacje NVDA i audio muszą używać tego samego urządzenia wyjściowego audio, takiego jak maper dźwięku. Co więcej, funkcjonalność jest interesująca tylko w tym przypadku.
+</P>
+<A NAME="hdr35"></A>
+<H3>2.30. Szybka aktywacja lub dezaktywacja rozszerzeń</H3>
+<P>
+Aby włączyć lub wyłączyć rozszerzenia, NVDA natywnie oferuje Menedżera rozszerzeń.
+Jednak w niektórych przypadkach może być konieczne dezaktywowanie niektórych lub wszystkich rozszerzeń, pozostawiając aktywowanych tylko kilka rozszerzeń.
+W przypadku menedżera rozszerzeń konieczne jest przejrzenie każdego rozszerzenia, aby je aktywować lub dezaktywować.
+</P>
+<P>
+To rozszerzenie stara się przyspieszyć tę manipulację i w tym celu zapewnia skrypt wyświetlający okno "Szybka aktywacja dodatków".
+</P>
+<P>
+Ten skrypt jest uruchamiany za pomocą polecenia "KEY_QUICK_ADDONS_ACTIVATION" interpretera poleceń. Nie jest z nim powiązany żaden gest wprowadzania. Ale można to zrobić za pomocą okna "Gesty wejściowe" NVDA.
+Można go znaleźć w kategorii "Rozszerzenie podstawowych poleceń NVDA" z opisem "Aktywuj okno szybkiej aktywacji dodatków".
+</P>
+<P>
+Te okno przedstawia:
+</P>
+<UL>
+<LI>lista zainstalowanych, aktywowanych lub dezaktywowanych dodatków,
+<LI>przycisk "Sprawdź wszystko", aby sprawdzić wszystkie dodatki z listy,
+<LI>przycisk "Odznacz wszystko", aby odznaczyć wszystkie dodatki z listy,
+<LI>przycisk "Zapisz i zrestartuj NVDA", aby zatwierdzić zmiany i zrestartować NVDA,
+<LI>przycisk "Anuluj", aby zamknąć okno bez zmiany stanu aktywacji dodatków.
+</UL>
+
+<P>
+Lista pokazuje tylko dodatki włączone lub wyłączone, gdy wyświetlane jest okno. Niekompatybilne dodatki, które mają zostać aktywowane lub dezaktywowane przy następnym uruchomieniu, nie są uwzględnione na liście.
+</P>
+<P>
+Po wyświetleniu okna aktywowane dodatki są sprawdzane.
+</P>
+<P>
+Aby zmienić stan aktywacji dodatku, wystarczy go zaznaczyć, aby go aktywować, lub odznaczyć, aby go dezaktywować.
+</P>
+<P>
+Zmiany zostaną uwzględnione dopiero po naciśnięciu przycisku "Zapisz i uruchom ponownie NVDA".
+</P>
+<A NAME="toc104"></A>
+<H2>3. Opcje</H2>
+<A NAME="hdr100"></A>
+<H3>3.1. Usunięcie ogłaszania opisu obiektów na wstążkach Windows</H3>
+<P>
+Na wstążkach Windows NVDA jest niepotrzebnie zbyt gadatliwy.
+Domyślnie ten dodatek zapobiega ogłaszaniu opisu, który wydaje się dość niepotrzebny.
+</P>
+<P>
+Można to jednak wyłączyć za pomocą opcji "Brak opisu obiektu na wstążkach systemu Windows" znajdującej się w kategorii "Komputer" w oknie "Ustawienia dodatków".
+</P>
+<P>
+Aby opcja została uwzględniona, konieczne będzie ponowne uruchomienie NVDA.
+</P>
+<A NAME="hdr101"></A>
+<H3>3.2. Ogłaszanie słowa posiadającego fokus, po usunięciu tego słowa</H3>
+<P>
+W niektórych aplikacjach, takich jak WordPad, Microsoft Word, możliwe jest usunięcie następującego słowa za pomocą polecenia "control+Del", 
+ale wersje NVDA przed 2020.3 nie wymawiają po usunięciu tego słowa występującego na pozycji kursora.
+</P>
+<P>
+Domyślnie ten dodatek pozwala tym wersjom NVDA na wypowiadanie tego słowa.
+</P>
+<P>
+W przypadku tych wersji można temu zapobiec, odznaczając opcję "Ogłoś następne słowo po usunięciu" w kategorii "Rozszerzenie NVDA" w oknie "Ustawienia" dodatku.
+</P>
+<A NAME="hdr102"></A>
+<H3>3.3. Automatyczna maksymalizacja okna</H3>
+<P>
+Ta opcja automatycznie maksymalizuje okna, które są wysuwane na pierwszy plan.
+</P>
+<P>
+Domyślnie jest włączona.
+</P>
+<P>
+Możesz ją wyłączyć, w oknie "Ogólne ustawienia" w kategorii "Komputer", w oknie dodatku odznaczając opcję "Automatycznie maksymalizuj okna".
+</P>
+<A NAME="hdr103"></A>
+<H3>3.4. Ogłaszanie interpunkcji podczas poruszania się po słowie</H3>
+<P>
+NVDA umożliwia przenoszenie słowo po słowie w dokumentach za pomocą poleceń klawiaturowych "control+strzałka w prawo" i "control+strzałka w lewo".
+</P>
+<P>
+Symbole i znaki interpunkcyjne są następnie wymieniane zgodnie z poziomem interpunkcji i symboli skonfigurowanych dla bieżącego profilu konfiguracji.
+</P>
+<P>
+Ta opcja pozwala skonfigurować poziom symboli i interpunkcji, które będą używane tylko podczas poruszania się po słowie.
+</P>
+<P>
+Ten wybór jest zapisywany dla bieżącego profilu konfiguracji. Jest skonfigurowany w oknie "Ogólne ustawienia" dodatku w kategorii "Ulepszenie NVDA" i nazwany "Poziom interpunkcji i symboli", w grupie "Przesuwanie kursora".
+</P>
+<P>
+Występuje tylko wtedy, gdy zainstalowano polecenia edycji w stylu, "Ogłaszanie poleceń związanych z funkcjami edycji w stylu "Kopiuj, Wklej".
+</P>
+<P>
+Prezentowany jest w formie pola kombi, który pozwala wybrać:
+</P>
+<UL>
+<LI>poziom symboli i interpunkcji aktualnego poziomu konfiguracji (domyślnie wybrany),
+<LI>lub jeden z poziomów symboli i interpunkcji NVDA (brak, niektóre, większość, wszystkie).
+</UL>
+
+<A NAME="hdr302"></A>
+<H3>3.5. Tytuły okien z nazwą dodatku</H3>
+<P>
+Ta opcja umożliwia zatytułowanie okien tego dodatku lub nie za pomocą jego nazwy.
+Można go znaleźć w kategorii "Zaawansowane" w oknie "Ustawienia".
+</P>
+<P>
+Domyślnie ta opcja jest zaznaczona, a tytuł pól ma postać: "Rozszerzenie podstawowych poleceń NVDA - NVDA - tytuł okna".
+</P>
+<P>
+++ Ogłaszanie błędów pisowni za pomocą sygnału dźwiękowego lub komunikatu głosowego ++ [hdr104]
+Gdy zaznaczona jest opcja "Ogłaszanie błędów pisowni" w grupie "Informacje o dokumencie" kategorii "Formatowanie dokumentu" ustawień NVDA, NVDA wyda specjalny dźwięk dla błędu pisowni, który został popełniony.
+</P>
+<P>
+Ten dźwięk jest emitowany zaraz po naciśnięciu spacji kończącej słowo.
+</P>
+<P>
+Niektórzy użytkownicy uważają ten dźwięk za nieprzyjemny, rozszerzenie daje możliwość zastąpienia tego dźwięku albo podwójnym sygnałem dźwiękowym, albo komunikatem głosowym "Błąd pisowni".
+</P>
+<P>
+Wyboru dokonuje się w grupie "Ogłaszanie błędów pisowni" w kategorii "Ulepszenia NVDA" w ustawieniach globalnych dodatku.
+</P>
+<A NAME="hdr305"></A>
+<H3>3.6. Zarządzanie Blokadą numeryczną</H3>
+<P>
+Ta funkcja jest częściowo zaczerpnięta z dodatku "sharedComputer" (autorzy "Robert Hänggi &lt;<A HREF="mailto:aarjay.robert@gmail.com">aarjay.robert@gmail.com</A>&gt;, Noelia Ruiz Martínez &lt;<A HREF="mailto:nrm1977@gmail.com">nrm1977@gmail.com</A>&gt;", który wydaje się nie być aktualizowany od 2018 roku.
+</P>
+<P>
+Składa się ona z:
+</P>
+<A NAME="toc111"></A>
+<H4>3.6.1. Ogłaszanie aktywacji blokady numerycznej przy uruchomieniu NVDA</H4>
+<P>
+Domyślnie w układzie klawiatury "Desktop", dodatek informuje, że podczas uruchamiania NVDA włączona jest funkcja Blokada numeryczna.
+</P>
+<P>
+Można to jednak wyłączyć, tak jak jest to domyślne dla układu klawiatury "laptopa", za pomocą opcji "Ogłaszaj stan aktywacji po uruchomieniu NVDA" w grupie "Blokada numeryczna" w kategorii "Klawiatura" w ustawieniach dodatku.
+</P>
+<A NAME="toc112"></A>
+<H4>3.6.2. Automatyczna aktywacja/dezaktywacja podczas aktywacji profilu konfiguracji</H4>
+<P>
+Za każdym razem, gdy profil konfiguracyjny jest aktywowany, możliwe jest automatyczne włączenie lub wyłączenie blokady numerycznej.
+</P>
+<P>
+Wyboru dokonuje się w ustawieniach profilu konfiguracyjnego, w kategorii "Klawiatura" grupy "Blokada numeryczna" oraz z listy wyboru "Po aktywacji profilu:".
+</P>
+<P>
+Ta lista oferuje następujące opcje:
+</P>
+<UL>
+<LI>"Nic nie rób": stan blokowania nie jest modyfikowany.
+<LI>"Dezaktywuj": blokada jest dezaktywowana.
+<LI>"Aktywuj": blokada jest aktywna.
+</UL>
+
+<P>
+Domyślnie wybór to:
+</P>
+<UL>
+<LI>"Wyłączone" dla układu klawiatury "Komputer stacjonarny".
+<LI>"Nic nie rób" dla układu klawiatury "laptopa".
+<P></P>
+</UL>
+
+<OL>
+<LI>Opcje zaawansowane +
+++ Sygnalizacja dźwiękiem błędu w logu NVDA ++[hdr300]
+Doświadczeni użytkownicy mogli zauważyć, że przy korzystaniu z rozwojowej wersji NVDA (snapshot master lub następna wersja) każdy błąd wpisany do logu NVDA jest sygnalizowany dźwiękiem. 
+Ale w przypadku ostatecznych wersji lub kandydujących wydań ten sygnał nie jest emitowany.
+<P></P>
+Ta opcja oferuje wybór między:
+</OL>
+
+<UL>
+<LI>nadawać sygnał dźwiękowy niezależnie od wersji NVDA,
+<LI>nigdy nie nadawać sygnału,
+<LI>nadawać sygnał tylko do następnego startu NVDA,
+<LI>nadawaj sygnał tylko dla wersji rozwojowych.
+</UL>
+
+<P>
+Aby dokonać tego wyboru, wystarczy wybrać opcję na liście rozwijanej o nazwie "Odtwarzaj dźwięk przy zarejestrowanych błędach" w kategorii "Zaawansowane" w oknie "Ustawienia" dodatku.
+Domyślnie zaznaczona jest opcja "Tylko dla wersji deweloperskich".
+</P>
+<A NAME="hdr303"></A>
+<H3>3.7. Konfiguracja opóźnienia oczekiwania na powtórzenie tego samego gestu polecenia</H3>
+<P>
+Niektóre skrypty w tym dodatku wykonują różne czynności w zależności od tego, ile razy wybierany jest gest polecenia powiązany ze skryptem.
+Powtórzenie gestu polecenia musi nastąpić w krótkim czasie (domyślnie 500 ms).
+</P>
+<P>
+W przypadku skryptu wykonującego trzy różne akcje mechanizmem jest:
+</P>
+<UL>
+<LI>przy pierwszym naciśnięciu, rozpoczyna się opóźnienie czasowe,
+<LI>jeśli nie ma drugiego naciśnięcia przed końcem opóźnienia czasowego, wykonywana jest pierwsza akcja. W przeciwnym razie opóźnienie czasowe jest ponownie uruchamiane przy drugim naciśnięciu.
+<LI>jeśli nie ma trzeciego naciśnięcia przed końcem opóźnienia czasowego, wykonywana jest druga akcja. W przeciwnym razie stoper jest zatrzymywany i wykonywana jest trzecia akcja.
+</UL>
+
+<P>
+W zależności od zręczności użytkownika lub konfiguracji sprzętowej ten limit czasu może być zbyt długi lub zbyt krótki.
+</P>
+<P>
+Opcja zatytułowana "Opóźnienie między powtórzeniem tego samego gestu" w kategorii "Zaawansowane" w oknie "Ustawienia" dodatku umożliwia dostosowanie tego limitu czasu zgodnie z potrzebami.
+</P>
+<A NAME="hdr304"></A>
+<H3>3.8. Standardowe użycie klawiatury numerycznej</H3>
+<P>
+Domyślnie NVDA używa pewnych klawiszy na klawiaturze numerycznej, takich jak klawisze strzałek, klawisze "gwiazdka", "slesz" i "plus", aby aktywować skrypty.
+</P>
+<P>
+Celem jest przywrócenie każdemu klawiszowi klawiatury numerycznej, tymczasowo lub na stałe, jego normalnego funkcjonowania, złożonego samodzielnie lub z klawiszami modyfikującymi, takimi jak "kontrol", "Alt", "Shift" (klawisz "NVDA" jest wykluczony) .
+</P>
+<P>
+Te klawisze to:
+</P>
+<UL>
+<LI>klawisze "strzałka w prawo i w lewo",
+<LI>klawisze "strzałki w górę i w dół",
+<LI>klawisze "pagedown i pageup",
+<LI>klawisze "home i end",
+<LI>klawisze "mnożenie" i "dzielenie",
+<LI>przycisk "Więcej".
+</UL>
+
+<P>
+Aby włączyć lub wyłączyć korzystanie z klawiatury numerycznej w trybie standardowym oraz w przypadku zaznaczenia opcji "zezwól na standardowe korzystanie z klawiatury numerycznej" w grupie "Klawiatura numeryczna" w kategorii "Klawiatura" dodatek oferuje:
+</P>
+<UL>
+<LI>opis skryptu "Włącz lub wyłącz standardowe użycie klawiatury numerycznej". Domyślnie nie jest do niego przypisany żaden gest polecenia.
+<LI>polecenie "f5" z interpretera poleceń.
+<LI>aktywacja przez dwa kolejne naciśnięcia klawisza "Num lock" jeżeli zaznaczona jest opcja "Włącz/wyłącz standardowe użycie klawiatury numerycznej z klawiszem num lock" (grupa "Klawiatura numeryczna", kategoria "Klawiatura").
+</UL>
+
+<P>
+Opcja "Włącz standardowe korzystanie z klawiatury numerycznej przy starcie NVDA" (grupa "Klawiatura numeryczna", kategoria "Klawiatura") pozwala, 
+jeśli jest zaznaczona, na używanie klawiatury numerycznej standardowo od początku NVDA, ale należy również zaznaczyć opcję umożliwiającą standardowe korzystanie z klawiatury numerycznej.
+</P>
+<A NAME="toc115"></A>
+<H2>4. Inne ulepszenia</H2>
+<A NAME="hdr202"></A>
+<H3>4.1. Eksploracja folderu konfiguracji użytkownika lub folderu programu nvda</H3>
+<P>
+Ten dodatek dodaje do menu "narzędzia" NVDA podmenu "Eksploruj NVDA", które oferuje dwie pozycje do wyboru:
+</P>
+<UL>
+<LI>"Przeglądaj mój folder konfiguracyjny": otwiera folder konfiguracyjny użytkownika w Eksploratorze Windows.
+<LI>"Eksploruj folder programu": otwiera folder programu NVDA w eksploratorze.
+</UL>
+
+<P>
+Dwa skrypty, umieszczone w kategorii "Rozszerzenie podstawowych poleceń NVDA" w oknie "Zdarzenia Wejścia" NVDA, służą do wykonywania tych samych czynności i mają następujące opisy:
+</P>
+<UL>
+<LI>"Przeglądaj folder konfiguracji użytkownika",
+<LI>"Przeglądaj folder programów NVDA".
+</UL>
+
+<P>
+Domyślnie nie jest z nimi powiązany żaden gest polecenia.
+</P>
+<A NAME="hdr203"></A>
+<H3>4.2. Prezentacja formatowania tekstu</H3>
+<P>
+Zasadniczo dwukrotne naciśnięcie gestu polecenia "NVDA+f" przedstawia informacje o formatowaniu w postaci dokumentu HTML.
+</P>
+<P>
+Ten skrypt ma na celu ich uzupełnienie i wyświetlenie ich w oknie, tak aby można je było odczytać za pomocą klawiszy strzałek.
+Uruchamia się za pomocą polecenia "f" interpretera.
+</P>
+<P>
+Opis skryptu to: "Wyświetl informacje o formatowaniu dla bieżącej pozycji kursora przeglądu w dokumencie w oknie".
+Jest on przechowywany pod nagłówkiem "Rozszerzenie podstawowych poleceń NVDA" w oknie "gesty poleceń NVDA".
+</P>
+<P>
+Domyślnie nie jest do niego przypisany żaden gest polecenia.
+</P>
+<A NAME="hdr204"></A>
+<H3>4.3. Ogłaszanie tekstu okien w stylu potwierdzenia</H3>
+<P>
+NVDA uważa, że ​​niektóre okna, takie jak okna potwierdzenia, zawierają opis.
+Więc jeśli opcja "Czytaj opisy obiektów" w kategorii "Prezentacja obiektów" w oknie "Ustawienia" NVDA nie jest zaznaczona, tekst nie jest ogłaszany przez NVDA.
+</P>
+<P>
+Ten dodatek implementuje opcję "Nie uwzględniaj opcji o nazwie "Czytaj opisy obiektów" podczas wyświetlania okna w stylu potwierdzenia" w kategorii "Zaawansowane" w oknie "Ogólne Ustawienia" dodatku i wymusza, jeśli jest zaznaczone ogłaszanie tekstu tych pól we wszystkich przypadkach. Ta opcja jest domyślnie zaznaczona.
+</P>
+<A NAME="hdr205"></A>
+<H3>4.4. Uruchamianie skryptów w oknie dialogowym "Gesty poleceń"</H3>
+<P>
+Okno dialogowe NVDA "Gesty poleceń" pozwala skonfigurować gesty poleceń (skróty klawiaturowe, przyciski wyświetlacza brajlowskiego itp.) dla skryptów (nazywanych poleceniami w instrukcji obsługi NVDA) dostępnych w tej chwili. Aby uzyskać więcej informacji, zapoznaj się z rozdziałem "Gesty poleceń" tego podręcznika.
+</P>
+<P>
+Rozszerzenie umożliwia wykonywanie skryptów w tym oknie dialogowym, nawet jeśli nie skonfigurowano żadnego gestu polecenia.
+</P>
+<P>
+Modyfikuje to okno dialogowe, dodając przycisk "Wykonaj skrypt", gdy skrypt jest zaznaczony w widoku drzewa.
+</P>
+<P>
+Skrypt można wykonać za pomocą jednej z trzech następujących akcji:
+</P>
+<UL>
+<LI>naciskając ten przycisk,
+<LI>albo przez wybranie skrótu powiązanego z przyciskiem,
+<LI>lub naciskając spację, gdy kursor znajduje się na elemencie drzewa.
+<P></P>
+Powtarzając czynność kilka razy szybko, skrypt będzie wykonywany tyle razy.
+</UL>
+
+<P>
+++ Automatyczny wybór kategorii w oknie dialogowym "Gesty poleceń" ++ [hdr206]
+Może się zdarzyć, że musimy otworzyć okno dialogowe "Gesty poleceń", aby poznać gesty poleceń udostępniane przez aktywne rozszerzenie dla aplikacji, na której mamy fokus.
+</P>
+<P>
+Bez rozszerzenia domyślnie wybrana jest pierwsza kategoria.
+</P>
+<P>
+W celu zaoszczędzenia czasu rozszerzenie umożliwia wybór kategorii powiązanej z aktywnym rozszerzeniem dla aplikacji będącej przedmiotem zainteresowania.
+</P>
+<P>
+Robi to, wyszukując kategorię wśród kategorii, które dostarczają skrypty należące do aktywnego rozszerzenia. Ale ten ostatni może konfigurować skrypty w dowolnej kategorii.
+</P>
+<P>
+Ta kategoria zostanie następnie automatycznie wybrana i rozszerzona.
+</P>
+<P>
+++ Wybór ostatniego ustawienia używanego w pokrętle ustawień syntezatora ++ [hdr207]
+Gesty poleceń NVDA "NVDA+kontrol+strzałka w prawo lub w lewo" umożliwiają przechodzenie z jednego ustawienia do drugiego w pokrętle ustawień syntezatora.
+</P>
+<P>
+Ale po ponownym uruchomieniu NVDA, ostatnio używane ustawienie jest zapomniane.
+</P>
+<P>
+To ulepszenie próbuje przezwyciężyć tę wadę.
+</P>
+<P>
+W tym celu dodatek zapisuje, przy każdym ruchu pokrętła ustawień syntezatora, ostatnie ustawienie używane dla każdego syntezatora i dla każdego profilu konfiguracji.
+</P>
+<P>
+To ustawienie zostanie następnie wybrane ponownie, gdy NVDA uruchomi się dla syntezatora i profilu "normalnej konfiguracji" lub podczas przełączania profili.
+</P>
+<P>
+Ostrzeżenie: tak jak wszystkie parametry NVDA, konieczne jest zapisanie konfiguracji NVDA przed ponownym uruchomieniem NVDA (automatycznie lub ręcznie), aby można było je znaleźć po restarcie.
+</P>
+<A NAME="toc120"></A>
+<H2>5. Podsumowanie poleceń dostarczonych przez to rozszerzenie</H2>
+<A NAME="toc121"></A>
+<H3>5.1. Systematycznie instalowane gesty poleceń</H3>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>NVDA+j</TD>
+<TD>NVDA+j</TD>
+<TD>Brak</TD>
+<TD>Uruchom dodatkowy interpreter poleceń</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc122"></A>
+<H3>5.2. Polecenia interpretera</H3>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Polecenie</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>a</TD>
+<TD>Wyświetla informacje o wybranej aplikacji</TD>
+</TR>
+<TR>
+<TD>b</TD>
+<TD>Wyświetla widoczne elementy listy tworzące bieżący obiekt pierwszego planu</TD>
+</TR>
+<TR>
+<TD>c</TD>
+<TD>Kopiuje datę i godzinę do schowka</TD>
+</TR>
+<TR>
+<TD>e</TD>
+<TD>Wyświetla listę uruchomionych dodatków</TD>
+</TR>
+<TR>
+<TD>f</TD>
+<TD>Wyświetla informacje o formatowaniu dla bieżącej pozycji kursora przeglądu w dokumencie w oknie</TD>
+</TR>
+<TR>
+<TD>f1</TD>
+<TD>Wyświetla okno ustawień dodatków</TD>
+</TR>
+<TR>
+<TD>f2</TD>
+<TD>Wyświetla okno zmiany nazwy klawiszy klawiatury</TD>
+</TR>
+<TR>
+<TD>f3</TD>
+<TD>Wyświetla okno selektywnego ogłaszania klawisza poleceń</TD>
+</TR>
+<TR>
+<TD>f4</TD>
+<TD>Umożliwia kopiowanie lub wpisywanie złożonego symbolu</TD>
+</TR>
+<TR>
+<TD>kontrol+f4</TD>
+<TD>Wyświetla listę ostatnio używanych symboli</TD>
+</TR>
+<TR>
+<TD>f5</TD>
+<TD>Włącz lub wyłącz standardowe użycie klawiatury numerycznej</TD>
+</TR>
+<TR>
+<TD>f9</TD>
+<TD>Wyświetla zapisy historii mowy</TD>
+</TR>
+<TR>
+<TD>F10</TD>
+<TD>Wyświetla listę uruchomionych okien aplikacji z możliwością umieszczenia jednej z nich na pierwszym planie lub jej Usuńenia</TD>
+</TR>
+<TR>
+<TD>F11a</TD>
+<TD>Pokazuje listę przycisków w zasobniku systemowym</TD>
+</TR>
+<TR>
+<TD>f12</TD>
+<TD>Wyświetla okno, aby uruchomić minutnik. Jeśli minutnik już się uruchomił, wyświetla okno czasu trwania raportu</TD>
+</TR>
+<TR>
+<TD>K</TD>
+<TD>Zamknij wszystkie otwarte okna</TD>
+</TR>
+<TR>
+<TD>g</TD>
+<TD>Wyświetla dodatkową instrukcję obsługi</TD>
+</TR>
+<TR>
+<TD>h</TD>
+<TD>Wyświetla polecenia interpretera poleceń</TD>
+</TR>
+<TR>
+<TD>j</TD>
+<TD>Otwórz okno do zarządzania dziennikami NVDA</TD>
+</TR>
+<TR>
+<TD>o</TD>
+<TD>Ogłasza nazwę aktualnie wybranego folderu w oknie Otwórz lub Zapisz</TD>
+</TR>
+<TR>
+<TD>p</TD>
+<TD>Przełącz tryb przełączania profilu głosu</TD>
+</TR>
+<TR>
+<TD>r</TD>
+<TD>Wyświetla okno, aby zamknąć, ponownie uruchomić lub hibernować komputer</TD>
+</TR>
+<TR>
+<TD>s</TD>
+<TD>Przełącz bieżące wyciszenie głośności aktualnie aktywnej aplikacji</TD>
+</TR>
+<TR>
+<TD>kontrol+s</TD>
+<TD>Ustaw głośność główną i NVDA</TD>
+</TR>
+<TR>
+<TD>t</TD>
+<TD>Wyświetla narzędzia dla okna programowania dodatków</TD>
+</TR>
+<TR>
+<TD>u</TD>
+<TD>Wyświetla okno do zarządzania gestami poleceń skonfigurowanymi przez użytkownika</TD>
+</TR>
+<TR>
+<TD>v</TD>
+<TD>Wyświetla okno do zarządzania przełącznikami profili głosowych</TD>
+</TR>
+<TR>
+<TD>v</TD>
+<TD>Wyświetla okno do zarządzania przełącznikami profili głosowych</TD>
+</TR>
+<TR>
+<TD>z</TD>
+<TD>Ogłasza bieżące ustawienia mowy</TD>
+</TR>
+<TR>
+<TD>control+z</TD>
+<TD>Wyświetla bieżące ustawienia mowy</TD>
+</TR>
+<TR>
+<TD>strzałka w górę</TD>
+<TD>Zwiększa głośność aktualnie aktywnej aplikacji</TD>
+</TR>
+<TR>
+<TD>kontrol+strzałka w górę</TD>
+<TD>Zwiększa głośność</TD>
+</TR>
+<TR>
+<TD>strzałkaw dół</TD>
+<TD>Zmniejsza głośność aktualnie aktywnej aplikacji</TD>
+</TR>
+<TR>
+<TD>kontrol+strzałka w dół</TD>
+<TD>Zmniejsza główną głośność</TD>
+</TR>
+<TR>
+<TD>page up</TD>
+<TD>Maksymalizuje głośność aktualnie aktywnej aplikacji</TD>
+</TR>
+<TR>
+<TD>kontrol+page up</TD>
+<TD>Maksymalizuje główną głośność</TD>
+</TR>
+<TR>
+<TD>page down</TD>
+<TD>Minimalizuje głośność aktualnie aktywnej aplikacji</TD>
+</TR>
+<TR>
+<TD>kontrol+page down</TD>
+<TD>Minimalizuje główną głośność</TD>
+</TR>
+<TR>
+<TD>backspace</TD>
+<TD>Ustawia głośność aktualnie aktywnej aplikacji na poprzedni poziom</TD>
+</TR>
+<TR>
+<TD>control+backspace</TD>
+<TD>Ustawia główny poziom głośności na poprzedni poziom</TD>
+</TR>
+<TR>
+<TD>liczba od 1 do 9</TD>
+<TD>Ustaw głośność zaznaczonej aplikacji na x procent głośności głównej (x równe 10 pomnożone przez liczbę)</TD>
+</TR>
+<TR>
+<TD>kontrol+numer od 1 do 9</TD>
+<TD>Ustaw na x głośność główną (x równe 10 pomnożone przez liczbę)</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc123"></A>
+<H3>5.3. gesty poleceń instalowane przez funkcjonalności</H3>
+<A NAME="toc124"></A>
+<H4>5.3.1. Wyświetlanie listy ikon w obszarze powiadomień i okien uruchomionych aplikacji</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Lista ikon i aktywnych okien</TD>
+<TD>NVDA+F11</TD>
+<TD>NVDA+F11</TD>
+<TD>Brak</TD>
+<TD>Wyświetla listę przycisków na pasku zadań. Dwa razy, Wyświetla listę uruchomionych okien aplikacji z możliwością umieszczenia jednej z nich na pierwszym planie lub jej usunięcie</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc125"></A>
+<H4>5.3.2. Pomoc w tworzeniu złożonych symboli</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Pomoc przy tworzeniu złożonych symboli</TD>
+<TD>NVDA+shift+f4</TD>
+<TD>NVDA+shift+f4</TD>
+<TD>Brak</TD>
+<TD>Umożliwia kopiowanie lub wpisywanie złożonego symbolu</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc126"></A>
+<H4>5.3.3. Informacje o aktualnie aktywnej aplikacji</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Ogłasza nazwę i wersję aktualnie aktywnej aplikacji</TD>
+<TD>NVDA+shift+f1</TD>
+<TD>NVDA+shift+f1</TD>
+<TD>Brak</TD>
+<TD>Ogłasza nazwę i wersję aplikacji</TD>
+</TR>
+<TR>
+<TD>Ogłasza profil konfiguracji</TD>
+<TD>NVDA+kontrol+F1</TD>
+<TD>NVDA+kontrol+F1</TD>
+<TD>Brak</TD>
+<TD>Ogłasza nazwę pliku aktywnej aplikacji wraz z nazwą aktualnie załadowanego pliku Pythona appModule. Dwukrotne naciśnięcie tego klawisza, ogłasza nazwę i stan bieżącego profilu konfiguracyjnego</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc127"></A>
+<H4>5.3.4. Rozszerzenie funkcjonalności bufora wirtualnego</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>NVDA+alt+j</TD>
+<TD>NVDA+alt+j</TD>
+<TD>brak</TD>
+<TD>Ogłasza komórki bieżącego wiersza tabeli</TD>
+</TR>
+<TR>
+<TD>NVDA+alt+l</TD>
+<TD>NVDA+alt+l</TD>
+<TD>brak</TD>
+<TD>Ogłasza komórki kolumny bieżącej tabeli</TD>
+</TR>
+<TR>
+<TD>NVDA+alt+strzałka w dół</TD>
+<TD>NVDA+alt+strzałka w dół</TD>
+<TD>brak</TD>
+<TD>Przechodzi do następnego wiersza tabeli i Ogłasza go</TD>
+</TR>
+<TR>
+<TD>NVDA+strzałka w górę</TD>
+<TD>NVDA+strzałka w górę</TD>
+<TD>brak</TD>
+<TD>Przechodzi do poprzedniego wiersza tabeli i Ogłasza go</TD>
+</TR>
+<TR>
+<TD>NVDA+alt+strzałka w prawo</TD>
+<TD>NVDA+alt+strzałka w prawo</TD>
+<TD>brak</TD>
+<TD>Przechodzi do następnej kolumny tabeli i Ogłasza ją</TD>
+</TR>
+<TR>
+<TD>NVDA+alt+strzałka w lewo</TD>
+<TD>NVDA+alt+strzałka w lewo</TD>
+<TD>brak</TD>
+<TD>Przechodzi do poprzedniej kolumny tabeli i Ogłasza ją</TD>
+</TR>
+<TR>
+<TD>NVDA+alt+numpad5</TD>
+<TD>NVDA+alt+średnik</TD>
+<TD>brak</TD>
+<TD>Ogłasza bieżącą pozycję komórki tabeli</TD>
+</TR>
+<TR>
+<TD>kontrol+alt+shift+strzałka w lewo</TD>
+<TD>kontrol+alt+shift+strzałka w lewo</TD>
+<TD>brak</TD>
+<TD>Przechodzi do pierwszej komórki wiersza tabeli</TD>
+</TR>
+<TR>
+<TD>kontrol+alt+shift+strzałka w prawo</TD>
+<TD>kontrol+alt+shift+strzałka w prawo</TD>
+<TD>brak</TD>
+<TD>Przechodzi do ostatniej komórki wiersza tabeli</TD>
+</TR>
+<TR>
+<TD>kontrol+alt+shift+strzałka w górę</TD>
+<TD>kontrol+alt+shift+strzałka w górę</TD>
+<TD>brak</TD>
+<TD>Przechodzi do pierwszej komórki kolumny tabeli</TD>
+</TR>
+<TR>
+<TD>kontrol+alt+shift+strzałka w dół</TD>
+<TD>kontrol+alt+shift+strzałka w dół</TD>
+<TD>brak</TD>
+<TD>Przechodzi do ostatniej komórki kolumny tabeli</TD>
+</TR>
+<TR>
+<TD>NVDA+a</TD>
+<TD>NVDA+shift+a</TD>
+<TD>brak</TD>
+<TD>Ogłasza adres dokumentu (URL). Dwa razy: Kopiuje do schowka</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc128"></A>
+<H4>5.3.5. Ogłaszanie wstępnie wybranego folderu w oknach w stylu "Otwórz, zapisz, zapisz jako"</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Ogłasza wybrany folder</TD>
+<TD>NVDA+o</TD>
+<TD>NVDA+o</TD>
+<TD>Brak</TD>
+<TD>Ogłasza nazwę aktualnie wybranego folderu w oknie Otwórz lub Zapisz. Dwa razy: Ogłasza pełną ścieżkę</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc129"></A>
+<H4>5.3.6. Dzienniki NVDA</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Otwiera dziennik</TD>
+<TD>NVDA+shift+j</TD>
+<TD>NVDA+shift+j</TD>
+<TD>Brak</TD>
+<TD>Otwiera bieżący plik dziennika NVDA. Dwukrotne naciśnięcie tego klawisza otwiera stary plik dziennika NVDA. Trzecie naciśnięcie, kopiuje bieżącą ścieżkę dziennika do schowka</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc130"></A>
+<H4>5.3.7. Historia mowy</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Ogłasza poprzedni rekord</TD>
+<TD>NVDA+kontrol+f8</TD>
+<TD>NVDA+kontrol+f8</TD>
+<TD>Brak</TD>
+<TD>Ogłasza poprzedni zapis historii mowy i kopiuje go do schowka</TD>
+</TR>
+<TR>
+<TD>Ogłasza następny rekord</TD>
+<TD>NVDA+kontrol+f10</TD>
+<TD>NVDA+kontrol+f10</TD>
+<TD>Brak</TD>
+<TD>Ogłasza kolejny zapis historii mowy i kopiuje go do schowka</TD>
+</TR>
+<TR>
+<TD>Ogłasza aktualny rekord</TD>
+<TD>NVDA+kontrol+f9</TD>
+<TD>NVDA+kontrol+f9</TD>
+<TD>Brak</TD>
+<TD>Ogłasza aktualny zapis historii mowy i kopiuje go do schowka. Dwa razy: Wyświetla historię mowy</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc131"></A>
+<H4>5.3.8. Minutnik</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Minutnik</TD>
+<TD>NVDA+shift+f12</TD>
+<TD>NVDA+shift+f12</TD>
+<TD>Brak</TD>
+<TD>Wyświetla okno, aby uruchomić minutnik.Jeżeli minutnik już się uruchomił, Wyświetla okno, aby ogłosić czas trwania</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc132"></A>
+<H4>5.3.9. Ponowne uruchamianie NVDA</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Ponowne uruchamianie NVDA</TD>
+<TD>NVDA+kontrol+f4</TD>
+<TD>NVDA+kontrol+f4</TD>
+<TD>Brak</TD>
+<TD>Uruchom ponownie NVDA. Dwa razy: uruchom ponownie z ustawionym poziomem dziennika debugowania</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc133"></A>
+<H4>5.3.10. Wyświetlanie widocznych elementów tworzących obiekt na pierwszym planie</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Wyświetlanie obiektów</TD>
+<TD>NVDA+b</TD>
+<TD>NVDA+b</TD>
+<TD>Brak</TD>
+<TD>Czyta wszystkie kontrolki w aktywnym oknie. W przypadku dwukrotnego naciśnięcia: Wyświetla widoczne elementy listy, które ją tworzą</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc134"></A>
+<H4>5.3.11. Przełączanie profili głosowych</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Wybór przełącznika</TD>
+<TD>nvda+shift+kontrol+numer selectora</TD>
+<TD>nvda+shift+kontrol+numer selectora</TD>
+<TD>Brak</TD>
+<TD>Ustawia przełącznik x jako aktualny przełącznik, jeśli to możliwe, skojarz profil głosowy jako aktualny profil głosowy (x równy numerowi od 1 do 8)</TD>
+</TR>
+<TR>
+<TD>Następny profil głosowy</TD>
+<TD>nvda+shift+kontrol+strzałka w prawo</TD>
+<TD>nvda+shift+kontrol+strzałka w prawo</TD>
+<TD>Brak</TD>
+<TD>Przechodzi do pierwszego przełącznika powiązanego z profilem głosowym i ustawia ten profil głosowy jako bieżący profil głosowy</TD>
+</TR>
+<TR>
+<TD>Poprzedni profil głosowy</TD>
+<TD>nvda+shift+kontrol+strzałka w lewo</TD>
+<TD>nvda+shift+kontrol+strzałka w lewo</TD>
+<TD>Brak</TD>
+<TD>Przechodzi wstecz do pierwszego przełącznika związanego z profilem głosowym i ustawia ten profil głosowy jako bieżący profil głosowy</TD>
+</TR>
+<TR>
+<TD>Zarządzanie profilami głosowymi</TD>
+<TD>nvda+shift+kontrol+m</TD>
+<TD>nvda+shift+kontrol+m</TD>
+<TD>Brak</TD>
+<TD>Wyświetla okno do zarządzania przełącznikami profili głosowych (polecenie: v)</TD>
+</TR>
+<TR>
+<TD>Włącza/Wyłącza tryb profili głosowych</TD>
+<TD>nvda+Shift+control+p</TD>
+<TD>nvda+Shift+control+p</TD>
+<TD>brak</TD>
+<TD>Włącza lub Wyłącza tryb przełączania profili głosowych</TD>
+</TR>
+</TABLE>
+
+<A NAME="toc135"></A>
+<H4>5.3.12. Dodatek - data i godzina</H4>
+<TABLE BORDER="1" CELLPADDING="4">
+<TR>
+<TD>Nazwa</TD>
+<TD>Komputer stacjonarny</TD>
+<TD>Laptop</TD>
+<TD>Dotyk</TD>
+<TD>Opis</TD>
+</TR>
+<TR>
+<TD>Data i godzina</TD>
+<TD>NVDA+F12</TD>
+<TD>NVDA+F12</TD>
+<TD>brak</TD>
+<TD>Ogłasza aktualny czas. Dwukrotnie: ogłasza aktualną datę. Trzykrotnie: kopiuje datę i godzinę do schowka</TD>
+</TR>
+</TABLE>
+
+
+</body>
+</html>

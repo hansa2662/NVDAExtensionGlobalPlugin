@@ -1,0 +1,894 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="pl" lang="pl">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="stylesheet" type="text/css" href="../style_t2t.css" media="screen"/>
+<title>Rozszerzenia podstawowych poleceń NVDA 11.2</title>
+</head>
+<BODY BGCOLOR="white" TEXT="black">
+<P ALIGN="center"><CENTER><H1>Rozszerzenie podstawowych poleceń NVDA - Historia</H1>
+<FONT SIZE="4">
+<I>Autor: paulber19</I><BR>
+</FONT></CENTER>
+
+<P>
+URL: <A HREF="mailto:paulber19@laposte.net">paulber19@laposte.net</A>
+</P>
+<P>
+<A HREF="https://github.com/paulber19/NVDAExtensionGlobalPlugin.git">Repozytorium GitHub: https://github.com/paulber19/NVDAExtensionGlobalPlugin.git</A>
+</P>
+<P>
+Pobierz:
+</P>
+<UL>
+<LI><A HREF="https://github.com/paulber007/AllMyNVDAAddons/raw/master/NVDAExtensionGlobalPlugin/NVDAExtensionGlobalPlugin-11.2.nvda-addon">Aktualna wersja: 11.2</A>
+<LI><A HREF="https://github.com/paulber007/AllMyNVDAAddons/raw/master/NVDAExtensionGlobalPlugin/NVDAExtensionGlobalPlugin-11.1.nvda-addon">Poprzednia wersja: 11.1</A>
+<LI><A HREF="https://github.com/paulber007/AllMyNVDAAddons/tree/master/NVDAExtensionGlobalPlugin/dev">Wersja deweloperska</A>
+</UL>
+
+<P>
+Przepraszamy, ale ten dokument jest automatycznym tłumaczeniem z języka francuskiego.
+</P>
+<H2>1. v11.2 (23 maja 2022)</H2>
+<P>
+Ulepszenia i nowe funkcje:
+</P>
+<UL>
+<LI>skrypt do opróżnienia schowka.
+<LI>wznowienie skryptu bazowego NVDA wypowiadającego tekst w schowku dla ("NVDA+c") 
+<LI>wskazuje, czy schowek jest pusty,
+ <UL>
+ <LI>zwiększenie liczby ogłaszanych znaków (konfigurowalne).
+ <LI>wskazuje, że schowek nie jest pusty, gdy w schowku nie ma tekstu.
+ </UL>
+<LI>w oknie "Menedżer dźwięku NVDA i aktywne aplikacje" lista aplikacji jest teraz automatycznie odświeżana za każdym razem, gdy otrzyma kursor.
+<LI>umieść dźwięk NVDA z powrotem na środku, jeśli dodatek jest wyłączony lub odinstalowany.
+<LI>wznowienie działania rozszerzenia w trybie bezpiecznym.
+<LI>zarządzanie blokadą numeryczną:
+ <UL>
+ <LI>aktywacja ogłaszania blokady przy uruchomieniu NVDA.
+ <LI>Konfigurowalna aktywacja lub dezaktywacja blokady numerycznej podczas aktywacji profilu konfiguracji.
+ <P></P>
+Poprawki błędów:
+ </UL>
+<LI>parser tekstu nie ogłasza zmian czcionki tekstu na ukrytą lub nieukrytą.
+<LI>z uwzględnieniem modyfikacji dokonanej w kontekście pr #11767 (<A HREF="https://github.com/nvaccess/nvda/pull/11767">https://github.com/nvaccess/nvda/pull/11767</A>).
+<LI>korekta pliku "keyboard.ini" dla języka francuskiego.
+</UL>
+
+<P>
+Zmiany:
+</P>
+<UL>
+<LI>wiadomość "skopiowana" jest ogłaszana tylko wtedy, gdy schowek zmieni się po komendzie "control+c".
+<LI>przy użyciu polecenia wklejania zawartości schowka ogłaszany jest pusty stan schowka.
+<LI>Z powodu konfliktu z gestem wejściowym "nvda+control+f8":
+ <UL>
+ <LI>gesty poleceń zainstalowane dla analizatora tekstu używają klawisza "f6" zamiast klawisza "f8",
+ <LI>komendy interpretera dotyczące parsera tekstu używają teraz klawisza "f6" zamiast klawisza "f8",
+ <LI>komenda interpretera dla Pokaż menedżera dźwięku NVDA i aktywnych aplikacji jest teraz „f8” zamiast „f6”.
+ <P></P>
+ </UL>
+<LI>v11.1 (2.05.2022) +
+Funkcje:
+<LI>dodano polecenie do wyśrodkowania dźwięku aktualnie aktywnej aplikacji,
+</UL>
+
+<P>
+poprawki błędów:
+</P>
+<UL>
+<LI>poprawka dotycząca błędu, który pojawia się w logu po wyświetleniu okna "gestów poleceń"
+w oknie „NVDA Audio Manager i aktywne aplikacje”.
+<LI>dodano komentarz dla oznaczenia części kodu wstawionej w rozszerzenia przez Tony Malika)
+<LI>naprawiono, aby uniknąć blokowania mowy przez funkcję „separacji dźwięku”.
+</UL>
+
+<H2>2. v11.0 (26.01.2022)</H2>
+<P>
+nowe funkcje:
+</P>
+<UL>
+<LI>orientacja wyjścia audio NVDA.
+<LI>dodano skrypty zwiększające lub zmniejszające głośność NVDA.
+<LI>możliwość zwiększenia głównej głośności w razie potrzeby przy zwiększaniu głośności NVDA lub aplikacji (opcja do skonfigurowania).
+<LI>szybka aktywacja / dezaktywacja dodatków.
+<LI>podczas otwierania okna "Gesty wejściowe" automatycznie wybierana jest kategoria powiązana z aktywnym dodatkiem dla aktualnie aktywnej aplikacji.
+<LI>możliwość ogłaszania błędów ortograficznych za pomocą podwójnego sygnału dźwiękowego lub komunikatu głosowego zamiast dźwięku emitowanego przez NVDA.
+<LI>ostatnie ustawienie użyte w pierścieniu ustawień syntezatora jest zapisywane, aby znaleźć je wybrane po ponownym uruchomieniu NVDA.
+<P></P>
+Zmiany:
+<LI>opcja "Ogłaszaj liczbę aplikacji w procentach" zostaje usunięta. Głośność jest ogłaszana na poziomie, jak w mikserze głośności systemu Windows.
+<LI>podczas automatycznej aktualizacji dodatku nie pyta już użytkownika, czy chce zachować bieżące parametry konfiguracyjne dodatku.
+<LI>podczas ręcznej instalacji dodatku pojawia się żądanie potwierdzenia, gdy użytkownik zrezygnował z zachowywania bieżących ustawień konfiguracji dodatku.
+<P></P>
+Kompatybilność z NVDA 22.1:
+<LI>uwzględnienie nowego pakietu UIAHandler.
+<P></P>
+</UL>
+
+<OL>
+<LI>V10.3 (12/12/2021) + poprawki błędów:
+</OL>
+
+<UL>
+<LI>Rozwiązanie problemu napotkanego z nowym rozszerzeniem "Nao" podczas przedstawienia wyniku rozpoznawania optycznego i poprzednich i następnych klawiszy.
+</UL>
+
+<OL>
+<LI>V10.2 (12/10/2021) + poprawki błędów:
+</OL>
+
+<UL>
+<LI>Rozdzielczość problemu napotkanego nowym rozszerzeniem "Nao" podczas przedstawienia wyniku rozpoznawania optycznego: nieoczekiwane zamknięcie okna.
+<LI>Skrypty można uruchomić ponownie w oknie "Shell Scripts".
+</UL>
+
+<OL>
+<LI>V10.1 (11/28/2021) + Bugfix:
+</OL>
+
+<UL>
+<LI>Foldery konfiguracji dodane za pomocą okna "User Configuration Manager" są przechowywane podczas instalacji dodatku. Plik "NVdaExtensionGlobalplugin-userconfigs.ini" nie jest już usuwany.
+<LI>Stan "poziomu symbolu i interpunkcji podczas przenoszenia według słowa" opcja jest teraz zachowana, gdy jest używana w wersji alfa.
+<LI>Próg odzyskiwania głośności NVDA jest teraz poprawnie zarejestrowany.
+</UL>
+
+<P>
+Przygotowanie do kompatybilności z NVDA 2022.1:
+-przestrzeganie "Curlang" przez "GetLanguage ()"
+</P>
+<H2>3. v10.0 (11.01.2021)</H2>
+<P>
+Nowe funkcje:
+</P>
+<UL>
+<LI>dodano funkcjonalność "Analizator tekstu”.
+<LI>dodano funkcjonalność "zarządzaj konfiguracjami użytkownika i restartuj NVDA z dokładną konfiguracją".
+<LI>tymczasowe użycie urządzenia wyjściowego audio bez wpływu na konfigurację NVDA.
+<LI>ogłaszanie pozycji kursora w polach edycyjnych.
+<LI>wznowienie funkcjonalności "Wyłączenie komputera” dla:
+ <UL>
+ <LI>zezwól na anulowanie żądania przełączenia komputera w stan wstrzymania, wyłączenia lub ponownego uruchomienia przed upływem limitu czasu.
+ <LI>zapytanie o potwierdzenie podczas żądania przełączenia komputera w stan wstrzymania, wyłączenia lub ponownego uruchomienia za pomocą gestu polecenia.
+ </UL>
+<LI>dodanie w oknie "Zarządzanie dziennikami NVDA" przycisku do kopiowania ścieżki poprzedniego dziennika do schowka,
+<LI>pomoc kontekstowa przy użyciu klawisza "f1” w oknach rozszerzenia.
+<LI>nowy skrypt dodawania zaznaczonego tekstu do schowka (polecenie "x").
+<LI>możliwość wykonywania skryptów w oknie "Zdarzenia wejścia" 
+</UL>
+
+<P>
+Zmiany:
+</P>
+<UL>
+<LI>podmenu "Parametry” rozszerzenia zostało podzielone na dwa podmenu:
+ <UL>
+ <LI>podmenu "Ogólne ustawienia” (polecenie interpretera "f1”),
+ <LI>podmenu "Aktualne ustawienia profilu konfiguracji” (polecenie interpretera "kontrol+f1”).
+ </UL>
+<LI>kopiowanie daty do schowka odbywa się teraz za pomocą polecenia "d" interpretera zamiast "c".
+<LI>odtąd w tej historii będą odnotowywane tylko wersje typu major.minor. Wersje typu major.mineure.x będą aktualizacjami tłumaczeń.
+</UL>
+
+<P>
+Zgodność:
+</P>
+<UL>
+<LI>Zgodność z nvda 2021.2:
+ <UL>
+ <LI>Zmieniły się stałe characterProcessing.SYMLVL_ *.
+ <LI>controlTypes został podzielony na kilka podmodułów.
+ </UL>
+<LI>wycofanie wersji NVDA sprzed 2019.3 i usunięcie kodu zaimplementowanego dla tych wersji.
+</UL>
+
+<P>
+Inni:
+</P>
+<UL>
+<LI>instalacja pliku symbols-xx.dic podczas zatrzymywania NVDA w przypadku zmiany języka.
+</UL>
+
+<H2>4. wersja 9.9 (21.09.2012)</H2>
+<P>
+korekta nieprawidłowego działania w funkcjonalności, „Selektywne ogłaszanie klawiszy poleceń”.
+</P>
+<H2>5. wersja 9.8.1 (07.08.2021)</H2>
+<P>
+Naprawa błędów:
+</P>
+<UL>
+<LI>w trybie nawigacji i NVDA 2021.1 poruszanie się po akapicie nie generuje już błędu.
+</UL>
+
+<H2>6. v9.8 (22.06.2021)</H2>
+<UL>
+<LI>kompatybilność z nvda 2021.1. Wersje NVDA sprzed 2019.3 nie są już obsługiwane.
+<LI>usunięcie kodu dotyczącego Pythona 2.7.
+<LI>korekta pisowni i gramatyki angielskich ciągów znaków.
+<LI>Wyświetlanie zapowiedzi głosowych w alfabecie Braille'a do poleceń edycji, takich jak „kopiuj”, „wklej”,...
+</UL>
+
+<H2>7. wersja 9.7 (01.04.2021)</H2>
+<UL>
+<LI>wznowienie wszystkich funkcji, aby również wysłać tekst komunikatów głosowych na monitor brajlowski.
+</UL>
+
+<H2>8. wersja 9.6 (10.03.2021)</H2>
+<P>
+Aktualności:
+</P>
+<UL>
+<LI>w oknie "Lista aktywnych okien" (otwieranym przez "nvda + j", a następnie "f10":
+ <UL>
+ <LI>na liście okien możliwość wybrania okna poprzez wpisanie początku jego nazwy.
+ <LI>wyświetlane są teraz aktywne okna drugiego poziomu.
+ </UL>
+<LI>w oknie "Lista widocznych elementów tworzących obiekt na pierwszym planie" otwieranym przez "NVDA + b":
+ <UL>
+ <LI>dodanie stanu przycisków i pól wyboru na liście znalezionych elementów.
+ <LI>możliwość wybrania elementu poprzez wpisanie początku jego etykiety.
+ </UL>
+<LI>Odnośnie funkcji „regulacja głośności”:
+ <UL>
+ <LI>skrypty ustawiające głośność aplikacji na określony procent głośności głównej.
+ <LI>skrypty do ustawienia głównej głośności na ustalonym poziomie.
+ <LI>skrypty przywracające główny wolumen lub aktywną aplikację do poprzedniego poziomu.
+ <LI>ogłaszaj zmianę poziomu głośności aplikacji w fokusie w wartości bezwzględnej lub w procentach głośności głównej.
+ </UL>
+<LI>ulepszenie funkcjonalności „Zapowiedź selektywna klawiszy poleceń”:
+ <UL>
+ <LI>uwzględnienie klawisza modyfikacji "window",
+ <LI>dodanie przycisków „Zaznacz wszystko” i „Odznacz wszystko” do zaznaczania lub odznaczania wszystkich kombinacji klawiszy modyfikujących,
+ <LI>dodanie możliwości wyłączenia dowolnego klawisza z lub bez kombinacji klawiszy modyfikujących,
+ <LI>możliwość wykluczenia klucza bez kombinacji klawiszy modyfikujących,
+ <LI>użycie klawisza "F2" do wyszukiwania następnej lub poprzedniej zaznaczonej pozycji na listach (rezygnacja z klawisza "F1" używanego przez NVDA od wersji 2020.4).
+ </UL>
+<LI>dodanie skryptów do ogłaszania lub wyświetlania aktualnych ustawień mowy.
+<LI>tłumaczenie instrukcji obsługi na język angielski.
+</UL>
+
+<P>
+Poprawki błędów:- naprawiono problem ze złym ogłoszeniem podczas otwierania pliku za pomocą notatnika, a następnie "control + n" i kilka strzałek w dół.
+</P>
+<P>
+Zmiany:
+</P>
+<UL>
+<LI>w oknie „Lista widocznych elementów tworzących obiekt pierwszoplanowy” (otwieranym przez „NVDA + b”) i gdy fokus znajduje się na liście elementów, wybór typu elementów odbywa się teraz za pomocą „control + pierwszy literę typu, a nie tylko pierwszą literą.
+<LI>na listach okna "Selektywne ogłaszanie klawiszy poleceń" klawisz "f1" nie ma dalszego działania.
+<LI>automatyczne powiększanie okien odbywa się teraz 100 ms po zdarzeniu na pierwszym planie, zamiast 2 sekund (związane z problemem złego ogłoszenia).
+</UL>
+
+<P>
+Dla zgodności z NVDA 2021.1
+</P>
+<UL>
+<LI>dodanie folderu „utilitiesPy38 dla bibliotek specyficznych dla Pythona 3.8.
+<LI>aktualizacja pakietu psutil kompatybilnego z pythonem 3.8.
+<LI>aktualizacja plików folderu "win32" biblioteki "pywin32" kompatybilnej z pythonem 3.8
+<LI>zastąpienie GetDateFormat i GetTimeFormat usunięte przez GetDateFormatEx i GetTimeFormatEx w skrypcie "dateTime".
+<LI>biorąc pod uwagę nowy pakiet "autoSettingsUtils" od NVDA.
+</UL>
+
+<H2>9. wersja 9.5.3 (20.01.2021)</H2>
+<P>
+Korekta problemu z tłumaczeniem komunikatu „Skopiowano do schowka” (zastąpiono komunikatem „Kopiuj”).
+</P>
+<H2>10. wersja 9.5.2 (16.01.2021)</H2>
+<P>
+Naprawiono nieprawidłową rejestrację skomplikowanych skopiowanych lub wklejonych symboli.
+</P>
+<H2>11. wersja 9.5 (28.12.2020)</H2>
+<P>
+Nowe funkcje:
+</P>
+<UL>
+<LI>kompatybilność z NVDA 2020.4
+<LI>włączenie kategorii „Emulowane klawisze klawiatury systemowej” w oknie „Gesty poleceń”.
+<LI>dodanie typu elementów wybranych w tytule okna otwieranego przez „NVDA+f7”.
+<LI>nowy skrypt do emulacji klawisza „Aplikacje”.
+<LI>nowy skrypt "Zamknij wszystkie otwarte okna".
+<LI>nowy skrypt do wyświetlania listy działających rozszerzeń.
+<LI>dodanie przycisku „Usuń wszystkie” w oknie „Lista aktywnych okien” w celu usunięcia wszystkich uruchomionych aplikacji.
+<P></P>
+Poprawki błędów:
+<LI>opcja „Przeglądaj w pętli” nie będzie się już przełączać za każdym razem, gdy konfiguracja rozszerzenia jest modyfikowana.
+</UL>
+
+<H2>12. v9.4 (29.11.2020)</H2>
+<UL>
+<LI>korekta problemu dotyczącego:
+ <UL>
+ <LI>brak możliwości przypisania gestu polecenia brajlowskiego w oknie „gest polecenia”,
+ <LI>niemożność skorzystania z pomocy gestów kontrolnych brajlowskich, gdy aktywna jest pomoc przy wprowadzaniu.
+ </UL>
+<LI>dodane linki do pobrania w historii rozszerzeń.
+<LI>dodanie przycisku „Zobacz historię” w kategorii „Aktualizuj” w parametrach rozszerzenia.
+<LI>naprawiono awarię NVDA podczas kopiowania i wklejania do okna edytora Thunderbirda.
+</UL>
+
+<H2>13. v9.3 (27.10.2020)</H2>
+<UL>
+<LI>kompatybilność z NVDA 2020.3
+<LI>Naprawiono używanie tego samego opóźnienia powtarzania skryptu.
+<LI>Wydłużenie górnej granicy czasu trwania.
+<LI>Zwiększenie górnej granicy opóźnienia czasowego powtórzenia tego samego gestu sterującego.
+<LI>Poprawka umożliwiająca używanie klawiszy „shift” i „control” z klawiszami kierunkowymi przy standardowym korzystaniu z klawiatury numerycznej.
+<LI>usunięcie, dla wersji NVDA wyższych niż 2020.3, zapowiedzi słowa z fokusem po usunięciu przez "control+sup" (teraz obsługiwane przez NVDA).
+<LI>częściowe działanie rozszerzenia w trybie bezpiecznym.
+<LI>Usunięto określony kod dla wxPython 3.
+<LI>duże czyszczenie kodu (korekta błędów podnoszonych przez analizator Flake8).
+<LI>korekta błędów w dokumentacji.
+<LI>dodanie przycisku „Co nowego” w oknie z propozycją instalacji nowej aktualizacji.
+</UL>
+
+<H2>14. wersja 9.2.2 (15.08.2020)</H2>
+<P>
+Korekta błędu występującego podczas uruchamiania skryptu „Wyświetl okno do zarządzania gestami sterującymi skonfigurowanymi przez użytkownika” (w wersji 2020.3 alpha)
+</P>
+<H2>15. wersja 9.2.1 (10.08.2020)</H2>
+<P>
+Dodano tłumaczenie hiszpańskie.
+</P>
+<UL>
+<LI>naprawiono błąd w logu za pomocą skryptu "reportFormatting" i zaktualizowałem ten skrypt.
+<LI>naprawiono błąd spowodowany czyszczeniem kodu w wersjach alfa NVDA.
+</UL>
+
+<H2>16. v9.2 (28.07.2020)</H2>
+<P>
+Zgodność z NVDA 2020.2
+</P>
+<H2>17. v9.1.3 (28.05.2020)</H2>
+<P>
+Dodano tłumaczenie wietnamskie.
+</P>
+<H2>18. v9.1.2 (21.05.2020)</H2>
+<P>
+Korekta dokumentacji
+</P>
+<H2>19. v9.1.1 (21.05.2020)</H2>
+<P>
+Dodano tłumaczenie tureckie.
+</P>
+<H2>20. v9.1 (05.01.2020)</H2>
+<UL>
+<LI>Kompatybilność z NVDA 2020.1
+<LI>wznów skrypty, aby ogłosić nazwę i pełną ścieżkę wybranego folderu w oknach stylu „Otwórz”, „Zapisz jako”.
+<LI>wznawia skrypty do ogłaszania nagrań z historii zapowiedzi głosowych do bezpośredniego kopiowania do schowka.
+</UL>
+
+<H2>21. 9,0 (15.12.2019)</H2>
+<P>
+Kompatybilność z NVDA 2019.3
+</P>
+<P>
+Nowe funkcje:
+</P>
+<UL>
+<LI>Możliwość całkowitego zresetowania ustawień wtyczki.
+<LI>Automatyczne wyszukiwanie i instalacja aktualizacji.
+<LI>Możliwość użycia klawisza numlock do przełączenia na standardową klawiaturę numeryczną.
+<LI>Dodano standardowe klawisze „mnożenie”, „dzielenie” i „więcej” w standardowym użyciu klawiatury numerycznej.
+<LI>Reorganizacja kategorii w opcje uzupełnienia.
+</UL>
+
+<H2>22. v8.1 (05.05.2019)</H2>
+<P>
+Nowe funkcje:
+</P>
+<UL>
+<LI>Możliwość ograniczenia remanencji do jedynego klucza „NVDA”.
+<LI>Dodatki do funkcji „Kontrola dźwięku”:
+ <UL>
+ <LI>Zwiększanie, zmniejszanie, maksymalizowanie lub minimalizowanie głośności skoncentrowanej aplikacji,
+ <LI>Zwiększanie, zmniejszanie, maksymalizowanie lub minimalizowanie głównego poziomu głośności,
+ <LI>grupowanie tych gestów wejściowych w kategorii „kontrola dźwięku”,
+ </UL>
+<LI>Możliwość używania klawiszy klawiatury numerycznej jako klawiszy strzałek (normalne działanie systemu Windows).
+</UL>
+
+<P>
+Poprawki błędów:
+</P>
+<UL>
+<LI>Funkcjonalność „Narzędzia programistyczne”: Poprawiono złe uwzględnienie podjęzyków przy tworzeniu dokumentacji wtyczki.
+</UL>
+
+<H2>23. v8.0 (13.12.2019)</H2>
+<P>
+Nowe funkcje:
+</P>
+<UL>
+<LI>W oknie „Lista widocznych elementów tworzących obiekt na pierwszym planie”, możliwość zmiany typu obiektu bez opuszczania listy obiektów.
+<LI>Dodano możliwość włączenia przechowywania kluczy podczas uruchamiania NVDA.
+<LI>Dodano konkretne remanence dla strony gmail.com.
+<LI>Reorganizacja podmenu „Opcje”.
+<LI>Dodano funkcjonalność „data i godzina - uzupełnienie”, która grupuje kopię daty i godziny do schowka (z „nvda+f12”), ogłoszenie godziny z sekundami oraz ogłoszenie daty i godziny bez interpunkcji.
+<LI>Nowy skrypt „Kopiuj datę i godzinę” w powłoce.
+<LI>Restrukturyzacja funkcji „Zmień profil głosowy”, aby wybrać selektory w profilu konfiguracyjnym. Powyższe ustawienia tej funkcji nie są obsługiwane i zostaną usunięte przy pierwszym użyciu tej funkcji.- Możliwość wyświetlania historii zapowiedzi mowy w porządku rosnącym lub malejącym.
+<LI>Przez odinstalowanie funkcji, całkowite usunięcie jej ustawień,
+<LI>Całkowita restrukturyzacja dokumentacji w celu użycia terminu „rozszerzenie” zamiast „moduł uzupełniający” (narzucony przez tłumaczy NVDA w języku francuskim),
+<LI>Eliminacja czasu oczekiwania między naciśnięciem klawisza dla wszystkich podstawowych skryptów NVDA zmodyfikowanych przez wtyczkę.
+</UL>
+
+<P>
+Poprawki błędów:
+</P>
+<UL>
+<LI>Nie wszystkie gesty wprowadzania dodane lub usunięte przez użytkownika są wyświetlane (okno „Gesty wprowadzania użytkownika”).
+</UL>
+
+<P>
+Rozwój:
+</P>
+<UL>
+<LI>Przygotowanie do kompatybilności z Python 3.
+<LI>Nowe narzędzia do tworzenia wtyczek na podstawie pliku buildVars.py:
+<LI>Zaktualizuj wersję wtyczki w pliku buildVars.py,
+<LI>Zaktualizuj plik manifest.ini,
+<LI>Utworzenie pliku manifest.ini lokalizacji,
+<LI>Tworzenie plików dokumentacji HTML,
+<LI>Utworzenie pliku .pot,
+<LI>Utworzenie pliku buildVars.py,
+<LI>Przygotowanie uzupełnienia,
+<LI>Przeglądaj folder wtyczek.
+</UL>
+
+<H2>24. v7.4.3 (01/07/2019)</H2>
+<UL>
+<LI>Poprawiono hiszpański plik keyboard.ini, który powoduje awarię NVDA w języku hiszpańskim.
+<LI>Arabskie tłumaczenie interfejsu wtyczki
+</UL>
+
+<H2>25. v7.4.2 (22.12.2018)</H2>
+<UL>
+<LI>poprawiono dokumentację,
+<LI>Naprawiono nieprawidłowe umieszczenie przycisku w oknie „Ostatnie symbole złożone”.
+</UL>
+
+<H2>26. v7.4.1 (21.12.2018)</H2>
+<P>
+Naprawiono problem z angielskimi zapowiedziami poleceń z klawiatury brajlowskiej.
+</P>
+<H2>27. v7.4 (16.12.2018)</H2>
+<P>
+1- Nowe funkcje:
+</P>
+<UL>
+<LI>Dodano, dla przeglądarek „Firefox” i Google Chrome, typ „Klikalne” dla trybu przeglądania i okno „Lista elementów”,
+<LI>Dodano dla przeglądarek „Firefox” Internet Explorer, Microsoft Edge i Google Chrome ”typu„ Akapit ”dla trybu przeglądania i okna„ Lista elementów ”,
+<LI>Dodano skrypt, aby wykonać proste i podwójne kliknięcie lewym przyciskiem myszy na bieżącej pozycji przeglądarki obiektów.
+<LI>Dodano skrypt, aby wykonać proste i podwójne kliknięcie prawym przyciskiem myszy na bieżącej pozycji przeglądarki obiektów.
+</UL>
+
+<P>
+2- Różne:
+</P>
+<UL>
+<LI>Możliwość uruchomienia wybranego skryptu w oknie prezentującym skrypty interpretera,
+<LI>Możliwość dla tłumaczy skonfigurowania zamówień edycji „Kontrol+c, Kontrol+a” dla każdego języka i dla niektórych aplikacji, które tego wymagają,
+<LI>Używanie CentreOnScreen ”zamiast„ Centrum ”.
+</UL>
+
+<H2>28. v7.3 (25.09.2018)</H2>
+<P>
+Ukończenie zgodności z NVDA 2018.3 i wxPython 4.
+</P>
+<UL>
+<LI>Nowe funkcje:
+ <UL>
+ <LI>Przechował najnowsze symbole i okna, aby je wyświetlić i ponownie skomponować,- Nowe okno Narzędzia programistyczne, które pozwala na konwersję plików dokumentacji wtyczek,
+ <LI>Dodano typ elementu „Główny region” dla trybu nawigacji (przeglądarka Firefox, Internet Explorer, Google Chrome i Microsoft Edge),
+ <LI>Dodano zaawansowaną opcję konfiguracji opóźnienia opóźnienia powtórzenia tego samego gestu wejściowego,
+ <LI>Dezaktywacja w opcji parametru „Reklama opisów obiektów” podczas wyświetlania okien stylu potwierdzenia (pokazanych przez gui.messageBox) dla NVDA w celu ogłoszenia komunikatu zawartego w tych polach,
+ <LI>Dodano opcję przeglądania w pętli w poszukiwaniu poprzedniego lub następnego elementu,
+ <LI>Dodano powtarzalny dźwięk podczas wyszukiwania przedmiotów w oknie „Lista przedmiotów” (NVDA+f7),
+ <LI>Umieszczenie przycisku „Hibernacja” najpierw w oknie „Wyłącz komputer”,
+ <LI>Zmieniono menu konfiguracji wtyczek, aby przypominało menu konfiguracji NVDA,
+ </UL>
+</UL>
+
+<UL>
+<LI>Poprawki błędów:
+ <UL>
+ <LI>Korekta etykiet listy opcji w oknach konfiguracji wtyczek.
+ <LI>Naprawiono brak sygnału dźwiękowego podczas wyszukiwania elementów okna pierwszego planu przy przerwaniu ucieczki,
++- Problem ze stopką przy nieprawidłowej konwersji dokumentu t2t (modyfikacja pliku txt2tags.py i usunięcie stopki).
+ </UL>
+</UL>
+
+<UL>
+<LI>Różnorodny:
+ <UL>
+ <LI>Reorganizacja kodu źródłowego z lokalizacją wszystkich modułów używanych w tym samym folderze („(„ narzędzia ”). Ten plik nie wymaga tłumaczenia,
+ <LI>Umieszczanie plików WAV w folderze Sound.
+ </UL>
+</UL>
+
+<H2>29. v7.2 (20 czerwca 2018 r.)</H2>
+<UL>
+<LI>Zgodność z wersjami rozwojowymi NVDA przygotowującymi do przejścia na wxPython 4 (NVDA 2018.3),
+<LI>Naprawiono błąd podczas niszczenia ostatniego okna na liście okien.
+<LI>Dodano opcję wyłączenia numerowania zapisów historii zapowiedzi mowy,
+<LI>Dodano opcję tytułowania lub nie dialogów z nazwą wtyczki,
+<LI>Dezaktywacja parametru „Ogłaszaj opisy obiektów” podczas wyświetlania okien wtyczek, w stylu gui.messageBox, w celu odsłuchania wiadomości zawartej w tych polach.
+</UL>
+
+<H2>30. v7.1.2 (6 czerwca 2018 r.)</H2>
+<P>
+Korekta, która nie uwzględniała konfiguracji wtyczki dla funkcji „Przechowywanie kluczy”.
+</P>
+<H2>31. v7.1.1 (5 czerwca 2018 r.)</H2>
+<P>
+Naprawiono problem braku możliwości odczytu wyniku rozpoznania optycznego.
+</P>
+<H2>32. v7.1 (1 czerwca 2018 r.)</H2>
+<P>
+Kompatybilność z NVDA 2018.2
+</P>
+<H2>33. v7.0 (8 marca 2018 r.)</H2>
+<P>
+Ta wersja wtyczki nie jest kompatybilna z wersjami wcześniejszymi niż wersja 2018.1 z NVDA
+</P>
+<H3>33.1. Nowe funkcje</H3>
+<UL>
+<LI>Obsługa przeglądarki Google Chrome poprzez funkcję „Rozszerzenie funkcjonalności trybu przeglądania”,
+<LI>Uruchomienie interpretera poleceń, które umożliwia uruchamianie skryptów za pomocą prostego klawisza,
+<LI>Instalacja poprzez konfigurację funkcjonalności z lub bez gestów wprowadzania,
+<LI>Nowa funkcja „Przechowywania klucza” do komponowania gestów wprowadzania za pomocą jednego klawisza NVDA, Control, Alt, Shift lub Windows,
+<LI>Ogłoszenie lub wyświetlenie nazwy i numeru wersji wtyczki aktywowanej dla aplikacji umieszczonej w centrum uwagi,
+<LI>Wyłącz, uruchom ponownie lub hibernuj komputer,
+<LI>Zarządzaj gestami wprowadzania skonfigurowanymi przez użytkownika.
+<LI>Sterowanie dźwiękiem komputera (Windows 10) w celu:
+ <UL>
+ <LI>Wycisz lub zresetuj dźwięk strumienia audio dla aplikacji, która ma fokus,
+ <LI>Ustal, poprzez skrypt i podczas uruchamiania wtyczki, dźwięk głównego strumienia audio i NVDA.
+ </UL>
+</UL>
+
+<H3>33.2. Zmiany</H3>
+<UL>
+<LI>Większość funkcji jest teraz domyślnie instalowana bez żadnego gestu wprowadzania. Można jednak zainstalować te gesty wejściowe, zmieniając status instalacji funkcji lub ręcznie przypisując te gesty wejściowe,
+<LI>Gest wejściowy „nvda+f12” może ogłosić czas zegara systemu Windows za pomocą sekund (konfigurowalna opcja),
+<LI>Gest wejściowy „NVDA+f12” może skopiować datę i godzinę do schowka (trzykrotne kliknięcie),
+<LI>Gest wejściowy „NVDA+alt+k” („Zareklamuj komórki w bieżącej kolumnie”) został zastąpiony przez „NVDA+alt+l” (konflikt z inną wtyczką),
+<LI>Gest wejściowy „NVDA+wielka litera+4” („Pomoc w tworzeniu złożonych symboli”) został zastąpiony przez „NVDA+majuscule+f4” (konflikt z inną wtyczką),
+<LI>Dokumentacja została zreorganizowana: rozdział „Historia” zostaje przeniesiony do rozdziału „Ogólne”, a historia wtyczek jest umieszczana w osobnym pliku (change.html).
+</UL>
+
+<H3>33.3. Korekta błędów</H3>
+<UL>
+<LI>Korekta błędnych opisów gestów wejściowych skryptów, które zastępują podstawowe skrypty,
+<LI>W przypadku uszkodzenia pliku konfiguracyjnego przywrócenie konfiguracji do wartości domyślnych.
+</UL>
+
+<H2>34. v6.5 (28 sierpnia 2017 r.)</H2>
+<UL>
+<LI>Zgodność z NVDA 2017.3,
+<LI>Kolejność „w” zmodyfikowana w „y”,
+<LI>Korekta błędu w funkcji „Selektywne zapowiedź klawiszy poleceń”,
+<LI>Korekta dokumentacji niektórych skryptów.
+</UL>
+
+<H2>35. v6.4 (9 lipca 2017 r.)</H2>
+<UL>
+<LI>Dodano skróty klawiaturowe, aby zmienić profil głosowy na laptopie,
+<LI>Korekta utraty nazw zmodyfikowanego klucza podczas aktualizacji,
+<LI>Korekta błędu podczas poruszania się na stronie HTML.
+</UL>
+
+<H2>36. v6.3 (2 czerwca 2017 r.)</H2>
+<UL>
+<LI>Szybka zmiana profilu głosowego.
+</UL>
+
+<H2>37. v6.2.1 (7 kwietnia 2017 r.)</H2>
+<P>
+Korekta problemu znalezionego w programie Excel za pomocą „control+c” lub „control+v”
+</P>
+<H2>38. v6.2 (13 marca 2017 r.)</H2>
+<P>
+Kompatybilność z Nvda 2017.1
+</P>
+<P>
+Nowe funkcje:
+</P>
+<UL>
+<LI>Możliwość ostrzeżenia przed upływem czasu,
+<LI>Dodano zamówienia podczas przenoszenia w tabeli dla Microsoft Edge,
+<LI>Uruchom ponownie NVDA z włączonym rejestrowaniem w trybie debugowania,
+<LI>Ostrzeż dźwiękiem zapisanie błędu w rejestrze.
+</UL>
+
+<P>
+Naprawa błędów:
+</P>
+<UL>
+<LI>Podwójne ogłoszenie skupionego elementu (Selektywne okno klawiszy poleceń),
+<LI>Brak działania przycisku „Zarządzaj symbolami” w oknie „Pomoc w tworzeniu złożonych symboli”,
+<LI>Nie można utworzyć nowej kategorii w oknie „Menedżer symboli użytkowników”,
+<LI>Nie wziął od razu pod uwagę tłumaczeń podczas aktualizacji (wymagane podwójne uruchomienie NVDA),
+<LI>„control+c” w Eksploratorze Windows przejdź do pierwszego pliku zaczynającego się od „c”,
+<LI>Liczba wybranych elementów jest źle reklamowana (Eksplorator Windows W10).
+</UL>
+
+<H2>39. v6.1 (10 stycznia 2017 r.)</H2>
+<UL>
+<LI>Konfiguracja poziomu symbolu i interpunkcji podczas przesuwania słów,
+<LI>Nowa zmiana kolejności klawiatury dla timera,
+<LI>Korekta braku kopiowania adresu dokumentu do schowka („NVDA+a”)
+</UL>
+
+<H2>40. v6.0.3 (5 stycznia 2017 r.) (nie dystrybuowane)</H2>
+<UL>
+<LI>Nowa zmiana skrótu timera,
+<LI>Korekta dokumentacji.
+</UL>
+
+<H2>41. v6.0.1 (26 grudnia 2016 r.)</H2>
+<P>
+Naprawiono błąd związany z reklamą punkt po słowie.
+</P>
+<H2>42. v6.0 (23 grudnia 2016 r.)</H2>
+<UL>
+<LI>Możliwość skopiowania ścieżki bieżącego rekordu do schowka,
+<LI>Możliwość wyświetlania historii komunikatów głosowych i zwiększenia liczby rekordów do 200,
+<LI>Częściowe dodanie funkcji „Eksploruj rozszerzenie trybu” dla przeglądarki Microsoft Edge,
+<LI>skrypt do ponownego uruchomienia NVDA,
+<LI>skrypt pokazujący widoczne elementy składające się na obiekt na pierwszym planie,
+<LI>Zmień kolejność klawiatury, aby uruchomić stoper,
+<LI>Ogłoś wynik, poruszając się między słowami,
+<LI>Przeprojektowanie wszystkich dialogów w celu wykorzystania usług guiHelper,
+<LI>Zgodność z NVDA 2016.4.
+</UL>
+
+<H2>43. v5.0.2 (30 września 2016 r.)</H2>
+<UL>
+<LI>Naprawiono problem awarii W10 podczas maksymalizacji okien,
+<LI>Wskazanie w dokumentacji, jak wybierać myszą, pozycje na listach w oknach „Selektywne zapowiedź klawiszy poleceń”.
+</UL>
+
+<H2>44. v5.0.1 (13 września 2016 r.)</H2>
+<P>
+Poprawki błędów:
+</P>
+<UL>
+<LI>problem nakładania się listy w oknie „Selektywne zapowiedź klawiszy poleceń”,
+<LI>Menu „Zmień nazwę klawiszy klawiatury” nie działa,
+<LI>Komendy „nvda+Shift+4” nie działają.
+</UL>
+
+<H2>45. v5.0 (23 sierpnia 2016 r.)</H2>
+<UL>
+<LI>Funkcjonalność zmiany nazw klawiszy klawiatury,
+<LI>funkcjonalność zarządzania złożonymi symbolami użytkownika,- Funkcjonalność selektywnego zapowiedzi klawiszy poleceń,
+<LI>funkcjonalność timera,
+<LI>Dodano skrypty do tabel, aby przejść do pierwszej / ostatniej komórki w rzędzie / kolumnie,
+<LI>Opcja automatycznej maksymalizacji okien,
+<LI>Dodano podmenu do przeglądania folderu konfiguracji lub folderu w plikach programu NVDA,
+<LI>Dodano kategorię „Alfabet grecki”,
+<LI>Lista złożonych symboli według kolejności pliku „symbolCategories.dic”,
+<LI>Wznowienie instrukcji.
+</UL>
+
+<H2>46. v4.3 (6 czerwca 2016 r.)</H2>
+<UL>
+<LI>korekta złego tłumaczenia reklam „kopiuj do schowka” i „brak wyboru”,
+<LI>Prezentacja w oknie formatu tekstowego (kolejność klawiatury nvda+f).
+</UL>
+
+<H2>47. v4.2 (18 kwietnia 2016 r.)</H2>
+<UL>
+<LI>Skrypty do ponownego słuchania poprzednich zapowiedzi mowy,
+<LI>Skrypty do ogłaszania komórek kolumn / wierszy tabeli,
+<LI>Skrypt do ogłaszania adresu dokumentu (Firefox i Internet Explorer),
+<LI>Modyfikacja skryptu NVDA „nvda+f12”, aby ogłosić czas bez uzależnienia od poziomu punktacji.
+</UL>
+
+<H2>48. v4.1.3 (14 marca 2016 r.)</H2>
+<UL>
+<LI>Korzystanie z tłumaczeń NVDA w oknie „NVDA+f7”,
+<LI>Ogłoszenie zamówień bez kontroli wyboru dla wszystkich aplikacji.
+<LI>Wznowienie opisu niektórych skryptów,
+<LI>Usunięcie zmian. * Pliki i włączenie historii do instrukcji obsługi.
+</UL>
+
+<H2>49. v4.1.2 (6 marca 2016 r.)</H2>
+<UL>
+<LI>Poprawka błędu: skrypt regresji „kontrola+usuwanie”
+</UL>
+
+<H2>50. v4.1.1 (5 marca 2016 r.)</H2>
+<UL>
+<LI>Poprawka błędu: Brak ogłoszenia o wyborze w programie Libre office Writer
+</UL>
+
+<H2>51. v4.1 (25 lutego 2016 r.)</H2>
+<UL>
+<LI>Zgodny z NVDA 2016.1
+<LI>Wtyczka nazewnictwa nazw elementów w oknie NVDA+f7.
+<LI>Wybór jest brany pod uwagę przy ogłoszeniu edycji zleceń
+<LI>Usunięcie opisu z taśm systemu Windows
+<LI>Zmaksymalizowano wysokość okna złożonego symbolu.
+</UL>
+
+<H2>52. v4.0.2 (16 grudnia 2015 r.) (nie dystrybuowane)</H2>
+<UL>
+<LI>Zmień literę podczas przechodzenia z zakotwiczenia do zakotwiczenia (konflikt z adnotacją)
+<LI>Korekta dokumentacji poleceń klawiaturowych (eliminacja punktu końcowego)
+<LI>Korekta zatrzymania pętli w linkach w drzewie (okno NVDA+f7)
+</UL>
+
+<H2>53. v4.0.1 (27 listopada 2015 r.)</H2>
+<UL>
+<LI>Poprawka błędu: Wada wyboru przedmiotu w drzewie (okno NVDA+f7),
+<LI>Naprawiono ustawianie bezogniskowania na liście rodzajów przedmiotów.
+</UL>
+
+<H2>54. v4.0 (23 listopada 2015 r.)</H2>
+<UL>
+<LI>Dodano Aktywację / dezaktywację instalacji funkcji wtyczki,
+<LI>Pokaż etykietę pól edycji w drzewie elementów (okno NVDA+f7),
+<LI>Ogłoszenie liczby elementów znalezionych na liście opcji typów elementów (okno NVDA+f7),
+<LI>Dodano skrypt pokazujący stary lub aktualny rekord NVDA.- Usunięto reklamę funkcji „control+y” (problem z MS sWord).
+<LI>Modyfikacja uwzględniająca nowe możliwości NVDA 2015.3, w szczególności:
+<LI>Skrypt „nvda+h” został usunięty
+<LI>Skrypt zmieniający ogłoszenie numeru linii został usunięty
+</UL>
+
+<H2>55. v3.6.1 (11 marca 2015 r.)</H2>
+<UL>
+<LI>Korekta wyświetlania otwartego okna przez „nvda+f7 (modyfikacja Daniel Poiraud)
+</UL>
+
+<H2>56. v3.6 (28 lutego 2015 r.)</H2>
+<UL>
+<LI>Nowy skrypt „nvda+alt+l”, aby włączyć lub wyłączyć ogłoszenie numeru linii,
+<LI>Ogłoszenie następnego słowa po słowie usuniętym poleceniem „control+delete”,
+<LI>Zmiana rozmiaru okien „Lista okien uruchomionych aplikacji” i „Lista ikon w zasobniku systemowym”.
+</UL>
+
+<H2>57. v3.5 (20 lutego 2015 r.)</H2>
+<UL>
+<LI>Integracja wtyczki fakeClipboardAnnouncement
+<LI>Integracja wtyczki DitDossierOuvrirEnregistrer (Daniel Poiraud)
+<LI>Zgodność z NVDA 2015.1
+<LI>Hiszpańskie tłumaczenie Rémy Ruiz
+</UL>
+
+<H2>58. v3.4 (28 listopada 2014 r.)</H2>
+<UL>
+<LI>Modyfikacja skrótu „nvda+control+v” już zastosowanego w „nvda+shift+f1”
+<LI>Czyszczenie kodu
+</UL>
+
+<H2>59. v3.3 (9 października 2014 r.)</H2>
+<UL>
+<LI>Dodano skrypt pod nazwą i wersją aplikacji pod kursorem,
+<LI>Zgodność z wersją NVDA 2014.3:
+<LI>Dostęp do pomocy wtyczki poprzez menedżera wtyczek,
+<LI>NVDA+h wyświetla teraz okno gestów wejściowych NVDA.
+</UL>
+
+<H2>60. v3.2 (22 czerwca 2014 r.)</H2>
+<UL>
+<LI>Na liście elementów (nvda+f7) brak możliwości wyboru linku za pomocą pierwszej litery.
+</UL>
+
+<H2>61. v3.1 (27 maja 2014 r.)</H2>
+<UL>
+<LI>Zastąpienie przycisków opcji listą w oknie „lista pozycji” („nvda+f7”)
+<LI>„nvda+h” zamiast „nvda+1” w dokumentacji
+<LI>Eliminacja zduplikowanych poleceń klawiaturowych „nvda+control+f1” w gestach wejściowych.
+</UL>
+
+<H2>62. v3.0 (29 listopada 2013 r.)</H2>
+<UL>
+<LI>Wykorzystanie kategorii skryptów dostarczonych przez NVDA 2013.3
+<LI>Zgodność z wersją NVDA 2014.1,
+<LI>Dodano skrypt do ogłaszania bieżącego profilu konfiguracji
+<LI>Eliminacja skryptu wyświetlającego listę okien (NVDA+SHIFT+F11)
+<LI>Dodano skrypt pokazujący listę ikon w zasobniku systemowym i listę okien (NVDA+F11)
+<LI>Wizualna jednolitość okien,
+<LI>Dodano nową kolejność nawigacji dla trybu przeglądania (akapit, podział, kotwica)
+<LI>Dodano nowy typ elementów dla zamówienia „nvda+F7”.
+<LI>Kompozycja symboli: znak „niepodzielna przestrzeń znaku jest teraz poprawnie kopiowany do schowka.
+</UL>
+
+<H2>63. v2.4.3 (11 kwietnia 2013 r.)</H2>
+<UL>
+<LI>Zarządzanie poleceniami klawiatury zdefiniowanymi w klasie nakładki. (Sterczący dodatek do kaczki)
+<LI>Problem przycisku „zamówienia globalne / powrót do zamówień wtyczek)
+</UL>
+
+<H2>64. v2.4.2 (1 kwietnia 2013)</H2>
+<UL>
+<LI>Błędy w Firefoksie i Thunderbirdzie
+<LI>Błąd z gestem zawierającym „więcej”
+</UL>
+
+<H2>65. v2.4.1 (26 marca 2013 r.)</H2>
+<UL>
+<LI>Wyświetlanie poleceń klawiaturowych w trybie przeglądania za pomocą skryptu „NVDA+h”
+<LI>Dodano nowe polecenia do poruszania się w trybie eksploracji: akapit, podział, kotwica.
+</UL>
+
+<H2>66. v2.3.8 (25 marca 2013 r.)</H2>
+<UL>
+<LI>Korekta pliku symbolCategories.dic fr i es.
+<LI>Naprawiono problem związany z akcentowanymi nazwami folderów i ich użyciem z os.path.join
+<LI>W onDestroyButton (activeWindowReport)
+</UL>
+
+<H2>67. v2.3.7 (23 marca 2013 r.)</H2>
+<UL>
+<LI>Hiszpańskie tłumaczenie
+<LI>Korekta pisowni i tekstu
+<LI>Korekta w plikach symbolCategories.dic i symboles-xx.dic
+</UL>
+
+<H2>68. v2.3.6 (4 lutego 2013 r.)</H2>
+<UL>
+<LI>Różne błędy.
+</UL>
+
+<H2>69. v2.3.4 (11 stycznia 2013 r.)</H2>
+<UL>
+<LI>Okno bez tytułu
+<LI>Lista symboli obcięta
+<LI>Błędy ortograficzne itp.
+</UL>
+
+<H2>70. v2.3.3 (8 stycznia 2013 r.)</H2>
+<UL>
+<LI>Błąd listy kategorii.
+<P></P>
+</UL>
+
+<OL>
+<LI>v2.3.2 (8 stycznia 2013 r.) ++
+</OL>
+
+<UL>
+<LI>Nowy skrypt pomocy do składania złożonych symboli (NVDA+shift+4)
+</UL>
+
+<H2>71. v2.2.1 (27 października 2012 r.)</H2>
+<UL>
+<LI>Zmiana rozmiaru okna w 1200X700,
+<LI>pierwsza litera nazwy kluczy jest wielka,
+<LI>Zmieniono nazwę przycisków „globalnych” i „aplikacji” w „zamówieniach globalnych” i „powróć do zamówień wtyczek”
+<LI>Modyfikacja pomocy w celu wskazania raczej możliwego użycia klawiszy „t” i „s”.
+</UL>
+
+<H2>72. v2.2.0 (6 października 2012 r.)</H2>
+<UL>
+<LI>Przegrupowanie w jednym skrypcie (NVDA+h) dwóch poprzednich skryptów.
+<LI>Integracja globalnej wtyczki „listDesFenetres-v100225”.
+</UL>
+
+<H2>73. v2.0.0 (3 października 2012 r.)</H2>
+<UL>
+<LI>Tłumaczenie kluczy,
+<LI>Uproszczona nawigacja między grupami zamówień za pomocą klawisza „t” oraz między kategoriami klawiatury za pomocą klawisza „s”.
+<LI>Dodano przycisk pomocy
+<LI>Uwzględniono pliki gestures.ini
+</UL>
+
+<H2>74. v1.0.0 (5 lipca 2012 r.)</H2>
+<P>
+Stworzenie globalnej wtyczki:
+</P>
+<UL>
+<LI>Skrypt (NVDA+h), aby wyświetlić własne polecenia klawiatury do aktywnej wtyczki
+<LI>Skrypt (NVDA+shift+h), aby wyświetlić globalne polecenia klawiatury.
+</UL>
+
+
+</body>
+</html>

@@ -1,0 +1,204 @@
+#Symbole i ich Opis Są podzielone na kategorie, a każda kategoria jest zdefiniowana przez sekcję zaczynającą się od nazwy kategorii umieszczonej między nawiasami.
+# Każda linia sekcji definiuje symbol wraz z jego opisem:
+# - symbol (jeden znak) 
+# - separator "Tab" 
+# - opis symbolu
+
+[Mała litera samogłoska akcentowana]
+á	a ze silnym akcentem
+é	e ze silnym akcentem
+í	i ze silnym akcentem
+ó	o ze silnym akcentem
+ú	u ze silnym akcentem
+ý	y ze silnym akcentem
+à	a ze słabym akcentem
+è	e ze słabym akcentem
+ì	i ze słabym akcentem
+ò	o ze słabym akcentem
+ù	u ze słabym akcentem
+â	a z akcentem cyrkumfleksowym
+ê	e z akcentem cyrkumfleksowym
+î	i z akcentem cyrkumfleksowym
+ô	o z akcentem cyrkumfleksowym
+û	u z akcentem cyrkumfleksowym
+ã	a z tyldą
+ñ	n z tyldą
+õ	o z tyldą
+ä	a z diaerezą
+ë	e z diaerezą
+ï	i z diaerezą
+ö	o z diaerezą
+ü	u z diaerezą
+
+[duża litera samogłoska akcentowana]
+Á	A duża litera ze silnym akcentem
+É	E duża litera ze silnym akcentem
+Í	I duża litera ze silnym akcentem
+Ó	O duża litera ze silnym akcentem
+Ú	U duża litera ze silnym akcentem
+Ý	Y duża litera ze silnym akcentem
+À	a duża litera ze słabym akcentem
+È	e duża litera ze słabym akcentem
+Ì	i duża litera ze słabym akcentem
+Ò	o duża litera ze słabym akcentem
+Ù	u duża litera ze słabym akcentem
+Â	a duża litera z akcentem cyrkumfleksowym
+Ê	e duża litera z akcentem cyrkumfleksowym
+Î	i duża litera z akcentem cyrkumfleksowym
+Ô	o duża litera z akcentem cyrkumfleksowym
+Û	u duża litera z akcentem cyrkumfleksowym
+Ã	a duża litera z tyldą
+Ñ	n duża litera z tyldą
+Õ	o duża litera z tyldą
+Ä	a duża litera z diaerezą
+Ë	e duża litera z diaerezą
+Ï	i duża litera z diaerezą
+Ö	o duża litera z diaerezą
+Ü	u duża litera z diaerezą
+
+[Symbole Monetarne]
+€	Znak euro
+$	Znak dolara
+¢	Znak centa
+£	Funt brytyjski
+¥	Japoński jen
+ƒ	Florin holenderski
+¤	Ogólny symbol waluty
+
+[Symbole matematyczne]
+÷	Znak dzielenia
+×	Znak mnożenia
+±	Plus/minus
+¹	Indeks górny 1
+²	Indeks górny 2
+³	Indeks górny 3
+ⁿ	Indeks górny N 
+°	Symbol stopnia
+µ	Mikro
+‰	Znak Mili (1/1000)
+‰	Milion
+¼	Ułamek jedna czwarta
+½	Ułamek jedna druga
+¾	Ułamek trzy czwarte
+⅛	Ułamek jedna ósma
+⅜	Ułamek trzy ósme
+⅞	Ułamek siedem ósmych
+¬	Nie logiczny symbol
+≠	znak nierówności
+≤	Znak mniejsze lub równe
+≥	Znak większe lub równe
+∞	Znak nieskończoności
+∫	Znak całki
+∂	Znak różniczkowy cząstkowy
+∆	Znak przyrostu
+∏	Znak N produktu
+∑	Znak N sumy
+√	Znak pierwiastka kwadratowego
+∟	Znak kąta prostego
+∩	Znak przecięcia
+ƒ	Znak funkcji
+
+[Symbole interpunkcyjne]
+…	Elipsa
+­	Miękki myślnik
+•	Punktor
+∙	Operator punktora
+‣	Trójkątna kropka
+¦	Przerywana pionowa linia 
+ 	Spacja nierozdzielająca
+§	Znak paragrafu
+¶	Symbol akapitu
+†	krzyżyk
+‡	Podwójny krzyżyk
+“	Lewy podwójny cudzysłów
+”	Prawy podwójny cudzysłów
+‚	Pojedynczy niski cudzysłów
+„	Podwójny niski cudzysłów
+‹	Lewy Pojedynczy Kąt
+›	Prawy Pojedynczy Kąt 
+«	Lewy Kąt
+»	Prawy Kąt
+­	Łącznik miękki
+–	Półpauza
+—	Myślnik
+℅	Care Of
+―	Pozioma kreska
+‾	Nadkreślenie
+‼	Podwójny wykrzyknik
+♦	Czarny diament
+&	Ampersand
+
+[Inne symbole]
+©	Symbol praw autorskich
+®	Symbol zarejestrowany
+™	Znak towarowy
+Ç	francuska C cedille duża litera
+ç	francuski C cedille
+Æ	A-E ligatura duża litera
+æ	Ligatura A-E
+Œ	O-E ligatura duża litera
+œ	Ligatura O-E
+Ø	Nordyckie O ze sleszem duża litera
+ø	Nordyckie O ze sleszem mała litera
+º	Męska liczba porządkowa
+ª	Żeńska liczba porządkowa
+¡	Odwrócony wykrzyknik
+¿	Odwrócony znak zapytania
+¯	Akcent Macrona
+Å	Duża litera A, pierścień (angström)
+å	Mała litera a, pierścień
+Þ	Cierń duża litera, islandzki
+þ	Cierń mała litera, islandzki
+Ð	Duża litera Eth, islandzki
+ð	Mała litera Eth, islandzki
+
+[Alfabet Grecki]
+α	Alpha Mała litera
+Α	Alpha Duża litera
+β	Beta Mała litera
+Β	Beta Duża litera
+γ	Gamma Mała litera
+Γ	Gamma Duża litera
+δ	Delta Mała litera
+Δ	Delta Duża litera
+ε	Epsilon Mała litera
+Ε	Epsilon Duża litera
+ζ	Zeta Mała litera
+Ζ	Zeta Duża litera
+η	Heta Mała litera
+Η	Heta Duża litera
+θ	Theta Mała litera
+Θ	Theta Duża litera
+ι	Jota Mała litera
+Ι	Jota Duża litera
+κ	Kappa Mała litera
+Κ	Kappa Duża litera
+λ	Lambda Mała litera
+Λ	Lambda Duża litera
+μ	My Mała litera
+Μ	My Duża litera
+ν	Ny Mała litera
+Ν	Ny Duża litera
+ξ	Xi Mała litera
+Ξ	Xi Duża litera
+ο	Omikron Mała litera
+Ο	Omikron Duża litera
+π	Pi Mała litera
+Π	Pi Duża litera
+ρ	Rho Mała litera
+Ρ	Rho Duża litera
+σ	Sigma Mała litera
+ς	Sigma Final Mała litera
+Σ	Sigma Duża litera
+τ	Tau Mała litera
+Τ	Tau Duża litera
+υ	Upsilon Mała litera
+Υ	Upsilon Duża litera
+φ	Phi Mała litera
+Φ	Phi Duża litera
+χ	Chi Mała litera
+Χ	Chi Duża litera
+ψ	Psi Mała litera
+Ψ	Psi Duża litera
+ω	Omega Mała litera
+Ω	Omega Duża litera
