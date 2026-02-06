@@ -1,12 +1,14 @@
 # globalplugins\NVDAExtensionGlobalPlugin\activeWindowsListReport\__init__.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016 - 2020 paulber19
+# Copyright (C) 2016 - 2025 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
 import addonHandler
+from logHandler import log
 import api
 import winUser
+import winKernel
 import time
 import wx
 from keyboardHandler import KeyboardInputGesture
@@ -17,27 +19,42 @@ import NVDAObjects.window
 import queueHandler
 from ..utils.NVDAStrings import NVDAString
 from ..utils import isOpened, makeAddonWindowTitle, getHelpObj
-from ..utils import contextHelpEx
+from ..gui import contextHelpEx
 from .user32 import (
 	SW_SHOWMAXIMIZED, SW_SHOWMINIMIZED, getWindowPlacement, enumWindows,
-	getParent, WS_EX_APPWINDOW, WS_EX_TOOLWINDOW, getExtendedWindowStyle
+	getParent, getExtendedWindowStyle,
+	WS_EX_APPWINDOW, WS_EX_TOOLWINDOW,
+	WS_EX_NOACTIVATE, WS_EX_NOREDIRECTIONBITMAP
 )
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, ReturnCode
+del sys.path[-1]
 
 addonHandler.initTranslation()
 
 # Translators: this is the list of windows titles which do not be displayed.
 _windowsToIgnore = _("Start menu|Charm Bar")
+_windowClassToIgnore = ["Windows.UI.Core.CoreWindow",]
 
 
 def isRealWindow(hWnd):
-	lExStyle = getExtendedWindowStyle(hWnd)
-	isToolWindow = (lExStyle & WS_EX_TOOLWINDOW) == 0
-	isAppWindow = (lExStyle & WS_EX_APPWINDOW) == 0
-	hasOwner = winUser.getWindow(hWnd, winUser.GW_OWNER)
 	if not winUser.isWindowVisible(hWnd):
 		return False
 	if getParent(hWnd):
 		return False
+	lExStyle = getExtendedWindowStyle(hWnd)
+	if (
+		lExStyle & WS_EX_NOACTIVATE
+		#or lExStyle == WS_EX_NOREDIRECTIONBITMAP
+	):
+		return False
+	isToolWindow = (lExStyle & WS_EX_TOOLWINDOW) == 0
+	isAppWindow = (lExStyle & WS_EX_APPWINDOW) == 0
+	hasOwner = winUser.getWindow(hWnd, winUser.GW_OWNER)
 	if (isToolWindow and not hasOwner) or (
 		(isAppWindow and hasOwner)):
 		if winUser.getWindowText(hWnd):
@@ -52,8 +69,10 @@ def getactiveWindows():
 		if not isRealWindow(hWnd):
 			return True
 		title = winUser.getWindowText(hWnd)
-		placement = getWindowPlacement(hwnd)
-		if not placement or title in _windowsToIgnore.split("|"):
+		windowClassName = winUser.getClassName(hwnd)
+		log.debug("title: %s, windowClass: %s" %(title, windowClassName))
+		#placement = getWindowPlacement(hwnd)
+		if title in _windowsToIgnore.split("|") or windowClassName in _windowClassToIgnore:
 			return True
 		windows.append((title, hWnd))
 		return True
@@ -82,7 +101,16 @@ def closeAllWindows(windowsList):
 			# we cannot destroy nvda windows
 			continue
 		# we destroy it
-		oleacc.AccessibleObjectFromWindow(hwnd, -2).accDoDefaultAction(5)
+		killProcess(obj.processID)
+
+
+# original code from killprocess add-on (#Copyright (C) 2023 Ángel Alcantar)
+def killProcess(processID) -> int:
+		PROCESS_TERMINATE = 1  
+		handle = winKernel.kernel32.OpenProcess(PROCESS_TERMINATE, 0, processID)  
+		res = winKernel.kernel32.TerminateProcess(handle, 0)  
+		winKernel.kernel32.CloseHandle(handle)  
+		return res  
 
 
 class ActiveWindowsListDisplay(
@@ -299,7 +327,7 @@ class ActiveWindowsListDisplay(
 			self.windowsListBox.SetFocus()
 			return
 		# we destroy it
-		oleacc.AccessibleObjectFromWindow(hwnd, -2).accDoDefaultAction(5)
+		killProcess(obj.processID)
 		time.sleep(0.5)
 		# windows list update
 		self.windowsListInit()
@@ -344,13 +372,12 @@ class ActiveWindowsListDisplay(
 		maximizeWindow(hwnd)
 
 	def onDestroyAllButton(self, evt):
-		from gui import messageBox
-		if messageBox(
+		if confirm_YesNo(
 			# Translators: message to confirm closing all windows
 			_("Are you sure you want to close all windows?"),
 			# Translators: dialog title.
 			_("Warning"),
-			wx.YES | wx.NO | wx.CANCEL | wx.ICON_WARNING) != wx.YES:
+		) != ReturnCode.YES:
 			return
 		closeAllWindows(self.windowsList)
 		self.Close()

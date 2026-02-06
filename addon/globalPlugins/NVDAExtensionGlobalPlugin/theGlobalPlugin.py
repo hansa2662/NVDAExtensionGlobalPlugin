@@ -1,18 +1,19 @@
-# globalPlugins\NVDAExtensionGlobalPlugin\__init__.py
+# globalPlugins\NVDAExtensionGlobalPlugin\theGlobalPlugin.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016 - 2021 Paulber19
+# Copyright (C) 2016 - 2025 Paulber19
 # This file is covered by the GNU General Public License.
 
 
 import addonHandler
 import globalPluginHandler
 from logHandler import log, _getDefaultLogFilePath
-import os
-import sys
+from .utils.nvdaInfos import NVDAVersion
 import globalVars
 import api
 import ui
 import speech
+import braille
+from keyLabels import localizedKeyLabels
 import time
 import gui
 import wx
@@ -21,7 +22,6 @@ import globalCommands
 import scriptHandler
 import queueHandler
 import winUser
-import NVDAObjects
 import mouseHandler
 import textInfos
 import winKernel
@@ -30,14 +30,9 @@ import inputCore
 import tones
 from functools import wraps
 import config
-try:
-	# for nvda version >= 2021.2
-	from characterProcessing import SymbolLevel
-	SYMLVL_SOME = SymbolLevel.SOME
-except ImportError:
-	from characterProcessing import SYMLVL_SOME
+from characterProcessing import SymbolLevel
 from .activeWindowsListReport import ActiveWindowsListDisplay
-from .systemTrayIconsList import ListeNotification
+from .systemTrayIconsList import DisplayNotificationIconsList
 # to load configuration
 from . import settings
 # from .settings import *
@@ -49,42 +44,46 @@ from .settings import addonConfig
 from . import commandKeysSelectiveAnnouncementAndRemanence
 from . import speechHistory
 from .utils.NVDAStrings import NVDAString
-from .utils import maximizeWindow, makeAddonWindowTitle, isOpened, getHelpObj
-from .utils import getSpeechMode, setSpeechMode, setSpeechMode_off
-from .utils import delayScriptTask, stopDelayScriptTask, clearDelayScriptTask
-from .utils import messageBox
+from .utils.secure import inSecureMode
+from .utils import (
+	maximizeWindow, makeAddonWindowTitle, isOpened, getHelpObj,
+	messageWithSpeakOnDemand, executeWithSpeakOnDemand,
+	getSpeechMode, setSpeechMode, setSpeechMode_off,
+	delayScriptTask, stopDelayScriptTask, clearDelayScriptTask,
+	getAddonSummary
+)
+from .utils import messageBoxPatches
 from .utils.informationDialog import InformationDialog
 from .utils import contextHelpEx
+from . import computerTools
 from .computerTools.volumeControlScripts import ScriptsForVolume
 from .scripts.scriptInfos import scriptsToDocInformations
-try:
-	# form nvda version >= 2020.3
-	from .userInputGestures import inputGesturesEx
-	inputGesturesEx.initialize()
-except ImportError:
-	pass
-
+from .scripts.scriptHandlerEx import speakOnDemand
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, alert, ReturnCode
+del sys.path[-1]
 
 addonHandler.initTranslation()
 
 _curAddon = addonHandler.getCodeAddon()
-_addonSummary = _curAddon.manifest['summary']
 # add-on script categories
-SCRCAT_MODULE = str(_addonSummary)
+SCRCAT_MODULE = str(getAddonSummary())
 
 
 # Below toggle code came from Tyler Spivey's code, with enhancements by Joseph Lee.
 def finally_(func, final):
 	"""Calls final after func, even if it fails."""
-	def wrap(f):
-		@wraps(f)
-		def new(*args, **kwargs):
-			try:
-				func(*args, **kwargs)
-			finally:
-				final()
-		return new
-	return wrap(final)
+	@wraps(func)
+	def new(*args, **kwargs):
+		try:
+			func(*args, **kwargs)
+		finally:
+			final()
+	return new
 
 
 def fetchAddon(processID, appName):
@@ -122,64 +121,6 @@ def fetchAddon(processID, appName):
 		return None
 
 
-class NVDAObjectEx (NVDAObjects.NVDAObject):
-	def _reportErrorInPreviousWord(self):
-		try:
-			# self might be a descendant of the text control; e.g. Symphony.
-			# We want to deal with the entire text, so use the caret object.
-			info = api.getCaretObject().makeTextInfo(textInfos.POSITION_CARET)
-			# This gets called for characters which might end a word; e.g. space.
-			# The character before the caret is the word end.
-			# The one before that is the last of the word, which is what we want.
-			info.move(textInfos.UNIT_CHARACTER, -2)
-			info.expand(textInfos.UNIT_CHARACTER)
-		except Exception:
-			# Focus probably moved.
-			log.debugWarning("Error fetching last character of previous word", exc_info=True)
-			return
-		# Fetch the formatting for the last word to see if it is marked as a spelling error,
-		# However perform the fetch and check in a future core cycle
-
-		# To give the content control more time to detect and mark the error itself.
-		# #12161: MS Word's UIA implementation certainly requires this delay.
-		def _delayedDetection():
-			try:
-				fields = info.getTextWithFields()
-			except Exception:
-				log.debugWarning("Error fetching formatting for last character of previous word", exc_info=True)
-				return
-			for command in fields:
-				if (
-					isinstance(command, textInfos.FieldCommand)
-					and command.command == "formatChange"
-					and command.field.get("invalid-spelling")
-				):
-					break
-			else:
-				# No error.
-				return
-			#  to report  error depending user configuration: wav, beep, or message
-
-			def reportSpellingError():
-				from .settings import _addonConfigManager
-				if _addonConfigManager.reportingSpellingErrorsByBeep():
-					from tones import beep
-					hz = 150
-					length = 50
-					beep(hz, length)
-					from time import sleep
-					sleep(2 * length / 1000)
-					beep(hz, length)
-				elif _addonConfigManager.reportingSpellingErrorsBySound():
-					import nvwave
-					nvwave.playWaveFile(os.path.join(globalVars.appDir, "waves", "textError.wav"))
-				elif _addonConfigManager.reportingSpellingErrorsByMessage():
-					speech.speakMessage(NVDAString("spelling error"))
-
-			reportSpellingError()
-		core.callLater(50, _delayedDetection)
-
-
 class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlugin):
 	_remanenceCharacter = None
 	_trapNextGainFocus = False
@@ -190,13 +131,13 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 	# a dictionnary to map main script to gestures and install feature option
 	_shellGestures = {}
 	_mainScriptToGestureAndfeatureOption = {
-		"test": (("kb:nvda+control+shift+f11",), None),
+		"test": (("kb:NVDA+control+shift+f11",), None),
 		"moduleLayer": (("kb:NVDA+j",), None),
 		"reportAppModuleInfoEx": (("kb:nvda+control+f1",), addonConfig.FCT_FocusedApplicationInformations),
 		"reportAppProductNameAndVersion": (("kb:nvda+shift+f1",), addonConfig.FCT_FocusedApplicationInformations),
 		"ComplexSymbolHelp": (("kb:nvda+shift+f4",), addonConfig.FCT_ComplexSymbols),
 		"lastUsedComplexSymbolsList": (None, addonConfig.FCT_ComplexSymbols),
-		"report_SystrayIconsOrWindowsList": (("kb:nvda+F11",), addonConfig.FCT_SystrayIconsAndActiveWindowsList),
+		"report_SystrayIconsOrWindowsList": (("kb:nvda+f11",), addonConfig.FCT_SystrayIconsAndActiveWindowsList),
 		"reportCurrentFolder": (("kb:nvda+o",), addonConfig.FCT_CurrentFolderReport),
 		"reportPreviousSpeechHistoryRecord": (("kb:nvda+control+f8",), addonConfig.FCT_SpeechHistory),
 		"reportCurrentSpeechHistoryRecord": (("kb:nvda+control+f9",), addonConfig.FCT_SpeechHistory),
@@ -208,8 +149,8 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		"restartEx": (("kb:nvda+control+f4",), addonConfig.FCT_RestartInDebugMode),
 		"keyboardKeyRenaming": (None, addonConfig.FCT_KeyboardKeyRenaming),
 		"commandKeySelectiveAnnouncement": (None, addonConfig.FCT_CommandKeysSelectiveAnnouncement),
-		"exploreUserConfigFolder": (None, addonConfig.ID_ExploreNVDA),
-		"exploreProgramFiles": (None, addonConfig.ID_ExploreNVDA),
+		"exploreUserConfigFolder": (None, addonConfig.FCT_ExploreNVDA),
+		"exploreProgramFiles": (None, addonConfig.FCT_ExploreNVDA),
 		"toggleSwitchVoiceProfileMode": (("kb:nvda+control+shift+p",), addonConfig.FCT_VoiceProfileSwitching),
 		"manageVoiceProfileSelectors": (("kb:nvda+shift+control+m",), addonConfig.FCT_VoiceProfileSwitching),
 		"previousVoiceProfile": (
@@ -235,19 +176,32 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		"toggleNumpadStandardUse": (None, None),
 		"toggleNumpadStandardUseWithNumlockKey": (("kb:numlock",), None),
 		"reportOrDisplayCurrentSpeechSettings": (None, None),
-		"toggleTextAnalyzer": (("kb:nvda+f8",), addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentWord": (("kb:nvda+shift+f8",), addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentLine": (("kb:nvda+control+f8",), addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentSentence": (("kb:nvda+windows+f8",), addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentParagraph": (("kb:nvda+shift+control+f8",), addonConfig.FCT_TextAnalysis),
+		"toggleTextAnalyzer": (("kb:nvda+f6",), addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentWord": (("kb:nvda+shift+f6",), addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentLine": (("kb:nvda+control+f6",), addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentSentence": (("kb:nvda+windows+f6",), addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentParagraph": (("kb:nvda+shift+control+f6",), addonConfig.FCT_TextAnalysis),
+		"findNextTextAnalyzerAlert": (None, addonConfig.FCT_TextAnalysis),
+		"findPreviousTextAnalyzerAlert": (None, addonConfig.FCT_TextAnalysis),
 		"manageUserConfigurations": (None, None),
 		"toggleReportCurrentCaretPosition": (None, None),
-		"addToClip": (None, addonConfig.FCT_ClipboardCommandAnnouncement),
+		"reportClipboardTextEx": (("kb:nvda+c",), None),
+		"addToClip": (None, None),
+		"emptyClipboard": (None, None),
+		"displayClipboardText": (None, None),
 		"temporaryAudioOutputDeviceManager": (None, addonConfig.FCT_TemporaryAudioDevice),
 		"cancelTemporaryAudioOutputDevice": (None, addonConfig.FCT_TemporaryAudioDevice),
 		"setTemporaryAudioOutputDevice": (None, addonConfig.FCT_TemporaryAudioDevice),
 		"setOrCancelTemporaryAudioOutputDevice": (None, addonConfig.FCT_TemporaryAudioDevice),
-		"activateAddonsActivationDialog": (None, None),
+		"activateAddonsActivationDialog": (None, addonConfig.FCT_VariousOutSecureMode),
+		"increaseSynthSetting": (
+			("kb(desktop): NVDA+control+upArrow", "kb(laptop):NVDA+shift+control+upArrow"), None),
+		"decreaseSynthSetting": (
+			("kb(desktop):NVDA+control+downArrow", "kb(laptop):NVDA+control+shift+downArrow"), None),
+		"nextSynthSetting": (
+			("kb(desktop):NVDA+control+rightArrow", "kb(laptop):NVDA+shift+control+rightArrow"), None),
+		"previousSynthSetting": (
+			("kb(desktop):NVDA+control+leftArrow", "kb(laptop):NVDA+shift+control+leftArrow"), None),
 	}
 
 	# a dictionnary to map shell script to gesture and fonctionality IDs
@@ -268,48 +222,47 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		"lastUsedComplexSymbolsList": ("kb:control+f4", addonConfig.FCT_ComplexSymbols,),
 		"toggleNumpadStandardUse": ("kb:f5", None),
 		"toggleReportCurrentCaretPosition": ("kb:f7", None),
-		"toggleTextAnalyzer": ("kb:f8", addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentWord": ("kb:shift+f8", addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentLine": ("kb:control+f8", addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentSentence": ("kb:windows+f8", addonConfig.FCT_TextAnalysis),
-		"analyzeCurrentParagraph": ("kb:shift+control+f8", addonConfig.FCT_TextAnalysis),
+		"toggleTextAnalyzer": ("kb:f6", addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentWord": ("kb:shift+f6", addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentLine": ("kb:control+f6", addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentSentence": ("kb:windows+f6", addonConfig.FCT_TextAnalysis),
+		"analyzeCurrentParagraph": ("kb:shift+control+f6", addonConfig.FCT_TextAnalysis),
+		"findNextTextAnalyzerAlert": ("kb:alt+f6", addonConfig.FCT_TextAnalysis),
+		"findPreviousTextAnalyzerAlert": ("kb:alt+shift+f6", addonConfig.FCT_TextAnalysis),
 		"displaySpeechHistoryRecords": ("kb:f9", addonConfig.FCT_SpeechHistory),
 		"report_WindowsList": ("kb:f10", addonConfig.FCT_SystrayIconsAndActiveWindowsList),
 		"report_SystrayIcons": ("kb:f11", addonConfig.FCT_SystrayIconsAndActiveWindowsList),
 		"minuteTimer": ("kb:f12", addonConfig.FCT_MinuteTimer),
-		"displayModuleUserGuide": ("kb:g", None),
+		"displayModuleUserGuide": ("kb:g", addonConfig.FCT_VariousOutSecureMode),
 		"displayHelp": ("kb:h", None),
 		"NVDALogsManagement": ("kb:j", addonConfig.FCT_OpenCurrentOrOldNVDALogFile),
-		"closeAllWindows": ("kb:k", None),
-		"manageUserConfigurations": ("kb:n", None),
+		"closeAllWindows": ("kb:k", addonConfig.FCT_VariousOutSecureMode),
+		"manageUserConfigurations": ("kb:n", addonConfig.FCT_VariousOutSecureMode),
 		"reportCurrentFolderName": ("kb:o", addonConfig.FCT_CurrentFolderReport),
 		"reportCurrentFolderFullPath": ("kb:control+o", addonConfig.FCT_CurrentFolderReport),
 		"toggleSwitchVoiceProfileMode": ("kb:p", addonConfig.FCT_VoiceProfileSwitching),
-		"activateQuickAddonsActivationDialog": ("kb:q", None),
+		"activateQuickAddonsActivationDialog": ("kb:q", addonConfig.FCT_VariousOutSecureMode),
 		"shutdownComputerDialog": ("kb:r", None),
 		"toggleCurrentAppVolumeMute": ("kb:s", addonConfig.FCT_VolumeControl),
 		"toolsForAddon": ("kb:t", addonConfig.FCT_Tools),
-		"activateUserInputGesturesDialog": ("kb:u", None),
+		"activateUserInputGesturesDialog": ("kb:u", addonConfig.FCT_VariousOutSecureMode),
 		"manageVoiceProfileSelectors": ("kb:v", addonConfig.FCT_VoiceProfileSwitching),
-		"addToClip": ("kb:x", addonConfig.FCT_ClipboardCommandAnnouncement),
+		"addToClip": ("kb:x", None),
+		"emptyClipboard": ("kb:control+x", None),
+		"displayClipboardText": ("kb:shift+x", None),
 		"reportCurrentSpeechSettings": ("kb:z", None),
 		"displayCurrentSpeechSettings": ("kb:control+z", None),
 	}
 
 	def __init__(self, *args, **kwargs):
+		log.debug("Start of initialization of %s version %s" % (
+			_curAddon.manifest["name"], _curAddon.manifest["version"]))
 		super(NVDAExtensionGlobalPlugin, self).__init__(*args, **kwargs)
-		self.curAddon = _curAddon
-		addonName = self.curAddon.manifest['name']
-		addonVersion = self.curAddon.manifest["version"]
-		log.info("Loaded %s version %s" % (addonName, addonVersion))
 		# update dictionaries for volume control scripts
 		self._mainScriptToGestureAndfeatureOption .update(self._volumeControlMainScriptToGestureAndfeatureOption)
 		self._shellScriptToGestureAndFeatureOption .update(self._volumeControlShellScriptToGestureAndFeatureOption)
 		self.maximizeWindowTimer = None
 		self.installSettingsMenu()
-		if isInstall(addonConfig.FCT_CommandKeysSelectiveAnnouncement) or\
-			isInstall(addonConfig.FCT_KeyRemanence):
-			wx.CallLater(800, commandKeysSelectiveAnnouncementAndRemanence.initialize)
 		if isInstall(addonConfig.FCT_ExtendedVirtualBuffer):
 			from . import browseModeEx
 			self.browseModeExChooseNVDAObjectOverlayClasses = browseModeEx.chooseNVDAObjectOverlayClasses
@@ -318,8 +271,6 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		if settings.toggleNoDescriptionReportInRibbonOption(False):
 			from . import extendedNetUIHWND
 			self.extendedNetUIHWNDChooseNVDAObjectOverlayClasses = extendedNetUIHWND.chooseNVDAObjectOverlayClasses
-		if isInstall(addonConfig.FCT_SpeechHistory):
-			wx.CallLater(800, speechHistory.initialize)
 		if isInstall(addonConfig.FCT_KeyboardKeyRenaming):
 			settings._addonConfigManager.reDefineKeyboardKeyLabels()
 		self.toggling = False
@@ -327,34 +278,62 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		self._setShellGestures()
 		core.callLater(200, self.installMainAndShellScriptDocs)
 		self.switchVoiceProfileMode = "off"
-		from .computerTools import volumeControl
-		if isInstall(addonConfig.FCT_VolumeControl) and settings.toggleSetOnMainAndNVDAVolumeAdvancedOption(False):
-			volumeControl.setSpeakerVolumeToRecoveryLevel(checkThreshold=True)
-			volumeControl.setNVDAVolumeToRecoveryLevel(checkThreshold=True)
-		volumeControl.initialize()
-		if isInstall(addonConfig.FCT_TemporaryAudioDevice):
-			from .computerTools import audioDevice
-			audioDevice.initialize()
 		if settings.toggleByPassNoDescriptionAdvancedOption(False):
-			messageBox.initialize()
-		from .scripts import scriptHandlerEx
-		scriptHandlerEx.initialize()
+			messageBoxPatches.initialize()
+		if NVDAVersion < [2024, 4]:
+			from .scripts import scriptHandlerEx
+			scriptHandlerEx.initialize()
 		# start update check if not in secur mode and option is set
-		if not globalVars.appArgs.secure:
-			from .settings import toggleAutoUpdateGeneralOptions
-			if toggleAutoUpdateGeneralOptions(False):
-				from .settings import toggleUpdateReleaseVersionsToDevVersionsGeneralOptions
-				from . updateHandler import autoUpdateCheck
-				autoUpdateCheck(
-					toggleUpdateReleaseVersionsToDevVersionsGeneralOptions(False))
-		# activate text analyzer if option is checked
-		from .textAnalysis.textAnalyzer import updateProfileConfiguration
-		updateProfileConfiguration()
+		from .settings import toggleAutoUpdateGeneralOptions
+		from .updateHandler.update_check import setCheckForUpdate
+		setCheckForUpdate(toggleAutoUpdateGeneralOptions(False))
+		if not inSecureMode():
+			from .settings import toggleUpdateReleaseVersionsToDevVersionsGeneralOptions
+			from . updateHandler import autoUpdateCheck
+			autoUpdateCheck(
+				toggleUpdateReleaseVersionsToDevVersionsGeneralOptions(False))
+		from .ComplexSymbols import newSymbolsHandler
+		newSymbolsHandler.initialize()
 		config.post_configProfileSwitch .register(self.handlePostConfigProfileSwitch)
-		self.updateSettingOfSynthSettingsRing()
+		self.handlePostConfigProfileSwitch()
+		# the rest of the initialization will be done when NVDA is initialized.
+		if hasattr(globalVars, "NVDAExtensionGlobalPluginInitialized"):
+			# it's a plugin reloading, so nvda is already initialized
+			self.handlePostNVDAStartup()
+			return
+		# now wait for nvda initialization end
+		from core import postNvdaStartup
+		postNvdaStartup .register(self.handlePostNVDAStartup)
+
+	def handlePostNVDAStartup(self):
+		log.debug(" Continuation of initialization %s version %s" % (
+			_curAddon.manifest["name"], _curAddon.manifest["version"]))
+		# to add "run script" button in "Input gestures" dialog
+		# we patche it
+		from .userInputGestures import inputGesturesEx
+		inputGesturesEx.initialize()
+		if isInstall(addonConfig.FCT_CommandKeysSelectiveAnnouncement) or\
+			isInstall(addonConfig.FCT_KeyRemanence):
+			commandKeysSelectiveAnnouncementAndRemanence.initialize()
+		from . import clipboardCommandAnnouncement
+		clipboardCommandAnnouncement .initialize()
+		speechHistory.initialize()
+		computerTools.initialize()
+		from .utils import numlock
+		# to report activated numlock and capslock state
+		wx.CallLater(
+			2000, numlock.reportActivatedLockState, winUser.getKeyState(
+				winUser.VK_NUMLOCK), winUser.getKeyState(winUser.VK_CAPITAL))
+
+		from .speech import speechEx
+		speechEx.initialize()
+		# after a faulty installation of an add-on,
+		# nvda cannot delete .delete files
+		self._removeFailedDeletion()
+		globalVars.NVDAExtensionGlobalPluginInitialized = True
+		log.info("Loaded %s version %s" % (_curAddon.manifest["name"], _curAddon.manifest["version"]))
 
 	def updateSettingOfSynthSettingsRing(self):
-
 		from .settings.nvdaConfig import _NVDAConfigManager
 		from synthDriverHandler import getSynth
 		synthName = getSynth().name
@@ -367,7 +346,33 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			if s.setting.id == id:
 				globalVars.settingsRing._current = settings.index(s)
 
+	def updateVolumeMuteKeyBinding(self):
+		try:
+			self.removeGestureBinding("kb:volumeMute")
+			log.debug("volumeMute key is unbound")
+		except KeyError:
+			pass
+		from .settings.nvdaConfig import (
+			_NVDAConfigManager, VMKC_Never, VMKC_WithoutBrailleDisplay, VMKC_WithOrWithoutBrailleDisplay
+		)
+		volumeMuteKeyControlOption = _NVDAConfigManager .getVolumeMuteKeyControlOption()
+		if volumeMuteKeyControlOption == VMKC_Never:
+			return
+		import braille
+		if (
+			volumeMuteKeyControlOption == VMKC_WithOrWithoutBrailleDisplay
+			or (
+				volumeMuteKeyControlOption == VMKC_WithoutBrailleDisplay
+				and braille.handler.display.name == "noBaille"
+			)
+		):
+			# bind volume mute key
+			self.bindGesture("kb:volumeMute", "volumeMuteKey")
+			log.debug("volumeMute key bound to volumeMute script")
+
 	def handlePostConfigProfileSwitch(self):
+		from .utils import numlock
+		wx.CallLater(400, numlock.manageNumlockActivation)
 		from .textAnalysis.textAnalyzer import updateProfileConfiguration
 		updateProfileConfiguration()
 		self.updateSettingOfSynthSettingsRing()
@@ -393,6 +398,8 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 
 	def installMainAndShellScriptDocs(self):
 		for script in scriptsToDocInformations:
+			if script == "moduleLayer":
+				continue
 			(doc, category, helpId) = self._getScriptDocAndCategory(script)
 			commandText = None
 			if script in self._shellScriptToGestureAndFeatureOption:
@@ -431,9 +438,9 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		menu = wx.Menu()
 		self.NVDAExtensionGlobalPluginSettingsMenu = self.prefsMenu .AppendSubMenu(
 			menu,
-			"%s..." % _addonSummary,
+			"%s..." % getAddonSummary(),
 			# Translators: the tooltip text for addon submenu.
-			_("%s add-on configuration menu") % _addonSummary)
+			_("%s add-on configuration menu") % getAddonSummary())
 		settingsSubMenu = menu.Append(
 			wx.ID_ANY,
 			# Translators: name of the option in the menu.
@@ -476,8 +483,8 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			"")
 		gui.mainFrame.sysTrayIcon.Bind(
 			wx.EVT_MENU, self.onResetConfiguration, self.resetConfigurationMenu)
-		if isInstall(addonConfig.ID_ExploreNVDA):
-			self.toolsMenu = gui.mainFrame.sysTrayIcon.toolsMenu
+		self.toolsMenu = gui.mainFrame.sysTrayIcon.toolsMenu
+		if isInstall(addonConfig.FCT_ExploreNVDA):
 			menu = wx.Menu()
 			self.exploreNVDAMenu = self.toolsMenu .AppendSubMenu(
 				menu,
@@ -501,14 +508,15 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 				"")
 			gui.mainFrame.sysTrayIcon.Bind(
 				wx.EVT_MENU, self.onExploreProgramFilesMenu, exploreProgramFilesMenu)
-		menu = wx.Menu()
-		item = self.toolsMenu .Append(
-			wx.ID_ANY,
-			# Translators: name of the option in the menu.
-			_("Manage user configurations"),
-			"")
-		gui.mainFrame.sysTrayIcon.Bind(
-			wx.EVT_MENU, self.onManageUserConfigurationsMenu, item)
+		if isInstall(addonConfig.FCT_ManageUserConfigurations):
+			menu = wx.Menu()
+			self.manageUserConfigurationMenu = self.toolsMenu .Append(
+				wx.ID_ANY,
+				# Translators: name of the option in the menu.
+				_("Manage user configurations"),
+				"")
+			gui.mainFrame.sysTrayIcon.Bind(
+				wx.EVT_MENU, self.onManageUserConfigurationsMenu, self.manageUserConfigurationMenu)
 
 	def onManageUserConfigurationsMenu(self, evt):
 		from .settings.userConfigManager import UserConfigManagementDialog
@@ -517,9 +525,13 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 	def script_manageUserConfigurations(self, gesture):
 		self.onManageUserConfigurationsMenu(None)
 
+	@scriptHandler.script(description=scriptsToDocInformations["moduleLayer"][0] + " " + getAddonSummary())
 	def script_moduleLayer(self, gesture):
 		# A run-time binding will occur
 		# from which we can perform various layered script commands
+		if self.switchVoiceProfileMode == "on":
+			self._setSwitchVoiceProfileMode("off")
+			return
 		# First, check if a second press of the script was done.
 		if self.toggling:
 			self.script_error(gesture)
@@ -553,9 +565,11 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		tones.beep(420, 40)
 
 	def terminate(self):
-		from .computerTools import volumeControl
-		volumeControl.terminate()
-
+		log.debug("Terminating %s" % _curAddon.manifest["name"])
+		from .speech import speechEx
+		speechEx.terminate()
+		from .userInputGestures import inputGesturesEx
+		inputGesturesEx.terminate()
 		from .scripts import scriptHandlerEx
 		scriptHandlerEx.terminate()
 		commandKeysSelectiveAnnouncementAndRemanence.terminate()
@@ -564,51 +578,46 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			self._repeatBeepOnAudio = None
 		from .settings import _addonConfigManager
 		_addonConfigManager.terminate()
-		if hasattr(self, "_caretMovementScriptHelper "):
-			import cursorManager
-			cursorManager.CursorManager._caretMovementScriptHelper = self._caretMovementScriptHelper
 		speechHistory.terminate()
 		for item in ["NVDAExtensionGlobalPluginSettingsMenu", ]:
 			if hasattr(self, item):
 				self.prefsMenu.Remove(getattr(self, item))
 		if hasattr(self, "exploreNVDAMenu"):
 			self.toolsMenu .Remove(getattr(self, "exploreNVDAMenu"))
-		messageBox.terminate()
-		# if language has changed, we must update symbols files
-		from languageHandler import getLanguage, getWindowsLanguage
-		NVDALang = getLanguage()
-		lang = config.conf["general"]["language"]
-		if lang == "Windows":
-			lang = getWindowsLanguage()
-		if NVDALang != lang:
-			log.warning("Language change: update user symbols files")
-			# set new symbols file for new language
-			path = _curAddon.path
-			sys.path.append(path)
-			import onInstall
-			onInstall.installNewSymbols(lang)
-			del sys.path[-1]
+		if hasattr(self, "manageUserConfigurationMenu"):
+			self.toolsMenu .Remove(getattr(self, "manageUserConfigurationMenu"))
+		messageBoxPatches.terminate()
+		computerTools.terminate()
+		config.post_configProfileSwitch .unregister(self.handlePostConfigProfileSwitch)
+		from core import postNvdaStartup
+		postNvdaStartup .unregister(self.handlePostNVDAStartup)
 		super(NVDAExtensionGlobalPlugin, self).terminate()
+
+	def _popupSettingsDialog(self, settingsDialog):
+		try:
+			gui.mainFrame.popupSettingsDialog(settingsDialog)
+		except AttributeError:
+			gui.mainFrame._popupSettingsDialog(settingsDialog)
 
 	def onSettingsSubMenu(self, evt):
 		from .settings.dialog import GlobalSettingsDialog
-		wx.CallAfter(gui.mainFrame._popupSettingsDialog, GlobalSettingsDialog)
+		wx.CallAfter(self._popupSettingsDialog, GlobalSettingsDialog)
 
 	def onProfileSettingsSubMenu(self, evt):
 		from .settings.dialog import ProfileSettingsDialog
-		wx.CallAfter(gui.mainFrame._popupSettingsDialog, ProfileSettingsDialog)
+		wx.CallAfter(self._popupSettingsDialog, ProfileSettingsDialog)
 
 	def script_globalSettingsDialog(self, gesture):
 		from .settings.dialog import GlobalSettingsDialog
-		wx.CallAfter(gui.mainFrame._popupSettingsDialog, GlobalSettingsDialog)
+		wx.CallAfter(self._popupSettingsDialog, GlobalSettingsDialog)
 
 	def script_profileSettingsDialog(self, gesture):
 		from .settings.dialog import ProfileSettingsDialog
-		wx.CallAfter(gui.mainFrame._popupSettingsDialog, ProfileSettingsDialog)
+		wx.CallAfter(self._popupSettingsDialog, ProfileSettingsDialog)
 
 	def onKeyboardKeysRenamingMenu(self, evt):
 		from .keyboardKeyRenaming import KeyboardKeyRenamingDialog
-		gui.mainFrame._popupSettingsDialog(KeyboardKeyRenamingDialog)
+		self._popupSettingsDialog(KeyboardKeyRenamingDialog)
 
 	def onResetConfiguration(self, evt):
 		from .settings import _addonConfigManager
@@ -647,16 +656,28 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		self.onExploreProgramFilesMenu(None)
 
 	def onCommandKeysSelectiveAnnouncementMenu(self, evt):
-		gui.mainFrame._popupSettingsDialog(
+		self._popupSettingsDialog(
 			commandKeysSelectiveAnnouncementAndRemanence.CommandKeysSelectiveAnnouncementDialog)
 
 	def chooseNVDAObjectOverlayClasses(self, obj, clsList):
-		clsList.insert(0, NVDAObjectEx)
+		from .WindowsExplorer import updateChooseNVDAOverlayClass
+		updateChooseNVDAOverlayClass(obj, clsList)
 		self.clipboardCommandAnnouncementChooseNVDAObjectOverlayClasses(obj, clsList)
 		if hasattr(self, "extendedNetUIHWNDChooseNVDAObjectOverlayClasses"):
 			self.extendedNetUIHWNDChooseNVDAObjectOverlayClasses(obj, clsList)
 		if hasattr(self, "browseModeExChooseNVDAObjectOverlayClasses"):
 			self.browseModeExChooseNVDAObjectOverlayClasses(obj, clsList)
+		# code comes from officeDesk.py module of nvda office desk add-on written by Joseph Lee.
+		from NVDAObjects.UIA import UIA, SearchField, SuggestionsList, SuggestionListItem
+		if isinstance(obj, UIA):
+			# Recognize search field found in backstage view.
+			if obj.UIAAutomationId == "HomePageSearchBox":
+				clsList.insert(0, SearchField)
+			# Also recognize suggestions list and its items.
+			elif obj.UIAElement.cachedClassName == "NetUIListView" and isinstance(obj.parent.previous, SearchField):
+				clsList.insert(0, SuggestionsList)
+			elif obj.UIAElement.cachedClassName == "NetUIListViewItem" and isinstance(obj.parent, SuggestionsList):
+				clsList.insert(0, SuggestionListItem)
 
 	def maximizeForegroundWindow(self):
 		self.maximizeWindowTimer = None
@@ -664,6 +685,7 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		maximizeWindow(oForeground.windowHandle)
 
 	def event_foreground(self, obj, nextHandler):
+		self.updateVolumeMuteKeyBinding()
 		if settings.toggleAutomaticWindowMaximizationOption(False):
 			if self.maximizeWindowTimer is not None:
 				self.maximizeWindowTimer.Stop()
@@ -672,6 +694,9 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		nextHandler()
 
 	def event_gainFocus(self, obj, nextHandler):
+		if isInstall(addonConfig.FCT_KeyRemanence):
+			from .commandKeysSelectiveAnnouncementAndRemanence import specialForGmail
+			specialForGmail.setShouldProcessRemanence()
 		if self._trapNextGainFocus:
 			self._trapNextGainFocus = False
 			return
@@ -684,36 +709,30 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			self.eventCaretTimer = None
 		nextHandler()
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_copyDateAndTimeToClip(self, gesture):
-		try:
-			# for NVDA version >= 2021.1
-			dateText = winKernel.GetDateFormatEx(
-				winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.DATE_LONGDATE, None, None)
-		except AttributeError:
-			dateText = winKernel.GetDateFormat(
-				winKernel.LOCALE_USER_DEFAULT, winKernel.DATE_LONGDATE, None, None)
+		dateText = winKernel.GetDateFormatEx(
+			winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.DATE_LONGDATE, None, None)
 		if settings.toggleReportTimeWithSecondsOption(False):
-			try:
-				# for NVDA version >= 2021.1
-				timeText = winKernel.GetTimeFormatEx(
-					winKernel.LOCALE_NAME_USER_DEFAULT, None, None, None)
-			except AttributeError:
-				timeText = winKernel.GetTimeFormat(
-					winKernel.LOCALE_USER_DEFAULT, None, None, None)
+			timeText = winKernel.GetTimeFormatEx(
+				winKernel.LOCALE_NAME_USER_DEFAULT, None, None, None)
 		else:
-			try:
-				# for NVDA version >= 2021.1
-				timeText = winKernel.GetTimeFormatEx(
-					winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.TIME_NOSECONDS, None, None)
-			except AttributeError:
-				timeText = winKernel.GetTimeFormat(
-					winKernel.LOCALE_USER_DEFAULT, winKernel.TIME_NOSECONDS, None, None)
+			timeText = winKernel.GetTimeFormatEx(
+				winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.TIME_NOSECONDS, None, None)
 		msg = "%s %s" % (dateText, timeText)
-		api.copyToClip(msg)
-		# Translators: message to report date and time copy to clipboard.
-		ui.message(_("{0} copied to clipboard").format(msg))
+		if api.copyToClip(msg):
+			# Translators: message to report date and time copy to clipboard.
+			ui.message(_("{0} copied to clipboard").format(msg))
+		else:
+			# Translators: Presented when unable to copy to the clipboard because of an error.
+			ui.message(NVDAString("Unable to copy"))
 
 	# modified nvda scripts
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_dateTimeEx(self, gesture):
 		def callback(action="time"):
 			speech.cancelSpeech()
@@ -721,32 +740,17 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 				self.script_copyDateAndTimeToClip(gesture)
 				return
 			if action == "date":
-				try:
-					# for NVDA version >= 2021.1
-					text = winKernel.GetDateFormatEx(winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.DATE_LONGDATE, None, None)
-				except AttributeError:
-					text = winKernel.GetDateFormat(
-						winKernel.LOCALE_USER_DEFAULT, winKernel.DATE_LONGDATE, None, None)
+				text = winKernel.GetDateFormatEx(winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.DATE_LONGDATE, None, None)
 				ui.message(text)
 				return
 			curLevel = config.conf["speech"]["symbolLevel"]
-			config.conf["speech"]["symbolLevel"] = SYMLVL_SOME
+			config.conf["speech"]["symbolLevel"] = SymbolLevel.SOME
 			if settings.toggleReportTimeWithSecondsOption(False):
-				try:
-					# for NVDA version >= 2021.1
-					text = winKernel.GetTimeFormatEx(
-						winKernel.LOCALE_NAME_USER_DEFAULT, None, None, None)
-				except AttributeError:
-					text = winKernel.GetTimeFormat(
-						winKernel.LOCALE_USER_DEFAULT, None, None, None)
+				text = winKernel.GetTimeFormatEx(
+					winKernel.LOCALE_NAME_USER_DEFAULT, None, None, None)
 			else:
-				try:
-					# for NVDA version >= 2021.1
-					text = winKernel.GetTimeFormatEx(
-						winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.TIME_NOSECONDS, None, None)
-				except AttributeError:
-					text = winKernel.GetTimeFormat(
-						winKernel.LOCALE_USER_DEFAULT, winKernel.TIME_NOSECONDS, None, None)
+				text = winKernel.GetTimeFormatEx(
+					winKernel.LOCALE_NAME_USER_DEFAULT, winKernel.TIME_NOSECONDS, None, None)
 			ui.message(text)
 			config.conf["speech"]["symbolLevel"] = curLevel
 		count = scriptHandler.getLastScriptRepeatCount()
@@ -762,6 +766,9 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 	if getInstallFeatureOption(addonConfig.FCT_DateAndTime):
 		script_dateTimeEx.removeCommandsScript = globalCommands.commands.script_dateTime
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportAppModuleInfoEx(self, gesture):
 		def reportAppModuleInfo():
 			globalCommands.commands.script_reportAppModuleInfo(None)
@@ -820,7 +827,7 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 
 	# new scripts
 	def script_report_SystrayIcons(self, gesture):
-		wx.CallAfter(ListeNotification.run)
+		wx.CallAfter(DisplayNotificationIconsList.run)
 
 	def script_report_WindowsList(self, gesture):
 		wx.CallAfter(ActiveWindowsListDisplay.run)
@@ -828,7 +835,7 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 	def script_report_SystrayIconsOrWindowsList(self, gesture):
 		def callback():
 			clearDelayScriptTask()
-			wx.CallAfter(ListeNotification.run)
+			wx.CallAfter(DisplayNotificationIconsList.run)
 
 		stopDelayScriptTask()
 		if scriptHandler.getLastScriptRepeatCount() == 0:
@@ -844,38 +851,53 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		from . import ComplexSymbols
 		wx.CallAfter(ComplexSymbols.LastUsedComplexSymbolsDialog.run)
 
+	def _getProductNameAndVersion(self, obj):
+		productName = ""
+		# for some software, procuttName contains control characters. Must be deleted.
+		for ch in obj.appModule.productName:
+			if ord(ch) < 32:
+				break
+			productName = productName + ch
+		appVersion = ""
+		# for some software, version contains control characters. Must be deleted.
+		for ch in obj.appModule.productVersion:
+			if ord(ch) < 32:
+				break
+			appVersion += ch
+		return (productName, appVersion)
+
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportAppProductNameAndVersion(self, gesture):
-		def callback(repeatCount):
-			clearDelayScriptTask()
-			obj = api.getFocusObject()
-			appName = obj.appModule.productName
-			appVersion = obj.appModule.productVersion
-			# Translators: message to report app version.
-			text = _("{0} version {1}") .format(appName, appVersion)
-			if repeatCount == 0:
-				ui.message(text)
-			else:
-				api.copyToClip(text)
-				# Translators: message to report that product name and version
-				# are copied to clipboard.
-				ui.message(_("Product name and version has been copied to clipboard"))
 		stopDelayScriptTask()
 		repeatCount = scriptHandler.getLastScriptRepeatCount()
+		(productName, appVersion) = self._getProductNameAndVersion(api.getFocusObject())
+		# Translators: message to report app version.
+		text = _("{0} version {1}") .format(productName, appVersion)
 		if repeatCount == 0:
-			delayScriptTask(callback, repeatCount)
+			ui.message(text)
 		else:
-			callback(repeatCount)
+			if api.copyToClip(text):
+				# Translators: message to report that product name and version are copied to clipboard.
+				ui.message(_("Product name and version has been copied to clipboard"))
+			else:
+				# Translators: Presented when unable to copy to the clipboard because of an error.
+				ui.message(NVDAString("Unable to copy"))
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportCurrentAddonNameAndVersion(self, gesture):
 		focus = api.getFocusObject()
 		mod = focus.appModule
 		if isinstance(mod, appModuleHandler.AppModule) and\
-			type(mod) != appModuleHandler.AppModule:
+			type(mod) is not appModuleHandler.AppModule:
 			addon = fetchAddon(focus.processID, focus.appModule.appName)
 			if addon is not None:
 				# Translators: indicate name and version of active addon
 				# for current focused application.
-				msg = _("add-on: {name}, version: {version}").format(
+				msg = _("Add-on: {name}, version: {version}").format(
 					name=addon.manifest["name"], version=addon.manifest["version"])
 				ui.message(msg)
 				return
@@ -923,8 +945,8 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		focus = api.getFocusObject()
 		appProcessName = appModuleHandler.getAppNameFromProcessID(
 			focus.processID, True)
-		appName = "%s, %s" % (appProcessName, focus.appModule.productName)
-		appVersion = focus.appModule.productVersion
+		(productName, appVersion) = self._getProductNameAndVersion(focus)
+		appName = "%s, %s" % (appProcessName, productName)
 		# Translators: Indicates the name of the current program and it version.
 		msg = _("Application: {appName} {appVersion}") .format(
 			appName=appName, appVersion=appVersion)
@@ -934,7 +956,7 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		mod = focus.appModule
 		modName = NVDAString("none")
 		if isinstance(mod, appModuleHandler.AppModule) and\
-			type(mod) != appModuleHandler.AppModule:
+			type(mod) is not appModuleHandler.AppModule:
 			modName = mod.appModuleName.split(".")[0]
 		modPath = mod.__module__.replace(".", "\\")
 		addons = []
@@ -958,8 +980,8 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		# Translators: indicates summary of current add-on.
 		text = _("Active add-on: %s") % info
 		textList.append(text)
-		# Translators: path of current add-on
-		text = _("add-on's path: %s") % path
+		# Translators: path of current add-on.
+		text = _("Add-on's path: %s") % path
 		textList.append(text)
 		if len(addons) > 1:
 			# Translators: indicate that others add-ons are installed
@@ -973,16 +995,25 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		dialogTitle = _("Application context's informations")
 		InformationDialog.run(None, dialogTitle, "", "\r\n".join(textList))
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportCurrentFolderName(self, gesture):
 		stopDelayScriptTask()
 		from .currentFolder import reportCurrentFolder
 		reportCurrentFolder(False)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportCurrentFolderFullPath(self, gesture):
 		stopDelayScriptTask()
 		from .currentFolder import reportCurrentFolder
 		reportCurrentFolder(True)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportCurrentFolder(self, gesture):
 		stopDelayScriptTask()
 		from .currentFolder import reportCurrentFolder
@@ -1019,11 +1050,11 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 				os.startfile(logFile)
 			except Exception:
 				wx.CallAfter(
-					gui.messageBox,
+					alert,
 					errorMsg,
 					# Translators: dialog title.
 					_("File open Error"),
-					wx.OK | wx.ICON_ERROR)
+				)
 		stopDelayScriptTask()
 		count = scriptHandler.getLastScriptRepeatCount()
 		if count == 0:
@@ -1033,25 +1064,35 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		else:
 			callback("copyPath")
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportPreviousSpeechHistoryRecord(self, gesture):
 		stopDelayScriptTask()
 		if speechHistory.isActive():
-			speechHistory.getSpeechRecorder().reportSpeechHistory("previous")
+			speechHistory.getSpeechRecorder().reportSpeechHistory("previous", toClip=False)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportNextSpeechHistoryRecord(self, gesture):
 		stopDelayScriptTask()
 		if speechHistory.isActive():
-			speechHistory.getSpeechRecorder().reportSpeechHistory("next")
+			speechHistory.getSpeechRecorder().reportSpeechHistory("next", toClip=False)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportCurrentSpeechHistoryRecord(self, gesture):
-		def callback():
+		def callback(count):
 			clearDelayScriptTask()
 			if speechHistory.isActive():
-				speechHistory.getSpeechRecorder().reportSpeechHistory("current")
+				speechHistory.getSpeechRecorder().reportSpeechHistory("current", toClip=True if count == 1 else False)
 		stopDelayScriptTask()
+
 		count = scriptHandler.getLastScriptRepeatCount()
-		if count == 0:
-			delayScriptTask(callback)
+		if count < 2:
+			delayScriptTask(executeWithSpeakOnDemand, callback, count)
 		else:
 			speechHistory.getSpeechRecorder().displaySpeechHistory()
 
@@ -1059,22 +1100,8 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		speechHistory.getSpeechRecorder().displaySpeechHistory()
 
 	def script_displayFormatting(self, gesture):
-		reportFormattingOptions = (
-			"reportFontName",
-			"reportFontSize",
-			"reportFontAttributes",
-			"reportSuperscriptsAndSubscripts",
-			"reportColor",
-			"reportStyle",
-			"reportAlignment",
-			"reportSpellingErrors",
-			"reportLineIndentation",
-			"reportParagraphIndentation",
-			"reportLineSpacing",
-			"reportBorderStyle",
-			"reportBorderColor",
-		)
-
+		from .reportFormatting import getReportFormattingOptions
+		reportFormattingOptions = getReportFormattingOptions()
 		# Create a dictionary to replace the config section that would normally be
 		# passed to getFormatFieldsSpeech / getFormatFieldsBraille
 		formatConfig = dict()
@@ -1113,12 +1140,12 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 
 	def script_keyboardKeyRenaming(self, gesture):
 		from .keyboardKeyRenaming import KeyboardKeyRenamingDialog
-		wx.CallAfter(gui.mainFrame._popupSettingsDialog, KeyboardKeyRenamingDialog)
+		wx.CallAfter(self._popupSettingsDialog, KeyboardKeyRenamingDialog)
 
 	def script_commandKeySelectiveAnnouncement(self, gesture):
 		from .commandKeysSelectiveAnnouncementAndRemanence import CommandKeysSelectiveAnnouncementDialog
 		wx.CallAfter(
-			gui.mainFrame._popupSettingsDialog, CommandKeysSelectiveAnnouncementDialog)
+			self._popupSettingsDialog, CommandKeysSelectiveAnnouncementDialog)
 
 	def script_minuteTimer(self, gesture):
 		from .minuteTimer import minuteTimer
@@ -1130,6 +1157,9 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		if obj:
 			wx.CallAfter(winExplorer.findAllNVDAObjects, obj)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_speakForegroundEx(self, gesture):
 		def callback(twice=False):
 			speech.cancelSpeech()
@@ -1137,18 +1167,18 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 				obj = api.getForegroundObject()
 				if obj:
 					from . import winExplorer
-					wx.CallAfter(winExplorer.findAllNVDAObjects, obj)
+					wx.CallAfter(executeWithSpeakOnDemand, winExplorer.findAllNVDAObjects, obj)
 			else:
 				globalCommands.commands.script_speakForeground(gesture)
 		count = scriptHandler.getLastScriptRepeatCount()
 		if count == 0:
-			callback(False)
+			delayScriptTask(callback, False)
 		else:
 			callback(True)
 	script_speakForegroundEx.removeCommandsScript = globalCommands.commands.script_speakForeground
 
 	def script_displayModuleUserGuide(self, gesture):
-		path = self.curAddon.getDocFilePath()
+		path = _curAddon.getDocFilePath()
 		ui.message(_("Please wait"))
 		os.startfile(path)
 
@@ -1158,63 +1188,64 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 
 	def script_shutdownComputer(self, gesture):
 		def callback():
-			if gui.messageBox(
+			if confirm_YesNo(
 				# Translators: message to confirm computer shutdown.
 				_("Are you sure you want to shutdown immediately the computer ?"),
 				# Translators: dialog title.
 				_("Confirmation"),
-				wx.YES | wx.NO | wx.CANCEL | wx.ICON_WARNING) != wx.YES:
+			) != ReturnCode.YES:
 				return
 			from .computerTools.shutdown_util import shutdown as shutdown
 			forceClose = True
 			timeout = 0
 			shutdown(timeout, forceClose)
-		# we must delay script execution cause messageBox
 		wx.CallAfter(callback)
 
 	def script_rebootComputer(self, gesture):
 		def callback():
-			if gui.messageBox(
+			if confirm_YesNo(
 				# Translators: message to confirm computer reboot.
 				_("Are you sure you want to reboot immediately the computer ?"),
 				# Translators: dialog title.
 				_("Confirmation"),
-				wx.YES | wx.NO | wx.CANCEL | wx.ICON_WARNING) != wx.YES:
+			) != ReturnCode.YES:
 				return
 			from .computerTools.shutdown_util import reboot as reboot
 			forceClose = True
 			timeout = 0
 			reboot(timeout, forceClose)
-		# we must delay script execution cause messageBox
 		wx.CallAfter(callback)
 
 	def script_hibernateComputer(self, gesture):
 		def callback():
-			if gui.messageBox(
+			if confirm_YesNo(
 				# Translators: message to confirm computer hibernation.
 				_("Are you sure you want to hibernate immediately the computer ?"),
 				# Translators: dialog title.
 				_("Confirmation"),
-				wx.YES | wx.NO | wx.CANCEL | wx.ICON_WARNING) != wx.YES:
+			) != ReturnCode.YES:
 				return
 			from .computerTools.shutdown_util import suspend as suspend
 			suspend(hibernate=True)
-		# we must delay script execution cause messageBox
 		wx.CallAfter(callback)
 
 	def _reportOrDisplayCurrentSpeechSettings(self, display=False):
 		from . import switchVoiceProfile
 		textList = switchVoiceProfile.SwitchVoiceProfilesManager().getSynthInformations()
+		text = "\r\n".join(textList)
 		if not display:
 			for item in textList:
-				ui.message(item)
+				executeWithSpeakOnDemand(speech.speakMessage, item)
+			braille.handler.message(text)
 		else:
-			text = "\r\n".join(textList)
 			# Translators: this is the title <of informationdialog box
 			# to show current speech settings.
 			dialogTitle = _("Current speech settings")
 			InformationDialog.run(None, dialogTitle, "", text)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportOrDisplayCurrentSpeechSettings(self, gesture):
 		stopDelayScriptTask()
 		if scriptHandler.getLastScriptRepeatCount() == 0:
@@ -1222,6 +1253,9 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		else:
 			wx.CallAfter(self._reportOrDisplayCurrentSpeechSettings, True)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_reportCurrentSpeechSettings(self, gesture):
 		stopDelayScriptTask()
 		wx.CallAfter(self._reportOrDisplayCurrentSpeechSettings)
@@ -1236,15 +1270,17 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 
 	def script_nextVoiceProfile(self, gesture):
 		from . import switchVoiceProfile
-		switchVoiceProfile.SwitchVoiceProfilesManager().nextVoiceProfile(
-			forward=True)
+		switchManager = switchVoiceProfile.SwitchVoiceProfilesManager()
+		switchManager .updateCurrentVoiceProfilSettings()
+		switchManager.nextVoiceProfile(forward=True)
 
 	def script_previousVoiceProfile(self, gesture):
 		from . import switchVoiceProfile
-		switchVoiceProfile.SwitchVoiceProfilesManager().nextVoiceProfile(
-			forward=False)
+		switchManager = switchVoiceProfile.SwitchVoiceProfilesManager()
+		switchManager .updateCurrentVoiceProfilSettings()
+		switchManager.nextVoiceProfile(forward=False)
 
-	def script_toggleSwitchVoiceProfileMode(self, gesture):
+	def _setSwitchVoiceProfileMode(self, mode=None):
 		__switchVoiceProfileModeGestures = {
 			"kb:leftArrow": "previousVoiceProfile",
 			"kb:rightArrow": "nextVoiceProfile",
@@ -1258,28 +1294,28 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			"kb:7": "setVoiceProfileSelector7",
 			"kb:8": "setVoiceProfileSelector8",
 		}
+		if mode:
+			self.switchVoiceProfileMode = "on" if mode == "off" else "off"
+		if self.switchVoiceProfileMode == "off":
+			self.switchVoiceProfileMode = "on"
+			ui.message(_("Voice profile switch mode on"))
+			self.bindGestures(__switchVoiceProfileModeGestures)
+		else:
+			self.switchVoiceProfileMode = "off"
+			ui.message(_("Voice profile switch mode off"))
+			self.clearGestureBindings()
+		self._bindGestures()
 
-		def toggleSwitchVoiceProfileMode(mmode=""):
-			if mode != "":
-				self.switchVoiceProfileMode = "on" if mode == "off" else "off"
-			if self.switchVoiceProfileMode == "off":
-				self.switchVoiceProfileMode = "on"
-				ui.message(_("Voice profile switch mode on"))
-
-				self.bindGestures(__switchVoiceProfileModeGestures)
-			else:
-				self.switchVoiceProfileMode = "off"
-				ui.message(_("Voice profile switch mode off"))
-				self.clearGestureBindings()
-				self._bindGestures()
-		mode = ""
+	def script_toggleSwitchVoiceProfileMode(self, gesture):
+		mode = None
 		if gesture.displayName == "escape":
 			mode = "off"
-		wx.CallAfter(toggleSwitchVoiceProfileMode, mode)
+		wx.CallAfter(executeWithSpeakOnDemand, self._setSwitchVoiceProfileMode, mode)
 
 	def setVoiceProfileSelector(self, selector):
 		from . import switchVoiceProfile
 		switchManager = switchVoiceProfile.SwitchVoiceProfilesManager()
+		switchManager .updateCurrentVoiceProfilSettings()
 		switchManager.setLastSelector(selector)
 		if switchManager.isSet(selector):
 			wx.CallAfter(switchManager.switchToVoiceProfile, selector)
@@ -1318,21 +1354,27 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 				# Translators: message to user no configuration change made.
 				_("There was no change of input gesture made by the user"))
 			return
-		wx.CallAfter(gui.mainFrame._popupSettingsDialog, UserInputGesturesDialog)
+		wx.CallAfter(self._popupSettingsDialog, UserInputGesturesDialog)
 
 	def script_toolsForAddon(self, gesture):
 		from . import tools
 		wx.CallAfter(tools.ToolsForAddonDialog.run)
 
-	def runScript(self, gesture):
-		self.bindGestures(self._shellGestures)
-		script = self.getScript(gesture)
-		self.clearGestureBindings()
+	def runScript(self, identifier):
+		gp = self
+		gp.clearGestureBindings()
+		gp.bindGestures(self._shellGestures)
+		from inputCore import normalizeGestureIdentifier
+		script = gp._gestureMap.get(normalizeGestureIdentifier(identifier))
+		gp.clearGestureBindings()
 		self._bindGestures()
-		queueHandler.queueFunction(queueHandler.eventQueue, script, gesture)
+		if script:
+			from keyboardHandler import KeyboardInputGesture
+			gesture = KeyboardInputGesture.fromName(identifier[3])
+			queueHandler.queueFunction(queueHandler.eventQueue, script, self, gesture)
 
 	def script_displayHelp(self, gesture):
-		HelperDialog.run(self)
+		wx.CallAfter(HelperDialog.run, self)
 
 	def script_leftClickAtNavigatorObjectPosition(self, gesture):
 		def callback(twice=False):
@@ -1432,25 +1474,28 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 				"""or "keys's remanence" functionnality is installed"""))
 		return False
 
-	def script_toggleNumpadStandardUse(self, gesture):
+	def _toggleNumpadStandardUse(self):
 		if not self.checkInstallationForNumpadFunctionnality():
 			return
 		from .settings import toggleEnableNumpadNavigationModeToggleAdvancedOption
 		if not toggleEnableNumpadNavigationModeToggleAdvancedOption(False):
-			ui.message(
+			messageWithSpeakOnDemand(
 				# Translators: message to user the fonctionnality is not available.
 				_("The standard use of the numeric keypad is not allowed"))
 			return
 		from .commandKeysSelectiveAnnouncementAndRemanence import _myInputManager
-		_myInputManager .toggleNavigationNumpadMode()
+		executeWithSpeakOnDemand(_myInputManager .toggleNavigationNumpadMode)
+
+	def script_toggleNumpadStandardUse(self, gesture):
+		self._toggleNumpadStandardUse()
 
 	def script_toggleNumpadStandardUseWithNumlockKey(self, gesture):
-
 		def callback(gesture):
 			clearDelayScriptTask()
 			if isInstall(addonConfig.FCT_CommandKeysSelectiveAnnouncement) or\
 				isInstall(addonConfig.FCT_KeyRemanence):
 				gesture.reportExtra()
+
 		stopDelayScriptTask()
 		if not settings.toggleEnableNumpadNavigationModeToggleAdvancedOption(False) or\
 			not settings.toggleActivateNumpadStandardUseWithNumLockAdvancedOption(False):
@@ -1463,29 +1508,49 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		else:
 			if not self.checkInstallationForNumpadFunctionnality():
 				return
-			self.script_toggleNumpadStandardUse(gesture)
+			self._toggleNumpadStandardUse()
 
 	def script_closeAllWindows(self, gesture):
 		def closeAll():
-			if gui.messageBox(
-				# Translators: message to confirm closing all windows
+			if confirm_YesNo(
+				# Translators: message to confirm closing all windows.
 				_("Are you sure you want to close all windows?"),
 				# Translators: dialog title.
 				_("Confirmation"),
-				wx.YES | wx.NO | wx.CANCEL | wx.ICON_WARNING) != wx.YES:
+			) != ReturnCode.YES:
 				return
 			from .activeWindowsListReport import getactiveWindows, closeAllWindows
 			windowsList = getactiveWindows()
 			closeAllWindows(windowsList)
 		wx.CallAfter(closeAll)
 
-	def script_EmulateApplicationsKey(self, gesture):
+	@scriptHandler.script(
+		description=NVDAString("Emulate key press: {emulateGesture}").format(
+			emulateGesture=localizedKeyLabels["applications"]),
+		category=inputCore.SCRCAT_KBEMU
+	)
+	def script_EmulateApplicationsCommand(self, gesture):
 		from keyboardHandler import KeyboardInputGesture
 		KeyboardInputGesture.fromName("Applications").send()
 		# Translators: Input help mode message for a keyboard command.
-	script_EmulateApplicationsKey.__doc__ = NVDAString("Emulate key press: {emulateGesture}").format(
-		emulateGesture="Applications")
-	script_EmulateApplicationsKey.category = inputCore.SCRCAT_KBEMU
+
+	@scriptHandler.script(
+		description=NVDAString("Emulate key press: {emulateGesture}").format(
+			emulateGesture=localizedKeyLabels["shift"] + "+" + localizedKeyLabels["applications"]),
+		category=inputCore.SCRCAT_KBEMU
+	)
+	def script_EmulateShiftPlusApplicationsCommand(self, gesture):
+		from keyboardHandler import KeyboardInputGesture
+		KeyboardInputGesture.fromName("shift+Applications").send()
+
+	@scriptHandler.script(
+		description=NVDAString("Emulate key press: {emulateGesture}").format(
+			emulateGesture=localizedKeyLabels["shift"] + "+" + "F10"),
+		category=inputCore.SCRCAT_KBEMU
+	)
+	def script_EmulateShiftPlusF10Command(self, gesture):
+		from keyboardHandler import KeyboardInputGesture
+		KeyboardInputGesture.fromName("shift+f10").send()
 
 	def script_displayRunningAddonsList(self, gesture):
 		from locale import strxfrm
@@ -1501,7 +1566,7 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		mixedTag = _("mixed")
 		# Translators: add-on type.
 		addonTypeLabel = _("%s add-on type:")
-		# Translators: no add-on
+		# Translators: no add-on.
 		noAddonText = _("any")
 		globalPlugins = []
 		mixes = []
@@ -1597,16 +1662,17 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			textInfo.expand(unit)
 		except Exception:
 			# Translators: message to user when text analysis is not available (for example by sentence).
-			ui.message(_("Text analysis not available"))
+			messageWithSpeakOnDemand(_("Text analysis not available"))
 			return
 		if unit in [textInfos.UNIT_SENTENCE, textInfos.UNIT_PARAGRAPH] and len(textInfo.text) > 80:
-			ui.message(_("Please wait"))
+			messageWithSpeakOnDemand(_("Please wait"))
+
 		(alertCount, textList) = getAnalyze(textInfo, unit)
 		if alertCount:
-			reportAnalysis(alertCount, textList, description=True)
+			executeWithSpeakOnDemand(reportAnalysis, alertCount, textList, description=True)
 		else:
 			# Translators: message to user to report no analysis alert.
-			ui.message(_("Nothing to report"))
+			messageWithSpeakOnDemand(_("Nothing to report"))
 
 	def script_analyzeCurrentWord(self, gesture):
 		wx.CallAfter(self.analyzeText, textInfos.UNIT_WORD)
@@ -1620,6 +1686,14 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 	def script_analyzeCurrentParagraph(self, gesture):
 		wx.CallAfter(self.analyzeText, textInfos.UNIT_PARAGRAPH)
 
+	def script_findNextTextAnalyzerAlert(self, gesture):
+		from .textAnalysis.textAnalyzer import moveToAlert
+		wx.CallAfter(moveToAlert, next=True),
+
+	def script_findPreviousTextAnalyzerAlert(self, gesture):
+		from .textAnalysis.textAnalyzer import moveToAlert
+		wx.CallAfter(moveToAlert, next=False)
+
 	def script_toggleReportCurrentCaretPosition(self, gesture):
 		from .settings.nvdaConfig import _NVDAConfigManager
 		state = _NVDAConfigManager.toggleReportCurrentCaretPositionOption()
@@ -1631,42 +1705,152 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 			msg = _("report current caret position off")
 		ui.message(msg)
 
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
+	def script_reportClipboardTextEx(self, gesture):
+		from .clipboardCommandAnnouncement import clipboard
+		cm = clipboard.ClipboardManager()
+		if cm.isEmpty:
+			ui.message(_("Clipboard is empty"))
+			return
+		try:
+			text = api.getClipData()
+		except Exception:
+			text = None
+		if not text or not isinstance(text, str) or text.isspace():
+			noTextMsg = NVDAString("There is no text on the clipboard")
+			# Translators: Presented when there is no text on the clipboard, but clipboard is not empty.
+			noEmptyMsg = _("but the clipboard is not empty")
+			ui.message("%s, %s" % (noTextMsg, noEmptyMsg))
+			return
+		from .settings import _addonConfigManager
+		maxLength = _addonConfigManager.getMaximumClipboardReportedCharacters()
+		textLength = len(text)
+		if not maxLength or (maxLength and textLength < maxLength):
+			repeatCount = scriptHandler.getLastScriptRepeatCount()
+			if repeatCount == 0:
+				tempText = text
+				while len(tempText) / 1024:
+					speech.speakMessage(tempText[:1025])
+					tempText = tempText[1025:]
+				if len(tempText):
+					speech.speakMessage(tempText)
+				braille.handler.message(text)
+			else:
+				speech.speakSpelling(text, useCharacterDescriptions=repeatCount > 1)
+		else:
+			from .utils.NVDAStrings import NVDAString_ngettext
+			msg = NVDAString_ngettext(
+				"The clipboard contains a large amount of text. It is %s character long",
+				"The clipboard contains a large amount of text. It is %s characters long",
+				textLength
+			)
+			ui.message(msg % textLength)
+
+	script_reportClipboardTextEx.removeCommandsScript = globalCommands.commands.script_reportClipboardText
+
 	def script_addToClip(self, gesture):
 		from .clipboardCommandAnnouncement .addToClip import addToClip
 		wx.CallAfter(addToClip)
 
+	def script_emptyClipboard(self, gesture):
+		from .clipboardCommandAnnouncement import clipboard
+		cm = clipboard.ClipboardManager()
+		if cm.clear():
+			# Translators: message to user to report clipboard.
+			ui.message(_("Clipboard cleared"))
+		else:
+			# Translators: message to user because of error on clipboard clearing.
+			ui.message(_("Error: clipboard cannot cleared"))
+
+	def script_displayClipboardText(self, gesture):
+		from .clipboardCommandAnnouncement import clipboard
+		cm = clipboard.ClipboardManager()
+		if cm.isEmpty:
+			ui.message(_("Clipboard is empty"))
+			return
+		try:
+			text = api.getClipData()
+		except Exception:
+			text = None
+		if not text or not isinstance(text, str) or text.isspace():
+			noTextMsg = NVDAString("There is no text on the clipboard")
+			# Translators: Presented when there is no text on the clipboard, but clipboard is not empty.
+			noEmptyMsg = _("but the clipboard is not empty")
+			ui.message("%s, %s" % (noTextMsg, noEmptyMsg))
+			return
+		from .settings import _addonConfigManager
+		maxLength = _addonConfigManager.getMaximumClipboardReportedCharacters()
+		textLength = len(text)
+		if not maxLength or (maxLength and textLength < maxLength):
+			from .utils.informationDialog import InformationDialog
+			InformationDialog.run(
+				None, _("Clipboard text"), "", text, insertionPointOnLastLine=False, copyButton=False)
+		else:
+			from .utils.NVDAStrings import NVDAString_ngettext
+			msg = NVDAString_ngettext(
+				"The clipboard contains a large amount of text. It is %s character long",
+				"The clipboard contains a large amount of text. It is %s characters long",
+				textLength
+			)
+			ui.message(msg % textLength)
+
 	def script_temporaryAudioOutputDeviceManager(self, gesture):
-		from .computerTools.audioDevice import TemporaryAudioDeviceManagerDialog
+		from .computerTools.temporaryOutputDevice import TemporaryAudioDeviceManagerDialog
 		TemporaryAudioDeviceManagerDialog.run()
 
-	def script_cancelTemporaryAudioOutputDevice(self, gesture):
-		from .computerTools.audioDevice import cancelTemporaryAudioOutputDevice
-		wx.CallAfter(cancelTemporaryAudioOutputDevice)
-
-	def script_setTemporaryAudioOutputDevice(self, gesture):
-		from .computerTools.audioDevice import setTemporaryAudioOutputDevice
+	def _setTemporaryAudioOutputDevice(self):
+		from .computerTools.audioUtils import get_outputDevices
+		from .computerTools.temporaryOutputDevice import (
+			setTemporaryAudioOutputDevice, getTemporaryOutputDevice)
 		from .settings import _addonConfigManager
-		deviceNames = _addonConfigManager.getAudioDevicesForCycle()
-		if not deviceNames or len(deviceNames) == 1:
-			# Translators: message to user when cycle is not possible
-			ui.message(_("cycle is not possible on audio output device"))
+		deviceNamesForCycle = _addonConfigManager.getAudioDevicesForCycle()
+		if not deviceNamesForCycle or (getTemporaryOutputDevice() is not None and len(deviceNamesForCycle) == 1):
+			# Translators: message to user when cycle is not possible.
+			messageWithSpeakOnDemand(_("cycle is not possible on audio output device"))
 			return
 		from synthDriverHandler import _audioOutputDevice
-		curOutputDevice = _audioOutputDevice
+		# from nvda 2025.1, current audio output device is stored by it id instead of it name
+		self.deviceIds, self.deviceNames = get_outputDevices()
+		curOutputDeviceName = _audioOutputDevice if (
+			NVDAVersion < [2025, 1]) else self.deviceNames[self.deviceIds.index(_audioOutputDevice)]
 		try:
-			selection = deviceNames.index(curOutputDevice)
+			curSelection = deviceNamesForCycle.index(curOutputDeviceName)
 		except ValueError:
-			selection = 0
-		selection = (selection + 1) % len(deviceNames)
-		audioDevice = deviceNames[selection]
-		setTemporaryAudioOutputDevice(audioDevice)
+			curSelection = 0
+		selection = (curSelection + 1) % len(deviceNamesForCycle)
+		outputDeviceName = deviceNamesForCycle[selection]
+		self.deviceIds, self.deviceNames = get_outputDevices()
+		index = self.deviceNames.index(outputDeviceName)
+		outputDeviceId = self.deviceIds[index]
+		# we don't want a confirm dialog
+		from .settings import toggleConfirmAudioDeviceChangeAdvancedOption
+		option = toggleConfirmAudioDeviceChangeAdvancedOption(False)
+		if option:
+			toggleConfirmAudioDeviceChangeAdvancedOption(True)
+		executeWithSpeakOnDemand(
+			setTemporaryAudioOutputDevice,
+			(outputDeviceName, outputDeviceId))
+		if option:
+			toggleConfirmAudioDeviceChangeAdvancedOption(True)
+
+	def script_cancelTemporaryAudioOutputDevice(self, gesture):
+		from .computerTools.temporaryOutputDevice import cancelTemporaryAudioOutputDevice
+		wx.CallAfter(executeWithSpeakOnDemand, cancelTemporaryAudioOutputDevice)
+
+	@scriptHandler.script(
+		**speakOnDemand
+	)
+	def script_setTemporaryAudioOutputDevice(self, gesture):
+		self._setTemporaryAudioOutputDevice()
 
 	def script_setOrCancelTemporaryAudioOutputDevice(self, gesture):
 		stopDelayScriptTask()
 		if scriptHandler.getLastScriptRepeatCount():
 			self.script_cancelTemporaryAudioDevice(None)
 		else:
-			delayScriptTask(self.script_setTemporaryAudioOutputDevice, None)
+			delayScriptTask(self._setTemporaryAudioOutputDevice)
 
 	def script_activateQuickAddonsActivationDialog(self, gesture):
 		from .settings.quickAddonsActivation import QuickAddonsActivationDialog
@@ -1685,15 +1869,11 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		synthName = getSynth().name
 		from .settings.nvdaConfig import _NVDAConfigManager
 		_NVDAConfigManager.saveLastSelectedSettingInSynthSettingsRing(synthName, id)
-		profileName = config.conf.profiles[-1].name
-		log.warning("Last selected setting in synth settings ring  is saved for '%s' profile: %s" % (
-			profileName, id))
 
 	@scriptHandler.script(
 		# Translators: Input help mode message for increase synth setting value command.
 		description=NVDAString("Increases the currently active setting in the synth settings ring"),
 		category=globalCommands.SCRCAT_SPEECH,
-		gestures=("kb(desktop):NVDA+control+upArrow", "kb(laptop):NVDA+shift+control+upArrow")
 	)
 	def script_increaseSynthSetting(self, gesture):
 		globalCommands.commands.script_increaseSynthSetting(gesture)
@@ -1703,7 +1883,6 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		# Translators: Input help mode message for decrease synth setting value command.
 		description=NVDAString("Decreases the currently active setting in the synth settings ring"),
 		category=globalCommands.SCRCAT_SPEECH,
-		gestures=("kb(desktop):NVDA+control+downArrow", "kb(laptop):NVDA+control+shift+downArrow")
 	)
 	def script_decreaseSynthSetting(self, gesture):
 		globalCommands.commands.script_decreaseSynthSetting(gesture)
@@ -1713,7 +1892,6 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		# Translators: Input help mode message for next synth setting command.
 		description=NVDAString("Moves to the next available setting in the synth settings ring"),
 		category=globalCommands.SCRCAT_SPEECH,
-		gestures=("kb(desktop):NVDA+control+rightArrow", "kb(laptop):NVDA+shift+control+rightArrow")
 	)
 	def script_nextSynthSetting(self, gesture):
 		globalCommands.commands.script_nextSynthSetting(gesture)
@@ -1723,15 +1901,80 @@ class NVDAExtensionGlobalPlugin(ScriptsForVolume, globalPluginHandler.GlobalPlug
 		# Translators: Input help mode message for previous synth setting command.
 		description=NVDAString("Moves to the previous available setting in the synth settings ring"),
 		category=globalCommands.SCRCAT_SPEECH,
-		gestures=("kb(desktop):NVDA+control+leftArrow", "kb(laptop):NVDA+shift+control+leftArrow")
 	)
 	def script_previousSynthSetting(self, gesture):
 		globalCommands.commands.script_previousSynthSetting(gesture)
 		self.saveCurrentSettingRing()
 
+	def _removeFailedDeletion(self):
+		log.debug("removing .delete files that NVDA was unable to delete")
+		from addonHandler import DELETEDIR_SUFFIX
+		userConfigPath = globalVars.appArgs.configPath
+		path = os.path.join(userConfigPath, "addons")
+		for p in os.listdir(path):
+			file = os.path.join(path, p)
+			if not os.path.isfile(file):
+				continue
+			if not p.endswith(DELETEDIR_SUFFIX):
+				continue
+			try:
+				os.remove(file)
+				log.debug("removing file: %s" % file)
+			except Exception:
+				log.error(f"Failed to delete file {file}, try removing manually")
+
+	@scriptHandler.script(
+	)
+	def script_volumeMuteKey(self, gesture):
+		from .settings.nvdaConfig import _NVDAConfigManager
+		from .computerTools.audioCore import audioOutputDevicesManager
+		device = audioOutputDevicesManager .getDefaultDevice()
+		mute = device.volumeObj.GetMute()
+		if mute:
+			gesture.send()
+			return
+		option = _NVDAConfigManager.getSendVolumeMuteKeyOption()
+		from .settings.nvdaConfig import SMK_WithConfirmation, SMK_InSecondPress, SMK_Never
+		if option == SMK_Never:
+			return
+		if option == SMK_InSecondPress:
+			count = scriptHandler.getLastScriptRepeatCount()
+			if count == 0:
+				pass
+			else:
+				gesture.send()
+			return
+		if option == SMK_WithConfirmation:
+			def callback():
+				if confirm_YesNo(
+					# Translators: message to confirm sending key
+					_("Are you sure you want to send the volume mute key?"),
+					# Translators: dialog title.
+					_("Confirmation"),
+				) == ReturnCode.YES:
+					gesture.send()
+			wx.CallLater(40, callback)
+
+	@scriptHandler.script(
+		**speakOnDemand,
+	)
 	def script_test(self, gesture):
-		log.info("NVDAExtensionGlobalPlugin  test")
-		ui.message("NVDAExtensionGlobalPlugin test")
+		log.info("NVDAExtensionGlobalPlugin test")
+		self.essai()
+
+	def essai(self):
+		from pycaw.utils import (
+			AudioDevice, AudioSession, AudioUtilities
+		)
+		sessions = AudioUtilities.GetAllSessions()
+		for session in sessions:
+			name = session.Process.name() if session.Process else None
+
+
+
+
+
+
 
 
 class HelperDialog(
@@ -1784,8 +2027,7 @@ class HelperDialog(
 		mainSizer = wx.BoxSizer(wx.VERTICAL)
 		sHelper = guiHelper.BoxSizerHelper(self, orientation=wx.VERTICAL)
 		# the list box
-		# Translators: This is the label of the list appearing
-		# on HelperDialog
+		# Translators: This is the label of the list appearing on HelperDialog.
 		labelText = _("Description: command")
 		self.scriptsListBox = sHelper.addLabeledControl(
 			labelText,
@@ -1799,8 +2041,7 @@ class HelperDialog(
 		bHelper = guiHelper.ButtonHelper(wx.HORIZONTAL)
 		runScriptButton = bHelper.addButton(
 			self,
-			# Translators: This is a label of a button appearing
-			# on HelperDialog
+			# Translators: This is a label of a button appearing on HelperDialog
 			label=_("&Execute the script"))
 		runScriptButton.SetDefault()
 		sHelper.addItem(bHelper)
@@ -1839,10 +2080,9 @@ class HelperDialog(
 		doc = self.docList[index]
 		script = self.docToScript[doc]
 		identifier = self.scriptToIdentifier[script]
-		from keyboardHandler import KeyboardInputGesture
-		gesture = KeyboardInputGesture.fromName(identifier[3:])
 		self.globalPlugin._trapNextGainFocus = True
-		wx.CallLater(1000, self.globalPlugin.runScript, gesture)
+		wx.CallLater(40, speech.cancelSpeech)
+		wx.CallLater(1000, self.globalPlugin.runScript, identifier)
 		self.Close()
 
 	@classmethod

@@ -1,9 +1,9 @@
-﻿#Ce fichier définit  les symboles et leur description
-# Les symboles sont répartis en catégorie dont le nom est spécifié entre crochets ouvrant et fermant.
-# chaque symbole et sa description est décritecomme suit:
-#- le symbole (un caractère,
-#- le séparateur "Tab",
-#- la description. 
+# Este arquivo define os símbolos e suas descrições.
+# Os símbolos estão organizados em categorias, indicadas por colchetes.
+# Cada linha segue o formato:
+# - símbolo (um caractere)
+# - separador tabulação (tab)
+# - descrição do símbolo
 
 [Vogais minúsculas acentuadas]
 á	a acento agudo
@@ -19,7 +19,7 @@
 ù	u acento grave
 â	a acento circunflexo
 ê	e acento circunflexo
-î	i acento circonflex
+î	i acento circunflexo
 ô	o acento circunflexo
 û	u acento circunflexo
 ã	a til
@@ -37,25 +37,25 @@
 Í	I acento agudo maiúsculo
 Ó	O acento agudo maiúsculo
 Ú	U acento agudo maiúsculo
-Ý	y acento agudo maiúsculo
-À	a acento grave maiúsculo
-È	e acento grave maiúsculo
-Ì	i acento grave maiúsculo
-Ò	o acento grave maiúsculo
-Ù	u acento grave maiúsculo
-Â	a acento circunflexo maiúsculo
-Ê	e acento circunflexo maiúsculo
-Î	i acento circunflexo maiúsculo
-Ô	o acento circunflexo maiúsculo
-Û	u acento circunflexo maiúsculo
-Ã	a til maiúsculo
-Ñ	n til maiúsculo
-Õ	o til maiúsculo
-Ä	a trema maiúsculo
-Ë	e trema maiúsculo
-Ï	i trema maiúsculo
-Ö	o trema maiúsculo
-Ü	u trema maiúsculo
+Ý	Y acento agudo maiúsculo
+À	A acento grave maiúsculo
+È	E acento grave maiúsculo
+Ì	I acento grave maiúsculo
+Ò	O acento grave maiúsculo
+Ù	U acento grave maiúsculo
+Â	A acento circunflexo maiúsculo
+Ê	E acento circunflexo maiúsculo
+Î	I acento circunflexo maiúsculo
+Ô	O acento circunflexo maiúsculo
+Û	U acento circunflexo maiúsculo
+Ã	A til maiúsculo
+Ñ	N til maiúsculo
+Õ	O til maiúsculo
+Ä	A trema maiúsculo
+Ë	E trema maiúsculo
+Ï	I trema maiúsculo
+Ö	O trema maiúsculo
+Ü	U trema maiúsculo
 
 [Símbolos monetários]
 €	Euro
@@ -77,14 +77,13 @@ $	Cifrão
 °	Graus
 µ	Micro
 ‰	1 por mil
-‰	por milhão
 ¼	um quarto
 ½	um meio
 ¾	três quartos
 ⅛	um oitavo
 ⅜	três oitavos
 ⅞	sete oitavos
-¬	 Hífen opcional (símbolo não lógico)
+¬	Hífen opcional (símbolo não lógico)
 ≠	diferente de
 ≤	menor ou igual a
 ≥	maior ou igual a 
@@ -94,10 +93,10 @@ $	Cifrão
 ∆	Incremento
 ∏	Sinal de produto
 ∑	Somatório
-√	Raíz quadrada
-∟	Ângulo recto
-∩	Interceção
-ƒ	Sinal de  Função
+√	Raiz quadrada
+∟	Ângulo reto
+∩	Interseção
+ƒ	Sinal de função
 
 [Símbolos de Pontuação]
 …	reticências
@@ -131,43 +130,43 @@ $	Cifrão
 œ	o e ligados minúsculo
 Ø	O cortado
 ø	o cortado
-º	ordinal masculino (o superscrito)
-ª	ordinal feminino (a superscrito)
+º	ordinal masculino (o sobrescrito)
+ª	ordinal feminino (a sobrescrito)
 ¯	macron
 Å	A com círculo sobrescrito (angström) maiúsculo 
-å	A com círculo sobrescrito (anneau ) minúsculo
+å	A com círculo sobrescrito (anneau) minúsculo
 Þ	letra Thorn Islandês maiúsculo
 þ	letra Thorn Islandês minúsculo
-Ð	letra  Eth Islandês maiúsculo
-ð	letra  Eth Islandês minúsculo
+Ð	letra Eth Islandês maiúsculo
+ð	letra Eth Islandês minúsculo
 •	Marca grande
 ‣	Marca triangular
 ·	ponto centrado
 ¦	Barra vertical cortada
 †	Adaga simples
 ‡	Adaga dupla
-℅	À atenção de
+℅	À atenção de (símbolo comercial antigo)
 ―	Barra horizontal
 ‾	Linha no topo
-&	E commercial (And)
+&	E comercial
 
 [Alfabeto Grego]
-α	Alpha minúsculo α
+α	Alpha minúsculo
 Α	Alpha maiúsculo
-β	Béta minúsculo
-Β	Béta maiúsculo
+β	Beta minúsculo
+Β	Beta maiúsculo
 γ	Gamma minúsculo
 Γ	Gamma maiúsculo
 δ	Delta minúsculo
 Δ	Delta maiúsculo
 ε	Epsilon minúsculo
 Ε	Epsilon maiúsculo
-ζ	Zéta minúsculo
-Ζ	Zéta maiúsculo
-η	Éta minúsculo
-Η	Éta maiúsculo
-θ	Théta minúsculo
-Θ	Théta maiúsculo
+ζ	Zeta minúsculo
+Ζ	Zeta maiúsculo
+η	Eta minúsculo
+Η	Eta maiúsculo
+θ	Theta minúsculo
+Θ	Theta maiúsculo
 ι	Iota minúsculo
 Ι	Iota maiúsculo
 κ	Kappa minúsculo
@@ -195,9 +194,9 @@ $	Cifrão
 Υ	Upsilon maiúsculo
 φ	Phi minúsculo
 Φ	Phi maiúsculo
-χ	Xi minúsculo
-Χ	Xi maiúsculo
+χ	Chi minúsculo
+Χ	Chi maiúsculo
 ψ	Psi minúsculo
 Ψ	Psi maiúsculo
-ω	Ómega minúsculo
-Ω	Ómega maiúsculo
+ω	Ômega minúsculo
+Ω	Ômega maiúsculo

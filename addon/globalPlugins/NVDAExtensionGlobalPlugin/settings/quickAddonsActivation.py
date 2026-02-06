@@ -1,25 +1,29 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\settings\quickAddonsActivation.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2021-2022 paulber19
+# Copyright (C) 2021-2025 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
 
 import addonHandler
 from logHandler import log
-import globalVars
 import wx
 import ui
 import core
-import gui
 from gui import nvdaControls
 from gui import guiHelper, mainFrame
 from ..utils import isOpened, makeAddonWindowTitle, getHelpObj
-from ..utils import contextHelpEx
+from ..gui import contextHelpEx
 from ..utils.NVDAStrings import NVDAString
 from locale import strxfrm
-from addonHandler import addonVersionCheck
-import addonAPIVersion
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, ReturnCode
+del sys.path[-1]
+
 
 addonHandler.initTranslation()
 
@@ -92,38 +96,55 @@ class QuickAddonsActivationDialog(
 		self.SetEscapeId(wx.ID_CANCEL)
 		self.addonsListBox.SetFocus()
 		self.refreshAddonsList()
+		self.Bind(wx.EVT_ACTIVATE, self.onActivate)
 
-	def refreshAddonsList(self, activeIndex=0):
+	def refreshAddonsList(self):
+		curIndex = self.addonsListBox.GetSelection()
+		self.addonsListBox.Clear()
 		self.addonsList = []
 		self.curActivatedAddons = []
 		self.curAddons = []
 		for addon in sorted(addonHandler.getAvailableAddons(), key=lambda a: strxfrm(a.manifest['summary'])):
-			addonIncompatible = (
-				not addonVersionCheck.isAddonCompatible(
-					addon,
-					currentAPIVersion=addonAPIVersion.CURRENT,
-					backwardsCompatToVersion=addonAPIVersion.BACK_COMPAT_TO
-				)
-			)
-			if addonIncompatible or addon.isBlocked:
-				continue
 			if (
-				addon.isRunning and not addon.isPendingDisable
-				or addon.isDisabled and (
-					not addon.isPendingDisable or not globalVars.appArgs.disableAddons)):
-				self.curAddons.append(addon)
+				not addon.isInstalled
+				or addon.requiresRestart):
+				continue
+
+			if (
+				addon.isPendingDisable
+				or addon.isPendingEnable
+				or addon.isPendingRemove
+				or addon.isPendingInstall
+			):
+				continue
+			self.curAddons.append(addon)
+
 		for addon in self.curAddons:
 			state = addon.isRunning
 			if state:
 				index = self.curAddons.index(addon)
 				self.curActivatedAddons.append(index)
-		self.addonsListBox.AppendItems([x.manifest["summary"] for x in self.curAddons])
+		for addon in self.curAddons:
+			nameItem = addon.manifest["summary"]
+			if not addon.isCompatible:
+				# Translators: label to mark the add-on incompatible
+				nameItem = nameItem + " (%s)" % _("incompatible")
+			self.addonsListBox.AppendItems(nameItem)
 		self.addonsListBox.SetCheckedItems(self.curActivatedAddons)
-		self.addonsListBox.SetSelection(0)
+		if curIndex < 0 or curIndex > len(self.curAddons) - 1:
+			curIndex = 0
+		self.addonsListBox.SetSelection(curIndex)
 
 	def Destroy(self):
 		QuickAddonsActivationDialog._instance = None
 		super(QuickAddonsActivationDialog, self).Destroy()
+
+	def onActivate(self, evt):
+		isActive = evt.GetActive()
+		self.isActive = isActive
+		if isActive:
+			self.refreshAddonsList()
+		evt.Skip()
 
 	def onCheckAll(self, evt):
 		for addon in self.curAddons:
@@ -148,12 +169,10 @@ class QuickAddonsActivationDialog(
 			# Translators: A message asking the user if they wish to restart NVDA
 			# even if there were no changes
 			restartMessage = _("There is no change. Do you want to restart NVDA anyway?")
-			result = gui.messageBox(
-				message=restartMessage,
-				caption=restartTitle,
-				style=wx.YES | wx.NO | wx.ICON_WARNING
-			)
-			if wx.YES == result:
+			if confirm_YesNo(
+				restartMessage,
+				restartTitle,
+			) == ReturnCode.YES:
 				core.restart()
 			return
 		# there is  change, so set state of all cur addons
@@ -164,6 +183,8 @@ class QuickAddonsActivationDialog(
 				continue
 			addon = self.curAddons[index]
 			shouldEnable = index in checkedItems
+			if shouldEnable and not addon.isCompatible:
+				addon.enableCompatibilityOverride()
 			try:
 				addon.enable(shouldEnable)
 			except addonHandler.AddonError:

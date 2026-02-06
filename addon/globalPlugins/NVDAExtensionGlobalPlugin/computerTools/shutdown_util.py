@@ -1,19 +1,39 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\computerTools\shutdown_util.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2019 - 2020 paulber19
+# Copyright (C) 2019 - 2025 paulber19
 # This file is covered by the GNU General Public License.
 
 import addonHandler
+from logHandler import log
 import os
 import sys
 import ctypes
-from ..utils.py3Compatibility import getUtilitiesPath
-utilitiesPath = getUtilitiesPath()
-win32Path = os.path.join(utilitiesPath, "win32")
+from ..utils.py3Compatibility import getCommonUtilitiesPath
+sysPath = list(sys.path)
+win32securityModulePath = None
+if "win32security" in sys.modules:
+	log.warning(
+		"Potential incompatibility: win32security module is also used and loaded probably by other add-on")
+	win32securityModulePath = sys.modules["win32security"]
+	del sys.modules["win32security"]
+win32apiModulePath = None
+if "win32api" in sys.modules:
+	log.warning("Potential incompatibility: win32apimodule is also used and loaded probably by other add-on")
+	win32apiModulePath = sys.modules["win32api"]
+	del sys.modules["win32api"]
+sys.path = [sys.path[0]]
+utilitiesPath = getCommonUtilitiesPath()
+win32Path = os.path.join(utilitiesPath, "win32Ex")
+sys.path.append(utilitiesPath)
 sys.path.append(win32Path)
-import win32security
-import win32api
-del sys.path[-1]
+from win32Ex import win32security
+from win32Ex import win32api
+sys.path = sysPath
+del sys.modules["win32Ex"]
+if win32securityModulePath is not None:
+	sys.modules["win32security"] = win32securityModulePath
+if win32apiModulePath is not None:
+	sys.modules["win32api"] = win32apiModulePath
 
 addonHandler.initTranslation()
 

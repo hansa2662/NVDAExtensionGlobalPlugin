@@ -1,37 +1,53 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\settings\__init__.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016 - 2022 Paulber19
+# Copyright (C) 2016 - 2025 Paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
 # Manages configuration.
 import addonHandler
 from logHandler import log
-import os
 import core
 import queueHandler
 import globalVars
 import config
-import gui
 import wx
 import buildVersion
 import ui
 from configobj.validate import Validator, VdtTypeError
 from languageHandler import getLanguage
 from . import addonConfig
+from ..utils.secure import inSecureMode
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, warn, ReturnCode
+del sys.path[-1]
 
 addonHandler.initTranslation()
+# list of functionnalities which should not be installed in secure mode
+_functionnalitiesNoInSecurMode = [
+	addonConfig.FCT_SystrayIconsAndActiveWindowsList,
+	addonConfig.FCT_FocusedApplicationInformations,
+	addonConfig.FCT_ExtendedVirtualBuffer,
+	addonConfig.FCT_ClipboardCommandAnnouncement,
+	addonConfig.FCT_CurrentFolderReport,
+	addonConfig.FCT_RestartInDebugMode,
+	addonConfig.FCT_OpenCurrentOrOldNVDALogFile,
+	addonConfig.FCT_SplitAudio,
+	addonConfig.FCT_Tools,
+	addonConfig.FCT_TextAnalysis,
+	addonConfig.FCT_ManageUserConfigurations,
+	addonConfig.FCT_ExploreNVDA,
+	addonConfig.FCT_VariousOutSecureMode,
+]
 
 
 def getInstallFeatureOption(featureID):
-	if globalVars.appArgs.secure:
-		noInstallList = [
-			addonConfig.FCT_SystrayIconsAndActiveWindowsList,
-			addonConfig.FCT_OpenCurrentOrOldNVDALogFile,
-			addonConfig.FCT_Tools,
-			addonConfig.ID_ExploreNVDA,
-		]
-		if featureID in noInstallList:
+	if inSecureMode():
+		if featureID in _functionnalitiesNoInSecurMode:
 			return addonConfig.C_DoNotInstall
 	conf = _addonConfigManager.addonConfig
 	state = conf[addonConfig.SCT_InstallFeatureOptions].get(featureID)
@@ -45,6 +61,15 @@ def setInstallFeatureOption(featureID, option):
 	global _addonConfigManager
 	conf = _addonConfigManager.addonConfig
 	conf[addonConfig.SCT_InstallFeatureOptions][featureID] = option
+	log.debug("setInstallFeatureOption: feature= %s, value= %s" % (
+		featureID, conf[addonConfig.SCT_InstallFeatureOptions][featureID]))
+	if not isInstall(featureID):
+		deleteFeatureConfiguration(featureID)
+
+
+def deleteFeatureConfiguration(featureID):
+	from .nvdaConfig import _NVDAConfigManager
+	_NVDAConfigManager.deleteFeatureConfiguration(featureID)
 
 
 def isInstall(featureID):
@@ -63,6 +88,9 @@ def TOGGLE(sct, id, toggle):
 	conf = _addonConfigManager.addonConfig
 	if toggle:
 		conf[sct][id] = not conf[sct][id]
+		log.debug("toggle:  sct= %s, id= %s, value= %s" % (
+			sct, id, conf[sct][id]
+		))
 	return conf[sct][id]
 
 
@@ -86,16 +114,6 @@ def toggleRemindUpdateGeneralOptions(toggle=True):
 def toggleOption(id, toggle):
 	sct = addonConfig.SCT_Options
 	return TOGGLE(sct, id, toggle)
-
-
-def toggleReportNextWordOnDeletionOption(toggle=True):
-	# bug fix in nvda 2020.3
-	# so return always False if nvda version is equal or higher to this version
-	import versionInfo
-	NVDAVersion = [versionInfo.version_year, versionInfo.version_major]
-	if NVDAVersion >= [2020, 3]:
-		return False
-	return toggleOption(addonConfig.ID_ReportNextWordOnDeletion, toggle)
 
 
 def toggleNoDescriptionReportInRibbonOption(toggle=True):
@@ -147,6 +165,10 @@ def toggleIncreaseSpeakersVolumeIfNecessaryAdvancedOption(toggle=True):
 	return toggleAdvancedOption(addonConfig.ID_IncreaseSpeakersVolumeIfNecessary, toggle)
 
 
+def toggleNVDAOnBothChannelsAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_NVDAOnBothChannels, toggle)
+
+
 def toggleDialogTitleWithAddonSummaryAdvancedOption(toggle=True):
 	return toggleAdvancedOption(addonConfig.ID_DialogTitleWithAddonSummary, toggle)
 
@@ -183,8 +205,54 @@ def toggleConfirmAudioDeviceChangeAdvancedOption(toggle=True):
 	return toggleAdvancedOption(addonConfig.ID_ConfirmAudioDeviceChange, toggle)
 
 
+def toggleReportNumlockStateAtStartAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_ReportNumlockStateAtStart, toggle)
+
+
+def toggleReportCapslockStateAtStartAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_ReportCapslockStateAtStart, toggle)
+
+
+def toggleReversedPathWithLevelAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_ReversedPathWithLevel, toggle)
+
+
+def toggleLimitKeyRepeatsAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_LimitKeyRepeats, toggle)
+
+
+def toggleRecordCurrentSettingsForCurrentSelectorAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_RecordCurrentSettingsForCurrentSelector, toggle)
+
+
+def toggleTypedWordSpeakingEnhancementAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_TypedWordSpeakingEnhancement, toggle)
+
+
+def toggleAllowNVDATonesVolumeAdjustmentAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_AllowNVDATonesVolumeAdjustment, toggle)
+
+
+def toggleAllowNVDASoundGainModificationAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_AllowNVDASoundGainModification, toggle)
+
+
+def togglePlayToneOnAudioDeviceAdvancedOption(toggle=True):
+	return toggleAdvancedOption(addonConfig.ID_PlayToneOnAudioDevice, toggle)
+
+
+def renameFile(file, dest):
+	try:
+		if os.path.exists(dest):
+			os.remove(dest)
+		os.rename(file, dest)
+		log.debug("current configuration file: %s renamed to : %s" % (file, dest))
+	except Exception:
+		log.error("current configuration file: %s  cannot be renamed to: %s" % (file, dest))
+
+
 class AddonConfigurationManager():
-	_currentConfigVersion = "2.8"
+	_currentConfigVersion = "3.2"
 	_configFileName = "NVDAExtensionGlobalPluginAddon.ini"
 	_versionToConfiguration = {
 
@@ -192,6 +260,10 @@ class AddonConfigurationManager():
 		"2.6": addonConfig.AddonConfiguration26,
 		"2.7": addonConfig.AddonConfiguration27,
 		"2.8": addonConfig.AddonConfiguration28,
+		"2.9": addonConfig.AddonConfiguration29,
+		"3.0": addonConfig.AddonConfiguration30,
+		"3.1": addonConfig.AddonConfiguration31,
+		"3.2": addonConfig.AddonConfiguration32,
 	}
 
 	def __init__(self):
@@ -202,6 +274,7 @@ class AddonConfigurationManager():
 		self.basicLocalizedKeyLabels = localizedKeyLabels.copy()
 		self.restoreAddonProfilesConfig(self.addonName)
 		self.loadSettings()
+		log.debug("%s configuration: %s" % (self.addonName, self.addonConfig))
 		self.setIsTestVersionFlag()
 		config.post_configSave.register(self.handlePostConfigSave)
 
@@ -216,7 +289,10 @@ class AddonConfigurationManager():
 		profileNames = []
 		profileNames.extend(config.conf.listProfiles())
 		for name in profileNames:
-			profile = config.conf._getProfile(name)
+			try:
+				profile = config.conf._getProfile(name)
+			except Exception:
+				continue
 			if profile.get("%s-temp" % addonName):
 				log.warning("restoreAddonProfilesConfig: profile %s" % name)
 				profile[addonName] = profile["%s-temp" % addonName].copy()
@@ -232,22 +308,31 @@ class AddonConfigurationManager():
 	def warnConfigurationReset(self):
 		wx.CallLater(
 			100,
-			gui.messageBox,
+			warn,
+
 			# Translators: A message warning configuration reset.
 			_(
 				"The configuration file of the add-on contains errors. "
 				"The part of the configuration concerning the global parameters has been  reset to factory defaults"),
 			# Translators: title of message box
 			"{addon} - {title}" .format(addon=self.curAddon.manifest["summary"], title=_("Warning")),
-			wx.OK | wx.ICON_WARNING
 		)
 
 	def loadSettings(self):
+		log.debug("loading settings")
 		from .addonConfig import BaseAddonConfiguration, SCT_General, ID_ConfigVersion
-		addonConfigFile = os.path.join(
-			globalVars.appArgs.configPath, self._configFileName)
+		userConfigPath = globalVars.appArgs.configPath
+		self.addonConfigFile = addonConfigFile = os.path.join(userConfigPath, self._configFileName)
+		self.oldConfigFile = addonConfigFile + ".prev"
+		# after add-on installation and and the user does not want to keep the configuration
+		# the configuration has been renamed with .delete extension
+		# if this file exists, it must be deleted
+		self.deleteConfigFile = self.addonConfigFile + ".delete"
+		if os.path.exists(self.deleteConfigFile):
+			os.remove(self.deleteConfigFile)
 		doMerge = True
 		if os.path.exists(addonConfigFile):
+			log.debug("Existing configuration file")
 			# there is allready a config file
 			try:
 				baseConfig = BaseAddonConfiguration(addonConfigFile)
@@ -267,6 +352,7 @@ class AddonConfigurationManager():
 				# error on reading config file, so delete it
 				os.remove(addonConfigFile)
 				self.warnConfigurationReset()
+		self.shouldSetRecoveryDefaultVolumes = False
 		if os.path.exists(addonConfigFile):
 			self.addonConfig =\
 				self._versionToConfiguration[self._currentConfigVersion](addonConfigFile)
@@ -286,15 +372,15 @@ class AddonConfigurationManager():
 			self.addonConfig =\
 				self._versionToConfiguration[self._currentConfigVersion](None)
 			self.addonConfig.filename = addonConfigFile
-			# probably, it's an add-on installation, set default volume control parameters
-			from ..computerTools.volumeControl import setDefaultVolumeControl
-			setDefaultVolumeControl(self)
+			# probably, it's an add-on installation, set recovery default volumes
+			self.shouldSetRecoveryDefaultVolumes = True
 		# merge step
-		oldConfigFile = os.path.join(self.curAddon.path, self._configFileName)
-		if os.path.exists(oldConfigFile):
+		if os.path.exists(self.oldConfigFile):
+			log.debug("Previous config file found: %s" % self.oldConfigFile)
 			if doMerge:
-				self.mergeSettings(oldConfigFile)
-			os.remove(oldConfigFile)
+				self.mergeSettings(self.oldConfigFile)
+			os.remove(self.oldConfigFile)
+			log.debug("the %s config file has been removed" % self.oldConfigFile)
 		if not os.path.exists(addonConfigFile):
 			self.saveSettings(True)
 
@@ -312,7 +398,7 @@ class AddonConfigurationManager():
 			log.warning("Merge settings with old configuration : merge aborted")
 			wx.CallLater(
 				100,
-				gui.messageBox,
+				warn,
 				# Translators: message to inform the user
 				# than it's not possible to merge with old configuration because of error.
 				_(
@@ -320,7 +406,6 @@ class AddonConfigurationManager():
 					"""It's not possible to keep previous configuration""") % self.curAddon.manifest["summary"],
 				# Translators: title of message box
 				"{addon} - {title}" .format(addon=self.curAddon.manifest["summary"], title=_("Warning")),
-				wx.OK | wx.ICON_WARNING
 			)
 			core.callLater(
 				1000,
@@ -343,23 +428,41 @@ class AddonConfigurationManager():
 					else:
 						self.addonConfig[sect][k] = oldConfig[sect][k]
 		# others section
-		from .addonConfig import SCT_RedefinedKeyLabels
-		for sect in [SCT_RedefinedKeyLabels, ]:
+		from .addonConfig import SCT_RedefinedKeyLabels, SCT_CategoriesAndSymbols, SCT_AudioDevicesForCycle
+		for sect in [SCT_RedefinedKeyLabels, SCT_CategoriesAndSymbols, SCT_AudioDevicesForCycle]:
 			if sect in oldConfig.sections:
 				self.addonConfig[sect] = oldConfig[sect]
+
 
 	def handlePostConfigSave(self):
 		self.saveSettings(True)
 
+	def canConfigurationBeSaved(self, force):
+		# Never save config or state if running securely or if running from the launcher.
+		from NVDAState import shouldWriteToDisk
+		writeToDisk = shouldWriteToDisk()
+		if not writeToDisk:
+			log.debug("Not writing add-on configuration, either --secure or --launcher args present")
+			return False
+		# after add-on installation and and the user does not want to keep the configuration
+		# the configuration has been renamed with .delete extension
+		# if this file exists, configuration should not be saved
+		if os.path.exists(self.deleteConfigFile):
+			return False
+		# after an add-on removing, configuration is deleted so  don't save configuration if no nvda restart
+		if self.curAddon.isPendingRemove:
+			return False
+		# We don't save the configuration, in case the user
+			# would not have checked the "Save configuration on exit
+			# " checkbox in General settings and force is False
+		if not force and not config.conf['general']['saveConfigurationOnExit']:
+			return False
+		return True
+
 	def saveSettings(self, force=False):
-		# We never want to save config if runing securely
-		if globalVars.appArgs.secure:
+		if self.addonConfig is None:
 			return
-		# We save the configuration,
-			# in case the user would not have checked the "Save configuration on exit"
-			# checkbox in General settings or force is is True
-		if not force\
-			and not config.conf['general']['saveConfigurationOnExit']:
+		if not self.canConfigurationBeSaved(force):
 			return
 		if self.addonConfig is None:
 			return
@@ -372,19 +475,24 @@ class AddonConfigurationManager():
 			return
 		try:
 			self.addonConfig.write()
-			log.warning("add-on configuration saved")
+			log.warning("%s: configuration saved" % self.addonName)
+			# if an installation took place, the configuration file was renamed.
+			# so you have to do the same thing after saving
+			if os.path.exists(self.oldConfigFile):
+				renameFile(self.addonConfigFile, self.oldConfigFile)
 		except Exception:
 			log.warning("Could not save add-on configuration - probably read only file system")
 
 	def resetConfiguration(self):
 		from ..utils import makeAddonWindowTitle
-		if gui.messageBox(
+
+		if confirm_YesNo(
 			# Translators: A message asking the user to confirm reset of configuration.
 			_(
 				"The add-on configuration will be reset to factory values and NVDA will be restarted. "
 				"Would you like to continue?"),
 			makeAddonWindowTitle(_("Configuration reset")),
-			wx.YES | wx.NO | wx.ICON_WARNING) == wx.NO:
+		) != ReturnCode.YES:
 			return
 		addonConfigFile = os.path.join(
 			globalVars.appArgs.configPath, self._configFileName)
@@ -402,10 +510,10 @@ class AddonConfigurationManager():
 		config.post_configSave.unregister(self.handlePostConfigSave)
 
 	def saveRedefinedKeyLabels(self, keyLabels):
-		from .addonConfig import SCT_RedefinedKeyNames, SCT_RedefinedKeyLabels
+		from .addonConfig import SCT_RedefinedKeyLabels
 		lang = getLanguage().split("-")[0]
 		conf = self.addonConfig
-		if SCT_RedefinedKeyNames not in conf:
+		if SCT_RedefinedKeyLabels not in conf:
 			conf[SCT_RedefinedKeyLabels] = {}
 		elif lang in conf[SCT_RedefinedKeyLabels]:
 			del conf[SCT_RedefinedKeyLabels][lang]
@@ -461,7 +569,7 @@ class AddonConfigurationManager():
 			if sect not in conf[SCT_CategoriesAndSymbols][lang]:
 				conf[SCT_CategoriesAndSymbols][lang][sect] = {}
 			for symbol in userComplexSymbols[sect]:
-				conf[SCT_CategoriesAndSymbols	][lang][sect][symbol] =\
+				conf[SCT_CategoriesAndSymbols][lang][sect][symbol] =\
 					userComplexSymbols[sect][symbol]
 
 	def deleceAllUserComplexSymbols(self):
@@ -469,9 +577,6 @@ class AddonConfigurationManager():
 		conf = self.addonConfig
 		if SCT_CategoriesAndSymbols in conf:
 			del conf[SCT_CategoriesAndSymbols]
-			# delece All User Complex Symbols in configuration profiles
-		from .nvdaConfig import _NVDAConfigManager
-		_NVDAConfigManager.deleceAllLastUserComplexSymbols()
 
 	def getMaximumOfLastUsedSymbols(self):
 		from .addonConfig import SCT_AdvancedOptions, ID_MaximumOfLastUsedSymbols
@@ -482,6 +587,16 @@ class AddonConfigurationManager():
 		from .addonConfig import SCT_AdvancedOptions, ID_MaximumOfLastUsedSymbols
 		conf = self.addonConfig
 		conf[SCT_AdvancedOptions][ID_MaximumOfLastUsedSymbols] = str(max)
+
+	def getMaximumClipboardReportedCharacters(self):
+		from .addonConfig import SCT_AdvancedOptions, ID_MaxClipboardReportedCharacters
+		conf = self.addonConfig
+		return int(conf[SCT_AdvancedOptions][ID_MaxClipboardReportedCharacters])
+
+	def setMaximumClipboardReportedCharacters(self, max):
+		from .addonConfig import SCT_AdvancedOptions, ID_MaxClipboardReportedCharacters
+		conf = self.addonConfig
+		conf[SCT_AdvancedOptions][ID_MaxClipboardReportedCharacters] = str(max)
 
 	# minute timer feature
 	def getMinuteTimerOptions(self):
@@ -631,6 +746,16 @@ class AddonConfigurationManager():
 		conf = self.addonConfig
 		conf[SCT_AdvancedOptions][ID_MaximumDelayBetweenSameScript] = str(delay)
 
+	def getReducedPathItemsNumber(self):
+		from .addonConfig import SCT_AdvancedOptions, ID_ReducedPathItemsNumber
+		conf = self.addonConfig
+		return int(conf[SCT_AdvancedOptions][ID_ReducedPathItemsNumber])
+
+	def setReducedPathItemsNumber(self, nb):
+		from .addonConfig import SCT_AdvancedOptions, ID_ReducedPathItemsNumber
+		conf = self.addonConfig
+		conf[SCT_AdvancedOptions][ID_ReducedPathItemsNumber] = str(nb)
+
 	def getConfirmAudioDeviceChangeTimeOut(self):
 		from .addonConfig import SCT_AdvancedOptions, ID_ConfirmAudioDeviceChangeTimeOut
 		conf = self.addonConfig
@@ -678,31 +803,85 @@ class AddonConfigurationManager():
 			index = devices.index(device) + 1
 			conf[SCT_AudioDevicesForCycle][str(index)] = device
 
-	def getReportingSpellingErrorsByOption(self):
-		from .addonConfig import SCT_ReportingSpellingErrors, ID_ReportingBy
+	def getReportingSpellingErrorsByOption(self, reading=False):
+		from .addonConfig import (
+			SCT_ReportingSpellingErrors, ID_ReportingBy, ID_ReadingReportingBy,
+			RSE_Message, RSE_Sound, RSE_None
+		)
 		conf = self.addonConfig[SCT_ReportingSpellingErrors]
-		option = conf[ID_ReportingBy]
+		if reading:
+			option = conf[ID_ReadingReportingBy]
+			if option == RSE_None:
+				# default option
+				option = RSE_Message
+				self.setReportingSpellingErrorsByOption(option, reading=reading)
+		else:
+			option = conf[ID_ReportingBy]
+			if option == RSE_None:
+				# default option
+				option = RSE_Sound
+				self.setReportingSpellingErrorsByOption(option, reading=reading)
+
 		return option
 
-	def setReportingSpellingErrorsByOption(self, option):
-		from .addonConfig import SCT_ReportingSpellingErrors, ID_ReportingBy
+	def setReportingSpellingErrorsByOption(self, option, reading=False):
+		from .addonConfig import SCT_ReportingSpellingErrors, ID_ReportingBy, ID_ReadingReportingBy
 		conf = self.addonConfig[SCT_ReportingSpellingErrors]
-		conf[ID_ReportingBy] = option
+		if reading:
+			conf[ID_ReadingReportingBy] = option
+		else:
+			conf[ID_ReportingBy] = option
 
-	def reportingSpellingErrorsByBeep(self, option=None):
+	def reportingSpellingErrorsByBeep(self, option=None, reading=False):
 		if option is None:
-			option = self.getReportingSpellingErrorsByOption()
+			option = self.getReportingSpellingErrorsByOption(reading=reading)
 		return option == addonConfig.RSE_Beep
 
-	def reportingSpellingErrorsBySound(self, option=None):
+	def reportingSpellingErrorsBySound(self, option=None, reading=False):
 		if option is None:
-			option = self.getReportingSpellingErrorsByOption()
+			option = self.getReportingSpellingErrorsByOption(reading=reading)
 		return option == addonConfig.RSE_Sound
 
-	def reportingSpellingErrorsByMessage(self, option=None):
+	def reportingSpellingErrorsByMessage(self, option=None, reading=False):
 		if option is None:
-			option = self.getReportingSpellingErrorsByOption()
+			option = self.getReportingSpellingErrorsByOption(reading=reading)
 		return option == addonConfig.RSE_Message
+
+	def reportingSpellingErrorsByErrorReporting(self, option=None, reading=False):
+		if not option:
+			option = self.getReportingSpellingErrorsByOption(reading=reading)
+		return option == addonConfig.RSE_ErrorReporting
+
+	def reportingSpellingErrorsByNothing(self, option=None, reading=False):
+		if not option:
+			option = self.getReportingSpellingErrorsByOption(reading=reading)
+		return option == addonConfig.RSE_None
+
+	def getReadingReportingSpellingErrorsByOption(self):
+		return self.getReportingSpellingErrorsByOption(reading=True)
+
+	def setReadingReportingSpellingErrorsByOption(self, option):
+		self.setReportingSpellingErrorsByOption(option, reading=True)
+
+	def getKeyRepeatDelay(self):
+		from .addonConfig import SCT_AdvancedOptions, ID_KeyRepeatDelay
+		conf = self.addonConfig
+		return int(conf[SCT_AdvancedOptions][ID_KeyRepeatDelay])
+
+	def setKeyRepeatDelay(self, delay):
+		from .addonConfig import SCT_AdvancedOptions, ID_KeyRepeatDelay
+		conf = self.addonConfig
+		conf[SCT_AdvancedOptions][ID_KeyRepeatDelay] = str(delay)
+
+	def getTonalitiesVolumeLevel(self):
+		from .addonConfig import SCT_AdvancedOptions, ID_TonalitiesVolumeLevel
+		conf = self.addonConfig
+		return conf[SCT_AdvancedOptions][ID_TonalitiesVolumeLevel]
+
+	def setTonalitiesVolumeLevel(self, level):
+		from .addonConfig import SCT_AdvancedOptions, ID_TonalitiesVolumeLevel
+		conf = self.addonConfig
+		conf[SCT_AdvancedOptions][ID_TonalitiesVolumeLevel] = int(level)
 
 
 # singleton for add-on configuration manager

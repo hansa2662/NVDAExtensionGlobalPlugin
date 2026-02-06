@@ -1,25 +1,37 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\systemTrayIconsList\__init__.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016 - 2021 paulber19
+# Copyright (C) 2016 - 2023 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
-
 # Script originaly written by Yannick Mayot
+
 import addonHandler
+from logHandler import log
 import wx
-from oleacc import AccessibleObjectFromWindow, STATE_SYSTEM_INVISIBLE
 import time
 import winUser
+import NVDAObjects
 import ctypes
+from gui import guiHelper, mainFrame
 from ..utils.NVDAStrings import NVDAString
 from ..utils import isOpened, makeAddonWindowTitle, getHelpObj
-from gui import guiHelper, mainFrame
-from ..utils import contextHelpEx
+from ..gui import contextHelpEx
+import windowUtils
 
 addonHandler.initTranslation()
 
 
-class ListeNotification(
+def findWindow(windowClassPath):
+	hd = 0
+	for className in windowClassPath:
+		hd = ctypes.windll.user32.FindWindowExA(hd, 0, className, 0)
+		if not hd:
+			log.warning("search is aborted at className: %s" % str(className))
+			break
+	return hd
+
+
+class DisplayNotificationIconsList(
 	contextHelpEx.ContextHelpMixinEx,
 	wx.Dialog):
 	_instance = None
@@ -27,18 +39,29 @@ class ListeNotification(
 	helpObj = getHelpObj("hdr1-1")
 
 	def __new__(cls, *args, **kwargs):
-		if ListeNotification._instance is None:
+		if DisplayNotificationIconsList._instance is None:
 			return wx.Dialog.__new__(cls)
-		return ListeNotification._instance
+		return DisplayNotificationIconsList._instance
 
 	def __init__(self, parent):
-		if ListeNotification._instance is not None:
+		if DisplayNotificationIconsList._instance is not None:
 			return
-		ListeNotification._instance = self
+		DisplayNotificationIconsList._instance = self
 		# Translators: this is the title of NVDA - System tray icons 's list dialog.
 		dialogTitle = _("System tray icons 's list")
-		title = ListeNotification.title = makeAddonWindowTitle(dialogTitle)
-		super(ListeNotification, self).__init__(parent, wx.ID_ANY, title)
+		title = DisplayNotificationIconsList.title = makeAddonWindowTitle(dialogTitle)
+		super(DisplayNotificationIconsList, self).__init__(parent, wx.ID_ANY, title)
+		# init icons list
+		self.icons = []
+		from winVersion import getWinVer, WinVersion
+		winver = getWinVer()
+		# w11 22h2 and upper
+		if winver >= WinVersion(major=10, minor=0, build=22000):
+			# w11 and upper
+			self.updateIconsList_w11()
+		else:
+			# w10 and lower
+			self.updateIconsList_w10()
 		self.doGui()
 
 	def doGui(self):
@@ -48,15 +71,16 @@ class ListeNotification(
 		# Translators: this is the label of the list appearing
 		# in NVDA - System tray icons 's list dialog.
 		labelText = _("&Icons") + ":"
-		self.iconsList = sHelper.addLabeledControl(
+		self.iconsListBox = sHelper.addLabeledControl(
 			labelText,
 			wx.ListBox,
 			id=wx.ID_ANY,
 			style=wx.LB_SINGLE,
 			size=(700, 280))
-		self.iconsList.AppendItems(self.getIconsList())
-		if self.iconsList.Count:
-			self.iconsList.Select(0)
+		self.iconsListBox.AppendItems([x.name for x in self.icons])
+
+		if self.iconsListBox.Count:
+			self.iconsListBox.Select(0)
 		# the buttons
 		bHelper = guiHelper.ButtonHelper(wx.HORIZONTAL)
 		# Translators: this is a button appearing
@@ -81,63 +105,77 @@ class ListeNotification(
 		mainSizer.Fit(self)
 		self.SetSizer(mainSizer)
 		# the events
-		rightClickButton.Bind(wx.EVT_BUTTON, self.onRightMouseButton)
-		leftClickButton.Bind(wx.EVT_BUTTON, self.onLeftClick)
-		doubleLeftClickButton.Bind(wx.EVT_BUTTON, self.onDoubleLeftClick)
+		rightClickButton.Bind(wx.EVT_BUTTON, self.onRightClickButton)
+		leftClickButton.Bind(wx.EVT_BUTTON, self.onLeftClickButton)
+		doubleLeftClickButton.Bind(wx.EVT_BUTTON, self.onDoubleLeftClickButton)
 		closeButton.Bind(wx.EVT_BUTTON, lambda evt: self.Destroy())
 		self.SetEscapeId(wx.ID_CLOSE)
-		self.iconsList.SetFocus()
+		self.iconsListBox.SetFocus()
 
 	def Destroy(self):
-		ListeNotification._instance = None
-		super(ListeNotification, self).Destroy()
+		DisplayNotificationIconsList._instance = None
+		super(DisplayNotificationIconsList, self).Destroy()
 
-	def getIconsList(self):
-		hd = ctypes.windll.user32.FindWindowExA(None, None, b"Shell_TrayWnd", None)
-		path = (b"TrayNotifyWnd", b"SysPager", b"ToolbarWindow32")
-		for element in path:
-			hd = ctypes.windll.user32.FindWindowExA(hd, 0, element, 0)
-		oListe = AccessibleObjectFromWindow(hd, -4)
-		location, self.PositionXY = None, []
-		max = oListe.accChildCount
-		name = ""
-		namesList = []
-		for i in range(1, max + 1):
-			if (oListe.accState(i) & STATE_SYSTEM_INVISIBLE):
-				continue
-			name = oListe.accName(i)
-			if name:
-				name = name.replace("\n", ". ")
-				name = name.replace("\r", "")
-				location = oListe.accLocation(i)
-				x = int(location[0] + location[2] / 2)
-				y = int(location[1] + location[3] / 2)
-				self.PositionXY.append((x, y))
-				namesList.append(name)
-		return namesList
+	def updateIconsList_w10(self):
+		path = (b"Shell_TrayWnd", b"TrayNotifyWnd", b"SysPager", b"ToolbarWindow32")
+		hd = findWindow(path)
+		if hd:
+			window = NVDAObjects.IAccessible.getNVDAObjectFromEvent(hd, -4, 0)
+			self.icons.extend([obj for obj in window.children])
+		else:
+			log.warning("Cannot find window: %s" % ", ".join([str(x) for x in path]))
 
-	def getPositionXY(self):
-		itemSelected = self.iconsList.GetSelection()
-		xyItem = self.PositionXY[itemSelected]
-		return xyItem
+	def updateIconsList_w11(self):
+		self.updateIconsList_w10()
+		path = (b"Shell_TrayWnd", b"TrayNotifyWnd", b"Windows.UI.Composition.DesktopWindowContentBridge")
+		hd = findWindow(path)
+		if hd:
+			window = NVDAObjects.IAccessible.getNVDAObjectFromEvent(hd, -4, 0).firstChild
+			self.icons.extend([obj for obj in window.children])
+		else:
+			# after 22h2 build 22621.1344, new object hierarchy
+			self.updateIconsList_w11_22h2_22621_1344()
 
-	def onLeftClick(self, event):
-		self.clickLeftMouseButton(1)
+	def updateIconsList_w11_22h2_22621_1344(self):
+		h = winUser.FindWindow("Shell_TrayWnd", None)
+		# next line from systemTrayList add-on
+		hd = windowUtils.findDescendantWindow(
+			h, visible=None, controlID=None,
+			className="Windows.UI.Input.InputSite.WindowClass")
+		if hd:
+			window = NVDAObjects.IAccessible.getNVDAObjectFromEvent(hd, -4, 0)
+			objs = []
+			for obj in window.children:
+				if obj.name:
+					objs.append(obj)
+			self.icons.extend(objs)
+		else:
+			log.warning("Cannot find window: %s" % "Windows.UI.Input.InputSite.WindowClass")
 
-	def onRightMouseButton(self, event):
-		(x, y) = self.getPositionXY()
+	def getPosition(self):
+		index = self.iconsListBox.GetSelection()
+		location = self.icons[index].location
+		x = int(location[0] + location[2] / 2)
+		y = int(location[1] + location[3] / 2)
+		return (x, y)
+
+	def onRightClickButton(self, event):
+		(x, y) = self.getPosition()
 		self.Close()
 		winUser.setCursorPos(x, y)
 		winUser.mouse_event(winUser.MOUSEEVENTF_RIGHTDOWN, 0, 0, None, None)
 		time.sleep(0.01)
 		winUser.mouse_event(winUser.MOUSEEVENTF_RIGHTUP, 0, 0, None, None)
 
-	def onDoubleLeftClick(self, event):
+	def onLeftClickButton(self, event):
+		self.clickLeftMouseButton(1)
+
+	def onDoubleLeftClickButton(self, event):
 		self.clickLeftMouseButton(2)
 
 	def clickLeftMouseButton(self, nb):
 		self.Close()
-		(x, y) = self.getPositionXY()
+		(x, y) = self.getPosition()
 		winUser.setCursorPos(x, y)
 		for i in range(nb):
 			winUser.mouse_event(winUser.MOUSEEVENTF_LEFTDOWN, 0, 0, None, None)

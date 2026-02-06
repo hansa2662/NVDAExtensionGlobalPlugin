@@ -1,6 +1,6 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\clipboardCommandAnnouncement\__init__.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016 - 2022 Paulber19
+# Copyright (C) 2016 - 2025 Paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -10,54 +10,45 @@ import wx
 import api
 import textInfos
 import speech
+import speech.speech
+from speech.priorities import SpeechPriority
 import ui
 import time
-try:
-	# for nvda version >= 2021.2
-	from controlTypes.role import Role
-	ROLE_DOCUMENT = Role.DOCUMENT
-	ROLE_EDITABLETEXT = Role.EDITABLETEXT
-	ROLE_TREEVIEWITEM = Role.TREEVIEWITEM
-	ROLE_LISTITEM = Role.LISTITEM
-	from controlTypes.state import State
-	STATE_READONLY = State.READONLY
-	STATE_EDITABLE = State.EDITABLE
-	STATE_MULTILINE = State.MULTILINE
-	STATE_SELECTED = State.SELECTED
-except (ModuleNotFoundError, AttributeError):
-	from controlTypes import (
-		ROLE_DOCUMENT, ROLE_EDITABLETEXT,
-		ROLE_TREEVIEWITEM, ROLE_LISTITEM,
-		STATE_READONLY, STATE_EDITABLE,
-		STATE_MULTILINE, STATE_SELECTED)
-from editableText import EditableText
-import braille
+from controlTypes.role import Role
+from controlTypes.state import State
+import editableText
+import NVDAObjects.behaviors
 import config
-try:
-	# for nvda version >= 2021.2
-	from characterProcessing import SymbolLevel
-	SYMLVL_SOME = SymbolLevel.SOME
-except ImportError:
-	from characterProcessing import SYMLVL_SOME
+from characterProcessing import SymbolLevel
 from IAccessibleHandler import accNavigate
 from oleacc import (
 	STATE_SYSTEM_SELECTED,
 	NAVDIR_PREVIOUS, NAVDIR_NEXT,
 )
 import UIAHandler
+from NVDAObjects import NVDAObject
 from NVDAObjects.UIA import UIA
 import queueHandler
 import eventHandler
 import core
 import contentRecog.recogUi
+import unicodedata
+from ..utils.nvdaInfos import NVDAVersion
 from ..utils.NVDAStrings import NVDAString
-from ..settings import (
-	isInstall, toggleReportNextWordOnDeletionOption,
-)
+from ..utils import delayScriptTaskWithDelay, stopDelayScriptTask, clearDelayScriptTask
+from ..settings import isInstall
 from ..settings.addonConfig import (
 	FCT_ClipboardCommandAnnouncement,
 )
 from ..utils.keyboard import getEditionKeyCommands
+from . import clipboard
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, ReturnCode
+del sys.path[-1]
 
 addonHandler.initTranslation()
 
@@ -70,19 +61,21 @@ _msgCopy = _("Copy")
 # Translators: message to the user on undo command activation.
 _msgUnDo = _("Undo")
 # Translators: message to the user on select all command activation.
-_msgSelectAll = _("select all")
+_msgSelectAll = _("Select all")
 
 _clipboardCommands = {
-	"undo": (_msgUnDo, False),
-	"cut": (_msgCut, True),
-	"copy": (_msgCopy, True),
-	"paste": (_msgPaste, False)
+	# associate function to: check selection, check clipboard change, check empty clipboard
+	"undo": (_msgUnDo, False, False, False),
+	"cut": (_msgCut, True, True, False),
+	"copy": (_msgCopy, True, True, False),
+	"paste": (_msgPaste, False, False, True)
 }
 
 # task timer
 _GB_taskTimer = None
 
 _taskDelay = None
+NON_BREAKING_SPACE = 160
 
 
 def getWExplorerStatusBarText(foreground):
@@ -140,25 +133,13 @@ def reportPosition(pos):
 	if not _NVDAConfigManager.toggleReportCurrentCaretPositionOption(False):
 		return
 	info = pos.copy()
-	try:
-		if hasattr(info.bookmark, "_start"):
-			start = info.bookmark._start._startOffset
-		else:
-			start = info.bookmark.startOffset
-	except AttributeError:
-		return
-	lineInfo = info.copy()
-	lineInfo.collapse()
-	lineInfo.expand(textInfos.UNIT_LINE)
-	if hasattr(lineInfo.bookmark, "_start"):
-		lineStart = lineInfo.bookmark._start._startOffset
-	else:
-		lineStart = lineInfo.bookmark.startOffset
-	index = start - lineStart
+	from ..utils.textInfo import getRealPosition, getLineInfoMessage
+	position = getRealPosition(info)
+	lineNumberMessage = getLineInfoMessage(info)
 
-	def callback(index):
-		speech.speakMessage(str(index + 1))
-	_reportPositionTimer = wx.CallLater(500, callback, index)
+	def callback(position, lineNumberMessage):
+		ui.message("%s %s" % (lineNumberMessage, str(position + 1)))
+	_reportPositionTimer = wx.CallLater(500, callback, position, lineNumberMessage)
 
 
 class RecogResultNVDAObjectEx (contentRecog.recogUi.RecogResultNVDAObject):
@@ -181,7 +162,8 @@ class RecogResultNVDAObjectEx (contentRecog.recogUi.RecogResultNVDAObject):
 		config.conf["speech"]["symbolLevel"] = curLevel
 
 
-class EditableTextEx(EditableText):
+class EditableTextEx(editableText.EditableText):
+	characterTyped = False
 	_commandToScript = {
 		"copy": "copyToClipboard",
 		"cut": "cutAndCopyToClipboard",
@@ -196,11 +178,6 @@ class EditableTextEx(EditableText):
 				key = d[command]
 				if key != "":
 					self.bindGesture("kb:%s" % key, self._commandToScript[command])
-		# bug fix in nvda 2020.3
-					# so toggleReportNextWordOnDeletionOption return always since this version.
-		if toggleReportNextWordOnDeletionOption(False):
-			self.bindGesture("kb:control+numpadDelete", "controlDelete")
-			self.bindGesture("kb:control+delete", "controlDelete")
 
 	def getSelectionInfo(self):
 		obj = api.getFocusObject()
@@ -216,69 +193,123 @@ class EditableTextEx(EditableText):
 		return info
 
 	def script_copyToClipboard(self, gesture):
-		info = self.getSelectionInfo()
-		if not info:
-			# Translators: Reported when there is no text selected (for copying).
-			ui.message(NVDAString("No selection"))
-			gesture.send()
-			return
-		# Translators: Message presented when text has been copied to clipboard.
-		ui.message(_msgCopy)
-		gesture.send()
+		def callback(gesture):
+			clearDelayScriptTask()
+			info = self.getSelectionInfo()
+			if not info:
+				# Translators: Reported when there is no text selected (for copying).
+				ui.message(NVDAString("No selection"))
+				gesture.send()
+				return
+
+			def finaly():
+				cm = clipboard.ClipboardManager()
+				gesture.send()
+				time.sleep(0.1)
+				if cm.changed():
+					queueHandler.queueFunction(
+						queueHandler.eventQueue,
+						ui.message, _msgCopy)
+			# to check if clipboard has changed, we, now (nvda 2023.2), must use a thread !!!!
+			from threading import Thread
+			Thread(target=finaly).start()
+
+		stopDelayScriptTask()
+		# to filter out too fast script calls while holding down the command gesture.
+		delayScriptTaskWithDelay(80, callback, gesture)
 
 	def script_cutAndCopyToClipboard(self, gesture):
-		if STATE_READONLY in self.states or (
-			STATE_EDITABLE not in self.states
-			and STATE_MULTILINE not in self.states):
+		def callback():
+			clearDelayScriptTask()
+			if State.READONLY in self.states or (
+				State.EDITABLE not in self.states
+				and State.MULTILINE not in self.states):
+				gesture.send()
+				return
+			info = self.getSelectionInfo()
+			if not info:
+				# Translators: Reported when there is no text selected (for copying).
+				ui.message(NVDAString("No selection"))
+				gesture.send()
+				return
+			cm = clipboard.ClipboardManager()
 			gesture.send()
-			return
-		info = self.getSelectionInfo()
-		if not info:
-			# Translators: Reported when there is no text selected (for copying).
-			ui.message(NVDAString("No selection"))
-			gesture.send()
-			return
-		ui.message(_msgCut)
-		gesture.send()
+			time.sleep(0.1)
+			if cm.changed():
+				queueHandler.queueFunction(
+					queueHandler.eventQueue,
+					ui.message, _msgCut)
+
+		stopDelayScriptTask()
+		# to filter out too fast script calls while holding down the command gesture.
+		delayScriptTaskWithDelay(80, callback)
 
 	def script_pasteFromClipboard(self, gesture):
+		def callback():
+			clearDelayScriptTask()
+			if (
+				State.READONLY in self.states or (
+				State.EDITABLE not in self.states
+				and not State.MULTILINE)):
+				gesture.send()
+				return
+			cm = clipboard.ClipboardManager()
+			time.sleep(0.1)
+			if cm.isEmpty:
+				# Translators: message to report clipboard is empty
+				ui.message(_("Clipboard is empty"))
+				gesture.send()
+				return
+			queueHandler.queueFunction(
+				queueHandler.eventQueue,
+				ui.message, _msgPaste)
+			queueHandler.queueFunction(
+				queueHandler.eventQueue,
+				gesture.send)
+			wx.CallLater(400, self.reportCurrentLine)
+
+		stopDelayScriptTask()
+		# to filter out too fast script calls while holding down the command gesture.
+		delayScriptTaskWithDelay(80, callback)
+
+	def reportCurrentLine(self):
+		import treeInterceptorHandler
+		import controlTypes
+		obj = api.getFocusObject()
+		treeInterceptor = obj.treeInterceptor
 		if (
-			STATE_READONLY in self.states or (
-			STATE_EDITABLE not in self.states
-			and not STATE_MULTILINE)):
-			gesture.send()
-			return
-		ui.message(_msgPaste)
-		gesture.send()
-		from globalCommands import commands
-		wx.CallLater(100, commands.script_reportCurrentLine, None)
+			isinstance(treeInterceptor, treeInterceptorHandler.DocumentTreeInterceptor)
+			and not treeInterceptor.passThrough
+		):
+			obj = treeInterceptor
+		try:
+			info = obj.makeTextInfo(textInfos.POSITION_CARET)
+		except (NotImplementedError, RuntimeError):
+			info = obj.makeTextInfo(textInfos.POSITION_FIRST)
+		info.expand(textInfos.UNIT_LINE)
+		ui.message(info.text)
 
 	def script_undo(self, gesture):
-		if (
-			STATE_READONLY in self.states or (
-			STATE_EDITABLE not in self.states
-			and not STATE_MULTILINE)):
+		def callback():
+			clearDelayScriptTask()
+			if (
+				State.READONLY in self.states or (
+				State.EDITABLE not in self.states
+				and not State.MULTILINE)):
+				gesture.send()
+				return
+			queueHandler.queueFunction(
+				queueHandler.eventQueue,
+				ui.message, _msgUnDo)
 			gesture.send()
-			return
-		ui.message(_msgUnDo)
-		gesture.send()
 
-	def script_controlDelete(self, gesture):
-		from editableText import EditableText
-		gesture.send()
-		if not isinstance(self, EditableText):
-			log.warning("Not EtitableText class instance ")
-			return
-		time.sleep(0.3)
-		try:
-			info = self.makeTextInfo(textInfos.POSITION_CARET)
-		except Exception:
-			log.warning("not makeTextInfo")
-			return
-		self._caretScriptPostMovedHelper(textInfos.UNIT_WORD, gesture, info)
-		braille.handler.handleCaretMove(self)
+		stopDelayScriptTask()
+		# to filter out too fast script calls while holding down the command gesture.
+		delayScriptTaskWithDelay(80, callback)
 
 	def _caretScriptPostMovedHelper(self, speakUnit, gesture, info=None):
+		# Forget the word currently being typed as the user has moved the caret somewhere else.
+		speech.speech.clearTypedWordBuffer()
 		super(EditableTextEx, self)._caretScriptPostMovedHelper(speakUnit, gesture, info)
 		try:
 			info = self.makeTextInfo(textInfos.POSITION_CARET)
@@ -291,6 +322,8 @@ class EditableTextEx(EditableText):
 		_taskDelay = wx.CallLater(400, analyzeText, info, speakUnit)
 
 	def _caretMovementScriptHelper(self, gesture, unit):
+		# caret move but no character is typed. moving by arrow keys for exemple
+		self.characterTyped = False
 		try:
 			info = self.makeTextInfo(textInfos.POSITION_CARET)
 		except Exception:
@@ -312,7 +345,138 @@ class EditableTextEx(EditableText):
 		config.conf["speech"]["symbolLevel"] = curLevel
 
 
+class NVDAObjectExBase(NVDAObject):
+	def _reportErrorInPreviousWord(self, typedWord=None):
+		try:
+			# self might be a descendant of the text control; e.g. Symphony.
+			# We want to deal with the entire text, so use the caret object.
+			info = api.getCaretObject().makeTextInfo(textInfos.POSITION_CARET)
+			# This gets called for characters which might end a word; e.g. space.
+			# The character before the caret is the word end.
+			# The one before that is the last of the word, which is what we want.
+			info.move(textInfos.UNIT_CHARACTER, -2)
+			info.expand(textInfos.UNIT_CHARACTER)
+		except Exception:
+			# Focus probably moved.
+			log.debugWarning("Error fetching last character of previous word", exc_info=True)
+			return
+
+		# Fetch the formatting for the last word to see if it is marked as a spelling error,
+		# However perform the fetch and check in a future core cycle
+		# To give the content control more time to detect and mark the error itself.
+		# #12161: MS Word's UIA implementation certainly requires this delay.
+		def _detection(ch):
+			try:
+				formatConfig = config.conf["documentFormatting"].copy()
+				formatConfig["reportSpellingErrors"] = True
+				fields = info.getTextWithFields(formatConfig=formatConfig)
+			except Exception:
+				log.debugWarning("Error fetching formatting for last character of previous word", exc_info=True)
+				return
+			for command in fields:
+				if (
+					isinstance(command, textInfos.FieldCommand)
+					and command.command == "formatChange"
+					and command.field.get("invalid-spelling")
+				):
+					break
+			else:
+				# No error.
+				return False
+
+			#  to warn  error depending user configuration: wav, beep, message or error reporting
+			def warnSpellingError(typedWord):
+				from ..settings import _addonConfigManager
+				from ..speech.sayError import getErrorSpeechSequence, getErrorSoundSpeechSequence
+				if _addonConfigManager.reportingSpellingErrorsByMessage():
+					queueHandler.queueFunction(
+						queueHandler.eventQueue,
+						ui.message, NVDAString("spelling error"))
+					return
+				if _addonConfigManager.reportingSpellingErrorsByErrorReporting():
+					if typedWord is None:
+						seq = getErrorSoundSpeechSequence(typedWord)
+					else:
+						seq = getErrorSpeechSequence(typedWord)
+				else:
+					seq = getErrorSpeechSequence(reading=False)
+				if seq:
+					queueHandler.queueFunction(
+						queueHandler.eventQueue,
+						speech.speech.speak, seq, priority=SpeechPriority.NORMAL)
+
+			warnSpellingError(typedWord)
+
+		# #12161: MS Word's UIA implementation certainly requires this delay.
+		core.callLater(50, _detection, typedWord)
+
+	def _delayedReportErrorInPreviousWord(self, ch):
+		typedWord = self.hasWordTyped(ch)
+		self._reportErrorInPreviousWord(typedWord)
+
+	def hasWordTyped(self, ch: str):
+		typingIsProtected = api.isTypingProtected()
+		if typingIsProtected:
+			realChar = speech.speech.PROTECTED_CHAR
+		else:
+			realChar = ch
+		curWordChars = speech.speech._curWordChars[:]
+		if unicodedata.category(ch)[0] in "LMN":
+			curWordChars.append(realChar)
+		elif ch == "\b":
+			# Backspace, so remove the last character from our buffer.
+			del curWordChars[-1:]
+		elif ch == "\u007f":
+			# delete character produced in some apps with control+backspace
+			pass
+		elif len(curWordChars) > 0:
+			return "".join(curWordChars)
+		return None
+
+
+class NVDAObjectEx(NVDAObjectExBase):
+
+	def event_typedCharacter(self, ch: str):
+		if (
+			config.conf["keyboard"]["alertForSpellingErrors"]
+			and (
+			# Not alpha, apostrophe or control.
+				ch.isspace() or (ch >= " " and ch not in "'\x7f" and not ch.isalpha())
+			)
+		):
+			# Reporting of spelling errors is enabled and this character ends a word.
+			self._delayedReportErrorInPreviousWord(ch)
+		self.NVDAObject_event_typedCharacter(ch)
+
+	def NVDAObject_event_typedCharacter(self, ch):
+		from ..settings.nvdaConfig import _NVDAConfigManager
+		if not (ch.isalnum() or ch.isspace()):
+			typingEchoMode = config.conf["keyboard"]["speakTypedCharacters"]
+			if _NVDAConfigManager.toggleSpeakAlphaNumCharsOption(False):
+				if NVDAVersion < [2025, 1]:
+					# for nvda versions < 2025.1
+					config.conf["keyboard"]["speakTypedCharacters"] = True
+				else:
+					# for nvda versions >= 2025.1
+					from config.configFlags import TypingEcho
+					config.conf["keyboard"]["speakTypedCharacters"] = TypingEcho.ALWAYS.value
+			speech.speakTypedCharacters(ch)
+			config.conf["keyboard"]["speakTypedCharacters"] = typingEchoMode
+		else:
+			speech.speakTypedCharacters(ch)
+		import winUser
+
+		if (
+			config.conf["keyboard"]["beepForLowercaseWithCapslock"]
+			and ch.islower()
+			and winUser.getKeyState(winUser.VK_CAPITAL) & 1
+		):
+			import tones
+			tones.beep(3000, 40)
+
+
 class ClipboardCommandAnnouncement(object):
+	scriptDelay = None
 	_changeSelectionGestureToMessage = {
 		"shift+upArrow": None,
 		"shift+downArrow": None,
@@ -323,19 +487,18 @@ class ClipboardCommandAnnouncement(object):
 	}
 
 	def initOverlayClass(self):
-		if isInstall(FCT_ClipboardCommandAnnouncement):
-			editionKeyCommands = getEditionKeyCommands(self)
-			if self.checkSelection:
-				d = self._changeSelectionGestureToMessage .copy()
-				selectAllKey = editionKeyCommands["selectAll"]
-				if selectAllKey != "":
-					d[selectAllKey] = _msgSelectAll,
-				for key in d:
-					self.bindGesture("kb:%s" % key, "reportChangeSelection")
-			for item in _clipboardCommands:
-				key = editionKeyCommands[item]
-				if key != "":
-					self.bindGesture("kb:%s" % key, "clipboardCommandAnnouncement")
+		editionKeyCommands = getEditionKeyCommands(self)
+		if self.checkSelection:
+			d = self._changeSelectionGestureToMessage .copy()
+			selectAllKey = editionKeyCommands["selectAll"]
+			if selectAllKey != "":
+				d[selectAllKey] = _msgSelectAll,
+			for key in d:
+				self.bindGesture("kb:%s" % key, "reportChangeSelection")
+		for item in _clipboardCommands:
+			key = editionKeyCommands[item]
+			if key != "":
+				self.bindGesture("kb:%s" % key, "clipboardCommandAnnouncement")
 
 	def getSelectionCountByIA(self, obj):
 		count = 0
@@ -372,7 +535,7 @@ class ClipboardCommandAnnouncement(object):
 		count = 0
 		o = obj
 		while o:
-			if STATE_SELECTED in o.states:
+			if State.SELECTED in o.states:
 				count += 1
 			try:
 				o = o._get_next()
@@ -383,7 +546,7 @@ class ClipboardCommandAnnouncement(object):
 		while o:
 			try:
 				o = o.previous
-				if STATE_SELECTED in o.states:
+				if State.SELECTED in o.states:
 					count += 1
 			except Exception:
 				o = None
@@ -393,12 +556,12 @@ class ClipboardCommandAnnouncement(object):
 		obj = api.getFocusObject()
 		o = obj
 		while o:
-			if STATE_SELECTED in o.states:
+			if State.SELECTED in o.states:
 				return True
 			o = o._get_next()
 		o = obj.previous
 		while o:
-			if STATE_SELECTED in o.states:
+			if State.SELECTED in o.states:
 				return True
 			o = o.previous
 		return False
@@ -412,7 +575,7 @@ class ClipboardCommandAnnouncement(object):
 			text = NVDAString("No selection")
 		elif count == 1:
 			# Translators: no comment.
-			text = _(" one selected object")
+			text = _("One selected object")
 		elif count > 1:
 			# Translators: no comment.
 			text = _("%s selected objects") % count
@@ -428,7 +591,7 @@ class ClipboardCommandAnnouncement(object):
 			text = self.getSelectionInfo()
 			if text != "":
 				queueHandler.queueFunction(
-					queueHandler.eventQueue, speech.speakText, text, symbolLevel=SYMLVL_SOME)
+					queueHandler.eventQueue, speech.speakText, text, symbolLevel=SymbolLevel.SOME)
 
 		if _GB_taskTimer:
 			_GB_taskTimer.Stop()
@@ -444,41 +607,131 @@ class ClipboardCommandAnnouncement(object):
 		_GB_taskTimer = core.callLater(800, callback)
 
 	def script_clipboardCommandAnnouncement(self, gesture):
-		editionKeyCommands = getEditionKeyCommands(self)
-		d = {}
-		for item in _clipboardCommands:
-			d[editionKeyCommands[item]] = _clipboardCommands[item]
-		(msg, checkSelection) = d["+".join(gesture.modifierNames) + "+" + gesture.mainKeyName]
-		if self.checkSelection and checkSelection:
-			if not self.isThereASelection():
-				ui.message(NVDAString("No selection"))
-			else:
-				ui.message(msg)
-				# we send always command key
-				gesture.send()
-			return
-		ui.message(msg)
-		gesture.send()
+		stopDelayScriptTask()
+
+		def callback():
+			clearDelayScriptTask()
+			editionKeyCommands = getEditionKeyCommands(self)
+			d = {}
+			for item in _clipboardCommands:
+				d[editionKeyCommands[item]] = _clipboardCommands[item]
+			(msg, checkSelection, checkClipChange, checkClipEmpty) = d["+".join(
+				gesture.modifierNames) + "+" + gesture.mainKeyName]
+			cm = clipboard.ClipboardManager()
+			clipEmpty = cm.isEmpty if checkClipEmpty else None
+			selection = self.checkSelection if checkSelection else None
+			# we send always command key
+			gesture.send()
+			if selection:
+				if not self.isThereASelection():
+					ui.message(NVDAString("No selection"))
+					return
+
+			if clipEmpty:
+				# Translators: message to report clipboard is empty
+				ui.message(_("Clipboard is empty"))
+				return
+			if checkClipChange:
+				time.sleep(0.1)
+				if not cm.changed():
+					return
+			ui.message(msg)
+		delayScriptTaskWithDelay(80, callback)
 
 
 _classNamesToCheck = [
-	"Edit", "RichEdit", "RichEdit20", "REComboBox20W", "RICHEDIT50W",
+	"Edit", "RichEdit", "RichEdit20", "REComboBox20W", "RICHEDIT50W", "RichEditD2DPT",
 	"Scintilla", "TScintilla", "AkelEditW", "AkelEditA", "_WwG", "_WwN", "_WwO",
-	"SALFRAME"]
-_rolesToCheck = [ROLE_DOCUMENT, ROLE_EDITABLETEXT]
+	"SALFRAME", "ConsoleWindowClass"]
+_rolesToCheck = [Role.DOCUMENT, Role.EDITABLETEXT, Role.TERMINAL]
 
 
 def chooseNVDAObjectOverlayClasses(obj, clsList):
-	contentRecogClass = False
+	useRecogResultNVDAObjectEx = False
+	useEditableTextBaseEx = False
 	for cls in clsList:
 		if contentRecog.recogUi.RecogResultNVDAObject in cls.__mro__:
-			contentRecogClass = True
-	if contentRecogClass:
+			useRecogResultNVDAObjectEx = True
+		if NVDAObjects.behaviors.EditableTextBase in cls.__mro__:
+			useEditableTextBaseEx = True
+
+	if useEditableTextBaseEx:
+		if canInstallSpellingAtTypingFunctionnality:
+			clsList.insert(0, NVDAObjectEx)
+		else:
+			clsList.insert(0, NVDAObjectExBase)
+	if useRecogResultNVDAObjectEx:
 		clsList.insert(0, RecogResultNVDAObjectEx)
-	elif obj.role in _rolesToCheck or obj.windowClassName in _classNamesToCheck:
-		clsList.insert(0, EditableTextEx)
+	# to fix the Access8Math  problem with the "alt+m" virtual menu
+	# for the obj, the informations are bad: role= Window, className= Edit, not states
+	#  tand with no better solution, we check the length of obj.states
+	elif (
+		(
+			obj.role in _rolesToCheck
+			or hasattr(obj, "windowClassName")
+		and obj.windowClassName in _classNamesToCheck
+		)
+		and len(obj.states)
+	):
+		# newer revisions of Windows 11 build 22000 moves focus to emoji search field.
+		# However this means NVDA's own edit field scripts will override emoji panel commands.
+		# Therefore remove text field movement commands so emoji panel commands can be used directly.
+		if (
+			hasattr(obj, "UIAAutomationId")
+			and obj.UIAAutomationId == "Windows.Shell.InputApp.FloatingSuggestionUI.DelegationTextBox"
+		):
+			pass
+		else:
+			clsList.insert(0, EditableTextEx)
+		return
 	elif isInstall(FCT_ClipboardCommandAnnouncement):
 		clsList.insert(0, ClipboardCommandAnnouncement)
 		obj.checkSelection = False
-		if obj.role in (ROLE_TREEVIEWITEM, ROLE_LISTITEM):
+		if obj.role in (Role.TREEVIEWITEM, Role.LISTITEM):
 			obj.checkSelection = True
+
+
+def initialize():
+	setCanInstallSpellingAtTypingFunctionnality()
+
+	def callback():
+		if confirm_YesNo(
+			# Translators: message asking the user wether
+			# the clipboard command announcements feature should be disabled or not
+			_(
+				"The clipspeak add-on has been detected on your system. "
+				"In order for Clipboard command announcement feature to work without conflicts, "
+				"clipSpeak add-on must be desactivated or uninstalled."
+				"But if you want to use clipSpeak add-on, Clipboard command announcement feature must be uninstalled."
+				" Would you like to uninstall this feature now?"),
+			# Translators: warning dialog title
+			_("Warning"),
+		) != ReturnCode.YES:
+			return
+		from ..settings.addonConfig import C_DoNotInstall
+		from ..settings import setInstallFeatureOption
+		setInstallFeatureOption(FCT_ClipboardCommandAnnouncement, C_DoNotInstall)
+		from ..settings.dialog import askForNVDARestart
+		askForNVDARestart()
+	if isInstall(FCT_ClipboardCommandAnnouncement):
+		for addon in addonHandler.getRunningAddons():
+			if addon.name == "clipspeak":
+				wx.CallAfter(callback)
+				break
+
+
+canInstallSpellingAtTypingFunctionnality = None
+
+
+def setCanInstallSpellingAtTypingFunctionnality():
+	global canInstallSpellingAtTypingFunctionnality
+	try:
+		# if speakTypingWords add-on is running, spelling at typing functionnality can not be installed
+		m = next(filter (lambda a: a.name == "speakTypingWords", addonHandler.getRunningAddons ()))
+		canInstallSpellingAtTypingFunctionnality = False
+		log.info(
+			"""The add-on "%s" being running, the functionality concerning the reporting of spelling errors when typing is restricted (see the "NVDAExtensionGlobalPlugin" user manual).""" % m.manifest["name"])
+	except Exception:
+		# speakTypingWords add-on is not running
+		canInstallSpellingAtTypingFunctionnality = True
+	from . import settingsDialogsPatche

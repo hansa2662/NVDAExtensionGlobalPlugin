@@ -1,6 +1,6 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\settings\nvdaConfig.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2021-2022 paulber19
+# Copyright (C) 2021-2025 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -8,6 +8,7 @@ import addonHandler
 from logHandler import log
 import config
 import ui
+from . import addonConfig
 from ..textAnalysis.symbols import (
 	SMBL_NeedSpaceBefore,
 	SMBL_NeedSpaceAfter,
@@ -32,6 +33,29 @@ ID_ReportCurrentCaretPosition = "ReportCurrentCaretPosition"
 ID_AddToClipSeparator = "AddToClipSeparator"
 ID_AddTextBefore = "AddTextBefore"
 ID_ConfirmToAddToClip = "ConfirmToAddToClip"
+ID_ActivateNumlock = "ActivateNumlOck"
+ID_SpeakAlphaNumChars = "SpeakAlphaNumChars"
+ID_BlockInsertKey = "BlockinsertKey"
+ID_BlockCapslockKey = "BlockCapslockKey"
+ID_SayBlank = "SayBlank"
+ID_VolumeMuteKeyControl = "VolumeMuteKeyControl"
+ID_SendVolumeMuteKey = "SendMuteKey"
+ID_EvenIfBraille = "EvenIfBraille"
+
+# activateNumlock values
+ANL_NoChange = 0
+ANL_Off = 1
+ANL_On = 2
+# volumeMuteKeyControl values
+VMKC_WithOrWithoutBrailleDisplay = 0
+VMKC_WithoutBrailleDisplay = 1
+VMKC_Never = 2
+
+# sendVolumeMuteKey values
+SMK_WithConfirmation = 0
+SMK_InSecondPress = 1
+SMK_Never = 2
+
 
 # text analyzer section
 SCT_TextAnalyzer = "textAnalyzer"
@@ -43,6 +67,7 @@ ID_ReportBy = "ReportBy"
 ID_ReportSymbolMismatchAnalysis = "ReportSymbolMismatchAnalysis"
 ID_ReportAnomalies = "ReportAnomalies"
 ID_ReportFormattingChanges = "ReportFormattingChanges"
+ID_ReportSpellingErrors = "ReportSpellingErrors"
 # sections in TextAnalyzer section
 SCT_Symbols = "Symbols"
 SCT_Anomalies = "Anomalies"
@@ -128,18 +153,30 @@ _textAnalyzerConfspec = {
 	ID_ReportSymbolMismatchAnalysis: "boolean(default=True)",
 	ID_ReportAnomalies: "boolean(default=True)",
 	ID_ReportFormattingChanges: "boolean(default=False)",
+	ID_ReportSpellingErrors: "boolean(default=True)",
 	SCT_Anomalies: _anomaliesConfspec,
 	SCT_SymbolsAndSpace: _symbolsAndSpaceConfspec,
 	SCT_Formatting: _formattingConfspec,
 	SCT_Alert: _alertConfspec,
 }
+numLockByLayoutDefault = ANL_Off if config.conf['keyboard']['keyboardLayout'] == "desktop" else ANL_NoChange
+
 _optionsConfspec = {
 	ID_SymbolLevelOnWordCaretMovement: """string(default="None")""",
 	ID_ReportCurrentCaretPosition: "boolean(default=False)",
 	ID_AddToClipSeparator: """string(default="")""",
 	ID_AddTextBefore: "boolean(default=False)",
 	ID_ConfirmToAddToClip: "boolean(default=False)",
+	ID_ActivateNumlock: "integer(default=" + str(numLockByLayoutDefault) + ")",
+	ID_SpeakAlphaNumChars: "boolean(default=False)",
+	ID_BlockInsertKey: "boolean(default=False)",
+	ID_BlockCapslockKey: "boolean(default=False)",
+	ID_SayBlank: "boolean(default=True)",
+	ID_VolumeMuteKeyControl: "integer(default=" + str(VMKC_Never) + ")",
+	ID_SendVolumeMuteKey: "integer(default=" + str(SMK_WithConfirmation) + ")",
+	ID_EvenIfBraille: "boolean(default=False)",
 }
+
 SCT_SynthSettingsRing = "SynthSettingsRing"
 SCT_LastSelectedSettings = "lastSelectedSettings"
 
@@ -161,7 +198,7 @@ reportByChoiceLabels = {
 	# Translators: choice label to report analysis detection by the number of detected elements .
 	SIG_Number: _("Detections's number"),
 	# Translators: choice label to report analysis detection with description of each detected elements.
-	SIG_Description: _("detailed description")
+	SIG_Description: _("Detailed description")
 }
 anomalyLabels = {
 	# Translators: choice item for reporting extra spaces.label
@@ -177,9 +214,9 @@ anomalyLabels = {
 	# Translators: choice label for reporting symbols which need need space after it.
 	ANO_NeedSpaceAfter: _("The required space after the symbol"),
 	# Translators: choice label for reporting symbols which must not be preceded by a space.
-	ANO_NoSpaceBefore: _("unexpected space before symbol"),
+	ANO_NoSpaceBefore: _("Unexpected space before symbol"),
 	# Translators: choice label for reporting symbols which must not be followed by a space")
-	ANO_NoSpaceAfter: _("unexpected space after symbol"),
+	ANO_NoSpaceAfter: _("Unexpected space after symbol"),
 }
 formattingChangeLabels = {
 	# Translators: choice item for reporting font name change.
@@ -201,6 +238,14 @@ documentSettingsIDsToOptions = {
 	"reportSuperscriptsAndSubscripts": ID_FontAttributes,
 	"reportColor": ID_Color,
 	"reportStyle": ID_Style,
+}
+
+from ..switchVoiceProfile import SCT_VoiceProfileSwitching
+_featureToSection = {
+	addonConfig.FCT_ComplexSymbols: [SCT_LastUsedSymbols,],
+	addonConfig.FCT_CommandKeysSelectiveAnnouncement: [SCT_CommandKeysAnnouncement,],
+	addonConfig.FCT_VoiceProfileSwitching: [SCT_VoiceProfileSwitching,],
+	addonConfig.FCT_TextAnalysis: [SCT_TextAnalyzer,]
 }
 
 
@@ -230,6 +275,31 @@ class NVDAConfigurationManager(object):
 			config.conf.save()
 			return True
 		return False
+
+	def deleteFeatureConfiguration(self, featureID):
+		log.debug("deleteFeatureConfiguration: %s" % featureID)
+		scts = _featureToSection.get(featureID)
+		if scts is None:
+			return
+		log.debug("feature  configuration deletion: feature = %s, section = %s" % (featureID, scts))
+		conf = config.conf
+		profileNames = []
+		profileNames.extend(config.conf.listProfiles())
+		for sct in scts:
+			if self.addonName in conf.profiles[0] and (
+				sct in conf.profiles[0][self.addonName]):
+				log.debug("[%s][%s] section deleted from profile: %s" % (
+					self.addonName, sct, "normal configuration"))
+				conf.profiles[0][self.addonName][sct].clear()
+				del conf.profiles[0][self.addonName][sct]
+
+			for name in profileNames:
+				profile = config.conf._getProfile(name)
+				if profile.get(self.addonName) and profile[self.addonName].get(sct):
+					log.debug("[%s][%s] section deleted from profile: %s" % (
+						self.addonName, sct, profile.name))
+					del profile[self.addonName][sct]
+					config.conf._dirtyProfiles.add(name)
 
 	def saveCommandKeysSelectiveAnnouncement(
 		self, keysDic, speakCommandKeysOption):
@@ -269,7 +339,7 @@ class NVDAConfigurationManager(object):
 					change = True
 					continue
 				mask = abs(int(d[key]))
-				if type(d[key]) == str:
+				if type(d[key]) is str:
 					d[key] = mask
 					change = True
 
@@ -280,21 +350,6 @@ class NVDAConfigurationManager(object):
 					d, speakCommandKeysOption)
 			return d
 		return {}
-
-	def deleceCommandKeyAnnouncementConfiguration(self):
-		# delete configuration for all profils
-		conf = config.conf
-		if self.addonName in conf.profiles[0]\
-			and SCT_CommandKeysAnnouncement in conf.profiles[0][self.addonName]:
-			del conf.profiles[0][self.addonName][SCT_CommandKeysAnnouncement]
-		profileNames = []
-		profileNames.extend(config.conf.listProfiles())
-		for name in profileNames:
-			profile = config.conf._getProfile(name)
-			if profile.get(self.addonName)\
-				and SCT_CommandKeysAnnouncement in profile[self.addonName]:
-				del profile[self.addonName][SCT_CommandKeysAnnouncement]
-				config.conf._dirtyProfiles.add(name)
 
 	def getLastUsedSymbolsSection(self, profileName):
 		if profileName is None:
@@ -376,21 +431,6 @@ class NVDAConfigurationManager(object):
 	def cleanLastUsedSymbolsList(self):
 		self.saveLastUsedSymbols([])
 
-	def deleceAllLastUserComplexSymbols(self):
-		conf = config.conf
-		if self.addonName in conf.profiles[0]\
-			and SCT_LastUsedSymbols in conf.profiles[0][self.addonName]:
-			del conf.profiles[0][self.addonName][SCT_LastUsedSymbols]
-		profileNames = []
-		profileNames.extend(config.conf.listProfiles())
-		sct = "%s-pro" % SCT_LastUsedSymbols
-		for name in profileNames:
-			profile = config.conf._getProfile(name)
-			if profile.get(self.addonName)\
-				and sct in profile[self.addonName]:
-				del profile[self.addonName][sct]
-				config.conf._dirtyProfiles.add(name)
-
 	def toggleOption(self, ID, toggle=True):
 		conf = config.conf[self.addonName][SCT_Options]
 		if toggle:
@@ -427,6 +467,11 @@ class NVDAConfigurationManager(object):
 					# due to a bug , we must reset to default value
 					conf[self.addonName][SCT_Options][ID_SymbolLevelOnWordCaretMovement] = None
 		return None
+
+	def deleteTextAnalyzerConfiguration(self):
+		log.debug("deleteTextAnalysisConfiguration")
+		if self.addonName in config.conf and SCT_TextAnalyzer in config.conf[self.addonName]:
+			config.conf[self.addonName][SCT_TextAnalyzer] = {}
 
 	def toggleTextAnalyzerOption(self, option, toggle):
 		conf = config.conf[self.addonName][SCT_TextAnalyzer]
@@ -480,6 +525,9 @@ class NVDAConfigurationManager(object):
 
 	def toggleReportFormattingChangesOption(self, toggle=True):
 		return self.toggleTextAnalyzerOption(ID_ReportFormattingChanges, toggle)
+
+	def toggleReportSpellingErrorsOption(self, toggle=True):
+		return self.toggleTextAnalyzerOption(ID_ReportSpellingErrors, toggle)
 
 	def getAnomaliesOptions(self):
 		conf = config.conf[self.addonName][SCT_TextAnalyzer]
@@ -695,7 +743,42 @@ class NVDAConfigurationManager(object):
 			conf[addonName][SCT_SynthSettingsRing] = {}
 		if SCT_LastSelectedSettings not in conf[addonName][SCT_SynthSettingsRing]:
 			conf[addonName][SCT_SynthSettingsRing][SCT_LastSelectedSettings] = {}
+		if conf[addonName][SCT_SynthSettingsRing][SCT_LastSelectedSettings].get(synthName, None) == settingId:
+			return
 		conf[addonName][SCT_SynthSettingsRing][SCT_LastSelectedSettings][synthName] = settingId
+		profileName = config.conf.profiles[-1].name
+		log.warning("Last selected setting in synth settings ring  is saved to  '%s' setting for '%s' profile " % (
+			settingId, profileName))
+
+	def setActivateNumlockOption(self, option):
+		config.conf[self.addonName][SCT_Options][ID_ActivateNumlock] = option
+
+	def getActivateNumlockOption(self):
+		return config.conf[self.addonName][SCT_Options][ID_ActivateNumlock]
+
+	def toggleSpeakAlphaNumCharsOption(self, toggle=True):
+		return self.toggleOption(ID_SpeakAlphaNumChars, toggle)
+
+	def toggleBlockInsertKeyOption(self, toggle=True):
+		return self.toggleOption(ID_BlockInsertKey, toggle)
+
+	def toggleBlockCapslockKeyOption(self, toggle=True):
+		return self.toggleOption(ID_BlockCapslockKey, toggle)
+
+	def toggleSayBlankOption(self, toggle=True):
+		return self.toggleOption(ID_SayBlank, toggle)
+
+	def setVolumeMuteKeyControlOption(self, option):
+		config.conf[self.addonName][SCT_Options][ID_VolumeMuteKeyControl] = option
+
+	def getVolumeMuteKeyControlOption(self):
+		return config.conf[self.addonName][SCT_Options][ID_VolumeMuteKeyControl]
+
+	def setSendVolumeMuteKeyOption(self, option):
+		config.conf[self.addonName][SCT_Options][ID_SendVolumeMuteKey] = option
+
+	def getSendVolumeMuteKeyOption(self):
+		return config.conf[self.addonName][SCT_Options][ID_SendVolumeMuteKey]
 
 
 # singleton for addon configuration manager

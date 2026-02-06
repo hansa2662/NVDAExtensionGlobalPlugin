@@ -17,9 +17,6 @@ def _(arg):
 
 # Add-on information variables
 addon_info = {
-	# for previously unpublished addons, please follow
-	# the community guidelines at:
-	# https://bitbucket.org/nvdaaddonteam/todo/raw/master/guideLines.txt
 	# add-on Name, internal for nvda
 	"addon_name": "NVDAExtensionGlobalPlugin",
 	# Add-on summary, usually the user visible name of the addon.
@@ -29,104 +26,57 @@ addon_info = {
 	# Add-on description
 	# Translators: Long description to be shown for this add-on on
 	# add-on information from add-ons manager
-	"addon_description": _(
-		"""This add-on has been developed with the participation of Daniel Poiraud.
-It adds to NVDA:
-1- The features
-Some features can be enabled or disabled individually.
-* Display of the list of icons in the notification area,
-* Display of the windows list of running applications,
-* Help in the composition of a symbol that is complex such as, for example, """
-		"""an a e related, a symbol power of 2
-	and possibility to add its own categories and symbols,
-* Extension of the functionality of the virtual buffer
-	for browsers Mozilla Firefox, Microsoft Internet Explorer, Microsoft Edge, and Google Chrome:
-
-	* new commands for navigation mode (paragraph, division, anchor, main area,
-	* new types of elements for the dialog box opened by "NVDA+F7" """
-		"""(radio button, paragraph, frame, check box, ...) with the announcement of the number of items found,
-	* commands for the tables:
-	announce the cells of a row /column, go to first/last cell in the row/current column, move the column"""
-		"""/row preceding or following with announcement possible of the cells in that row/column,
-	* announcement of the URL of the document,
-	* navigate in loop,
-* Announcement of the function associated with editing commands
-	style Copy, Paste, etc.,
-* Announcement of the name of the folder pre-selected in the dialog boxes like "Open", "Save", "Save as", ...,
-* display of information on the focused application:
-	* the name and version number of the application,
-	* the current profile configuration,
-	* the add-on loaded for the application,
-*	NVDA logs tools:
-	* Opening the previous or current log,
-	* copy of the path of these in the clipboard.
-
-* history of voice speech,
+	"addon_description": _("""This add-on brings to NVDA a multitude of features which can be activated or deactivated individually depending on the need.
+Here are a few:
+* Display of the list of icons in the notification area or windows of applications launched,
+* Help in the composition of a symbol that is complex such as, for example, a a e related, a symbol power of 2 and possibility to add its own categories and symbols,
+* Extension of the functionality of the virtual buffer for browser:
+ * new commands for navigation mode (paragraph, division, anchor, main landmark),
+ * new types of elements for the dialog box opened by "NVDA+F7" (radio button, paragraph, frame, checkBox, etc) with the announcement of the number of items found,
+ * option to browse in a loop in search of a next or previous item,
+ * new scripts for table: cell/line/column announcement, move to the next or previous column / row with announcement of the cells composing it,
+* intelligent announcement of the function of editing commands like Copy, cut or Paste and improvement of the NVDA base script which announces the text in the clipboard("NVDA+c" ),
+* voice speechs's history,
 * renaming keyboard keys,
-* selective announcement of command keyboard keys,
-* simple countdown timer,
-* display of visible elements making up the object in the foreground,
-* fast switching of voice profile,
-* remanence of the modifier keys,
-* shutdown, reboot or hibernate the computer,
-* control the main or NVDA volume:
-	* mute or unmute volume for the focused application,
-	* establishment of the main Windows or NVDA volume at the start of add-on,
-	* modification of main volume or audio stream's volume of focused application.
-	* automatic recovery of the main volume and NVDA when the extension is loaded,
-	* orientation of NVDA audio output,
-* Tools for development of add-on
-* supplements regarding the date and time: copy date and time to clipboard, report time with seconds
-* user configurations management and NVDA restarting with precise configuration,
+* selective announcement of command keys,
+* display of visible elements making up the object in the foreground and possibility to move to or click on the elements,
+* quick voice profile switching,
+* persistence of NVDA and modification keys and specific persistence for the gmail.com site,
+* shutdown, restart or Hibernate the computer,
+* management of input gestures configured by user,
+* sound control: system/ NVDA/application's quick volume changes, audio split, temporary audio output device switching,
+* user configurations management and NVDA restarting  with precise configuration,
 * text analyser,
-* announcement of the cursor position in the edit boxes,
-* temporary use of an audio output device without impacting the NVDA configuration,
 * quick add-ons activation / desactivation,
+* Announcement or display of information about the application under focus, such as its version, the active configuration profile, loaded add-on,
+* possible use of numeric keypad as standard numeric keypad,
+* possibility of executing scripts from the "Input gestures" dialog,
+* and more.
 
-
-2- The options
-* remove the announcement from the description of the objects in the Windows ribbons,
-* proclaim the word focused when deleting a word (for NVDA versions lower than 2020.3),
-* automatically maximize the foreground window,
-* announce punctuations and symbols when moving by word in a document,
-* possibility of signaling spelling errors by a double beep or by a voice announcement """
-		"""instead of the sound emitted by NVDA.
-
-3- The advanced options
-* report, with a sound, the registration of an error in the NVDA log """
-		"""also for the final versions and release candidate of NVDA,
-* Caption dialog title with the name of the add-on,
-* Do not take account of the option called Report object descriptions """
-		"""during the display of the dialog box style confirmation,
-* use numeric keypad's keys conventionally.
-
-
-4- Various other elements
-* presentation formatting of the text in a dialog box,
-* sub-menus to explore the program folders or configuration,
-* script to quickly restart NVDA,
-* script to emulate the "Applications" key,
-* script to close all open windows,
-* possibility of executing scripts in the "Input gestures" dialog (for versions of NVDA greater than 2020.3),
-* automatic selection of the category in the dialog "Command gestures",
-* Selection of the last parameter used in the synthesizer parameter loop.
+For the full list of the add-on's features and their description, see the user manual.
 """),
 
 	# version
-	"addon_version": "11.1",
+	"addon_version": "14.1.2",
 	# Author(s)
-	"addon_author": "PaulBer19",
+	"addon_author": "PaulBer19 (paulber19@laposte.net",
 	# URL for the add-on documentation support
-	"addon_url": "paulber19@laposte.net",
+	"addon_url": "https://github.com/paulber19/NVDAExtensionGlobalPlugin.git",
+	# URL for the add-on repository where the source code can be found
+	"addon_sourceURL": "https://github.com/paulber19/NVDAExtensionGlobalPlugin.git",
 	# Documentation file name
 	"addon_docFileName": "addonUserManual.html",
 	# Minimum NVDA version supported (e.g. "2018.3")
-	"addon_minimumNVDAVersion": "2020.4",
+	"addon_minimumNVDAVersion": "2024.1",
 	# Last NVDA version supported/tested
 	# (e.g. "2018.4", ideally more recent than minimum version)
-	"addon_lastTestedNVDAVersion": "2022.1",
+	"addon_lastTestedNVDAVersion": "2025.3",
 	# Add-on update channel (default is stable or None)
 	"addon_updateChannel": None,
+	# Add-on license such as GPL 2
+	"addon_license": "GPL v2",
+	# URL for the license document the ad-on is licensed under
+	"addon_licenseURL": "https://www.gnu.org/licenses/gpl-2.0.html",
 }
 
 # Define the python files that are the sources of your add-on.
@@ -158,6 +108,7 @@ pythonSources = [
 	os.path.join(mainPath, "updateHandler", "*.py"),
 	os.path.join(mainPath, "userInputGestures", "*.py"),
 	os.path.join(mainPath, "utils", "*.py"),
+	os.path.join(mainPath, "WindowsExplorer", "*.py"),
 	os.path.join(mainPath, "winExplorer", "*.py"),
 ]
 
@@ -176,3 +127,10 @@ excludedFiles = []
 # For example:
 # set baseLanguage to "es" if your add-on is primarily written in spanish.
 baseLanguage = "en"
+
+# Markdown extensions for add-on documentation
+# Most add-ons do not require additional Markdown extensions.
+# If you need to add support for markup such as tables, fill out the below list.
+# Extensions string must be of the form "markdown.extensions.extensionName"
+# e.g. "markdown.extensions.tables" to add tables.
+markdownExtensions = []

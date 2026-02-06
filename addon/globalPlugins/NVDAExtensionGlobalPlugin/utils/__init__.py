@@ -1,6 +1,6 @@
-# NVDAExtensionGlobalPlugin/utils/__init__.py
+# globalPlugins\NVDAExtensionGlobalPlugin/utils/__init__.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016-2022  paulber19
+# Copyright (C) 2016-2025  paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -14,17 +14,20 @@ import time
 from keyboardHandler import KeyboardInputGesture
 from logHandler import log
 import queueHandler
-import config
 import core
 from ..settings import toggleDialogTitleWithAddonSummaryAdvancedOption
+import speech.speech
+try:
+	# NVDA >= 2024.1
+	speakOnDemand = speech.speech.SpeechMode.onDemand
+except AttributeError:
+	# NVDA <= 2023.3
+	speakOnDemand = None
+
 
 addonHandler.initTranslation()
 
 _curAddon = addonHandler.getCodeAddon()
-# addon informations
-_addonSummary = _curAddon.manifest['summary']
-_addonDocFile = _curAddon.getDocFilePath()
-
 
 # winuser.h constant
 SC_MAXIMIZE = 0xF030
@@ -54,10 +57,19 @@ GB_scriptTaskTimer = None
 _audioOutputDevice = None
 
 
+def getAddonSummary():
+	return _curAddon.manifest['summary']
+
+
 def delayScriptTask(func, *args, **kwargs):
 	global GB_scriptTaskTimer
 	from ..settings import _addonConfigManager
 	delay = _addonConfigManager.getMaximumDelayBetweenSameScript()
+	GB_scriptTaskTimer = wx.CallLater(delay, func, *args, **kwargs)
+
+
+def delayScriptTaskWithDelay(delay, func, *args, **kwargs):
+	global GB_scriptTaskTimer
 	GB_scriptTaskTimer = wx.CallLater(delay, func, *args, **kwargs)
 
 
@@ -71,17 +83,6 @@ def stopDelayScriptTask():
 def clearDelayScriptTask():
 	global GB_scriptTaskTimer
 	GB_scriptTaskTimer = None
-
-
-def setAudioOutputDevice(device):
-	global _audioOutputDevice
-	_audioOutputDevice = device
-
-
-def getAudioOutputDevice():
-	if _audioOutputDevice is None:
-		return config.conf["speech"]["outputDevice"]
-	return _audioOutputDevice
 
 
 def isMaximized(hWnd):
@@ -147,13 +148,13 @@ def isOpened(dialog):
 def makeAddonWindowTitle(dialogTitle):
 	if not toggleDialogTitleWithAddonSummaryAdvancedOption(False):
 		return dialogTitle
-	return "%s - %s" % (_addonSummary, dialogTitle)
+	return "%s - %s" % (getAddonSummary(), dialogTitle)
 
 
 def getHelpObj(helpId):
 	if helpId is None:
 		return None
-	return (helpId, _addonDocFile)
+	return (helpId, _curAddon.getDocFilePath())
 
 
 def getPositionXY(obj):
@@ -184,24 +185,26 @@ def mouseClick(obj, rightButton=False, twice=False):
 
 
 def getSpeechMode():
-	try:
-		# for nvda  version >= 2021.1
-		return speech.getState().speechMode
-	except AttributeError:
-		return speech.speechMode
+	return speech.getState().speechMode
 
 
 def setSpeechMode(mode):
-	try:
-		# for nvda version >= 2021.1
-		speech.setSpeechMode(mode)
-	except AttributeError:
-		speech.speechMode = mode
+	speech.setSpeechMode(mode)
 
 
 def setSpeechMode_off():
-	try:
-		# for nvda version >= 2021.1
-		speech.setSpeechMode(speech.SpeechMode.off)
-	except AttributeError:
-		speech.speechMode = speech.speechMode_off
+	speech.setSpeechMode(speech.SpeechMode.off)
+
+
+def executeWithSpeakOnDemand(func, *args, **kwargs):
+	from speech.speech import _speechState, SpeechMode
+	if not speakOnDemand or _speechState.speechMode != SpeechMode.onDemand:
+		return func(*args, **kwargs)
+	_speechState.speechMode = SpeechMode.talk
+	ret = func(*args, **kwargs)
+	_speechState.speechMode = SpeechMode.onDemand
+	return ret
+
+
+def messageWithSpeakOnDemand(msg):
+	executeWithSpeakOnDemand(ui.message, msg)

@@ -1,6 +1,6 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\utils\contextHelpEx.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2021 paulber19
+# Copyright (C) 2021-2023 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -9,10 +9,9 @@ import tempfile
 import typing
 import wx
 from logHandler import log
-try:
-	from documentationUtils import getDocFilePath
-except ImportError:
-	from gui import getDocFilePath
+from .secure import inSecureMode
+from documentationUtils import getDocFilePath
+
 
 # same as contextHelp of NVDA core
 # but for also addon user documentation
@@ -88,6 +87,9 @@ def bindHelpEvent(helpObj, window: wx.Window):
 
 
 def _onEvtHelp(helpObj, evt: wx.HelpEvent):
+	if inSecureMode():
+		# Disable context help in secure screens to avoid opening a browser with system-wide privileges.
+		return
 	# Don't call evt.skip. Events bubble upwards through parent controls.
 	# Context help for more specific controls should override the less specific parent controls.
 	showHelp(helpObj)

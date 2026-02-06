@@ -1,6 +1,6 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\clipboardCommandAnnouncement\addToClip.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2021 Paulber19
+# Copyright (C) 2021-2025 Paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
@@ -11,14 +11,18 @@
 import addonHandler
 import api
 import textInfos
-import controlTypes
+from controlTypes.role import Role
 import ui
-import winUser
 import browseMode
 import core
-import wx
-import gui
 from ..settings.nvdaConfig import _NVDAConfigManager
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, ReturnCode
+del sys.path[-1]
 
 addonHandler.initTranslation()
 
@@ -51,7 +55,7 @@ def getMath():
 	mathMl = mathPres.getMathMlFromTextInfo(api.getReviewPosition())
 	if not mathMl:
 		obj = api.getNavigatorObject()
-		if obj.role == controlTypes.ROLE_MATH:
+		if obj.role == Role.MATH:
 			try:
 				mathMl = obj.mathMl
 			except (NotImplementedError, LookupError):
@@ -89,29 +93,17 @@ def getTextToAdd():
 	return text
 
 
-def clipboardHasContent():
-	with winUser.openClipboard(gui.mainFrame.Handle):
-		clipFormat = winUser.windll.user32.EnumClipboardFormats(0)
-	if clipFormat:
-		return True
-	return False
-
-
-def requiredFormatInClip():
-	return True
-
-
 def confirmAdd():
 	text = getTextToAdd()
 	if not text:
 		return
-	if gui.messageBox(
+
+	if confirm_YesNo(
 		# Translators: Label of a dialog.
 		_("Do you want realy add the selected text to the clipboard?"),
 		# Translators: Title of a dialog.
 		_("Adding text to clipboard"),
-		wx.YES | wx.NO | wx.CANCEL
-	) == wx.YES:
+	) == ReturnCode.YES:
 		if api.copyToClip(text):
 			# Translators: message presented when the text has been added to the clipboard.
 			core.callLater(200, ui.message, _("Added"))
@@ -122,6 +114,8 @@ def confirmAdd():
 
 def performAdd():
 	text = getTextToAdd()
+	if text is None or len(text) == 0:
+		return
 	if api.copyToClip(text):
 		# Translators: message presented when the text has been added to the clipboard.
 		ui.message(_("Added"))

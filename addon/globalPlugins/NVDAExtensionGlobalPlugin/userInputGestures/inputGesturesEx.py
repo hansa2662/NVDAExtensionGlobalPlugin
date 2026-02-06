@@ -1,48 +1,33 @@
-# globalPlugins\NVDAExtensionGlobalPlugin\userConfig\inputGestures.py
+# globalPlugins\NVDAExtensionGlobalPlugin\userInputGestures\inputGesturesEx.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2021-2022 Paulber19
+# Copyright (C) 2021-2024 Paulber19
 # This file is covered by the GNU General Public License.
 # from a Javi Dominguez's idea  and some code  of it "commandHelper" add-on
 
 
 import addonHandler
-
+from logHandler import log
 import api
 import wx
 import speech
 import gui
 import gui.guiHelper as guiHelper
-from logHandler import log
 import scriptHandler
 from keyboardHandler import KeyboardInputGesture
 import inputCore
 from gui.inputGestures import InputGesturesDialog, _InputGesturesViewModel, _GesturesTree
 from ..utils.NVDAStrings import NVDAString
-from ..utils import getHelpObj, contextHelpEx
-
+from ..gui import contextHelpEx
+from ..utils import getHelpObj
+from . import inputGesturesExPatches
 
 addonHandler.initTranslation()
-
-
-def onInputGesturesCommandEx(evt):
-	gui.mainFrame._popupSettingsDialog(InputGesturesDialogEx)
-
-
-def initialize():
-	gui.mainFrame.onInputGesturesCommand = onInputGesturesCommandEx
-	menus = gui.mainFrame.sysTrayIcon.preferencesMenu.GetMenuItems()
-	item = None
-	for menuItem in menus:
-		if menuItem.GetItemLabel() == NVDAString("I&nput gestures..."):
-			item = menuItem
-	if item is not None:
-		gui.mainFrame.sysTrayIcon.Bind(wx.EVT_MENU, onInputGesturesCommandEx, item)
 
 
 class InputGesturesDialogEx(
 	contextHelpEx.ContextHelpMixinEx,
 	InputGesturesDialog):
-
+	refreshButtonStateDelay = None
 	_executeScriptWaitingTimer = None
 	repeatCount = 0
 
@@ -73,6 +58,7 @@ class InputGesturesDialogEx(
 		settingsSizer.AddSpacer(guiHelper.SPACE_BETWEEN_ASSOCIATED_CONTROL_VERTICAL)
 
 		bHelper = guiHelper.ButtonHelper(wx.HORIZONTAL)
+
 		# Translators: The label of a button to run the script in the Input Gestures dialog.
 		self.executeScriptButton = bHelper.addButton(self, label=_("&Execute the script"))
 		self.executeScriptButton.Bind(wx.EVT_BUTTON, self.onExecuteScriptButton)
@@ -138,10 +124,9 @@ class InputGesturesDialogEx(
 	def getScript(self, item):
 
 		def smallBeep():
-			if False:
-				from tones import beep
-				beep(300, 30)
 			return
+			from tones import beep
+			beep(300, 30)
 
 		if not item or not hasattr(item, "scriptInfo"):
 			return
@@ -176,9 +161,10 @@ class InputGesturesDialogEx(
 		if module[0] == "globalPlugins":
 			import globalPluginHandler
 			plugins = list(globalPluginHandler .runningPlugins)
+			gp = ".".join(module[:2])
 			for p in plugins:
 				m = p.__module__
-				if m == "%s.%s" % (module[0], module[1]):
+				if gp in m:
 					i = plugins .index(p)
 					script = getattr(list(plugins)[i], "script_%s" % scriptInfo.scriptName, None)
 					if script:
@@ -201,7 +187,21 @@ class InputGesturesDialogEx(
 			return script
 		return None
 
+	def onTreeSelect(self, evt):
+		if evt:
+			evt.Skip()
+		if self.refreshButtonStateDelay is not None:
+			self.refreshButtonStateDelay.Stop()
+			# to work around the NVDA bug that generates a series of errors in the log,
+			# when entering text in the "Filter by" field
+			# the refreshItems on the tree generates an onTreeSelect for each item.
+			# so wait for the last item to refresh buttons
+		self.refreshButtonStateDelay = wx.CallLater(50, self._refreshButtonState)
+
 	def _refreshButtonState(self):
+		if self.refreshButtonStateDelay is not None:
+			self.refreshButtonStateDelay.Stop()
+			self.refreshButtonStateDelay = None
 		selectedItems = self.tree.getSelectedItemData()
 		if selectedItems is None:
 			item = None
@@ -264,3 +264,11 @@ class InputGesturesDialogEx(
 		from ..settings import _addonConfigManager
 		delay = _addonConfigManager.getMaximumDelayBetweenSameScript()
 		self._executeScriptWaitingTimer = wx.CallLater(delay, callback, script, gestureOrGestureCls)
+
+
+def initialize():
+	inputGesturesExPatches.patche(install=True)
+
+
+def terminate():
+	inputGesturesExPatches.patche(install=False)

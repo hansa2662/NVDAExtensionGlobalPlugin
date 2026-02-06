@@ -1,39 +1,50 @@
 # globalPlugins/NVDAextensionGlobalPlugin\textAnalysis\textAnalyzer.py
 # a part of NVDAExtensionGlobalPlugin add-on
-# Copyright 2021-2022 paulber19
+# Copyright 2021-2025 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
 import addonHandler
 from logHandler import log
-import os
+import wx
+import api
 import config
 import ui
+import speech
 from ..utils.NVDAStrings import NVDAString
 import tones
 import textInfos
 import nvwave
 from ..settings.nvdaConfig import _NVDAConfigManager
 from . import symbols
+from ..utils.textInfo import getStartOffset, getEndOffset
+import os
+import sys
+_curAddon = addonHandler.getCodeAddon()
+sharedPath = os.path.join(_curAddon.path, "shared")
+sys.path.append(sharedPath)
+from negp_messages import confirm_YesNo, ReturnCode
+del sys.path[-1]
+
 
 addonHandler.initTranslation()
 
 _formattingFieldChangeMsg = {
 	"color": _("color"),
 	"background-color": _("background color"),
-	"bold": _("bold"),
-	"nonBold": _("non bold"),
-	"italic": _(" italic"),
-	"nonItalic": _(" non italic"),
-	"underline": _("underline"),
-	"nonUnderline": _("non underline"),
-	"strikethrough": _("strikethrough"),
-	"nonStrikethrough ": _("non strikethrough"),
-	"hidden": _("hidden"),
-	"nonHidden": _("non hidden"),
-	"sub": _("subscript"),
-	"super": _("superscript"),
-	"baseLine": _("base line"),
+	"bold": NVDAString("bold"),
+	"nonBold": NVDAString("no bold"),
+	"italic": NVDAString(" italic"),
+	"nonItalic": NVDAString("no italic"),
+	"underline": NVDAString("underline"),
+	"nonUnderline": NVDAString("not underlined"),
+	"strikethrough": NVDAString("strikethrough"),
+	"nonStrikethrough ": NVDAString("no strikethrough"),
+	"hidden": NVDAString("hidden"),
+	"nonHidden": NVDAString("not hidden"),
+	"sub": NVDAString("subscript"),
+	"super": NVDAString("superscript"),
+	"baseLine": NVDAString("base line"),
 }
 
 _negativeFields = {
@@ -79,6 +90,10 @@ _profiles = []
 
 
 def updateProfileConfiguration():
+	from ..settings.addonConfig import C_DoNotInstall, FCT_TextAnalysis
+	from ..settings import getInstallFeatureOption
+	if getInstallFeatureOption(FCT_TextAnalysis) == C_DoNotInstall:
+		return
 	global _profiles
 	# call when profile is triggered.
 	# activate text analyzer  for this profile ,
@@ -112,7 +127,7 @@ def checkSymbolsDiscrepancies(info, errorPositions):
 	allSymbols = symbolToSymetricDic .keys()
 	allSymbols.extend(symbolToSymetricDic .values())
 	charactersToSymbol = {}
-	characterPositionsToSymbol = {}
+	symbolsToPositions = {}
 	for index in range(0, len(text)):
 		ch = text[index]
 		if ch not in allSymbols:
@@ -125,46 +140,44 @@ def checkSymbolsDiscrepancies(info, errorPositions):
 		if c not in charactersToSymbol:
 			charactersToSymbol[c] = ""
 		charactersToSymbol[c] += ch
-		if c not in characterPositionsToSymbol:
-			characterPositionsToSymbol[c] = []
-		characterPositionsToSymbol[c].append(position)
+		if c not in symbolsToPositions:
+			symbolsToPositions[c] = []
+		symbolsToPositions[c].append(position)
 	for symbol, symetric in symbolToSymetricDic .items():
 		if symbol not in charactersToSymbol:
 			continue
 		done = False
 		i = 100
 		characters = charactersToSymbol[symbol]
-		characterPositions = characterPositionsToSymbol[symbol]
+		symbolPositions = symbolsToPositions[symbol]
 		while i and not done:
 			i -= 1
 			pos = characters.find("%s%s" % (symbol, symetric))
 			if pos < 0:
 				break
-			del characterPositions[pos]
-			del characterPositions[pos]
+			del symbolPositions[pos]
+			del symbolPositions[pos]
 			characters = characters[:pos] + characters[pos + 2:]
 		for index in range(0, len(characters)):
 			ch = characters[index]
-			position = characterPositions[index]
+			position = symbolPositions[index]
 			if position not in errorPositions:
 				errorPositions[position] = []
 			errorPositions[position].append(("unexpectedSymbol", ch))
 
 
+decimalSymbol = symbols.getDecimalSymbol()
+digitGroupingSymbol = symbols.getDigitGroupingSymbol()
+
+
 def checkExtraWhiteSpace(info, unit, errorPositions):
 	text = info.text
-	log.info("checkExtraWhiteSpace: %s" % text)
-	if hasattr(info.bookmark, "_end"):
-		curEndPos = info.bookmark._end._endOffset
-	else:
-		curEndPos = info.bookmark.endOffset
+	log.debug("checkExtraWhiteSpace: %s" % text)
+	curEndPos = getEndOffset(info)
 	tempInfo = info.copy()
 	tempInfo.collapse()
 	tempInfo.expand(textInfos.UNIT_STORY)
-	if hasattr(tempInfo.bookmark, "_end"):
-		storyEndPos = tempInfo.bookmark._end._endOffset
-	else:
-		storyEndPos = tempInfo.bookmark.endOffset
+	storyEndPos = getEndOffset(tempInfo)
 	if unit == textInfos.UNIT_WORD:
 		text = text.strip()
 	else:
@@ -173,12 +186,15 @@ def checkExtraWhiteSpace(info, unit, errorPositions):
 	if len(text) == 0:
 		return
 	eol = False
-	if len(text) != len(info.text) or curEndPos == storyEndPos:
+	if unit == textInfos.UNIT_LINE:
+		eol = True
+	elif len(text) != len(info.text) or curEndPos == storyEndPos:
 		# there is end of line.
 		eol = True
 	# replacing non-breaking space by simple space
 	text = text.replace(chr(0xA0), " ")
 	if _NVDAConfigManager.spaceOrTabAtEndAnomalyOption():
+		log.debug("eol: %s, text: %s" % (eol, text))
 		if text[-1] == "\t" and eol:
 			if len(text) not in errorPositions:
 				errorPositions[len(text)] = []
@@ -207,7 +223,6 @@ def checkExtraWhiteSpace(info, unit, errorPositions):
 
 def checkUppercaseMissingAndStrayOrUnSpacedPunctuation(info, unit, errorPositions):
 	text = info.text
-
 	text = text.replace("\r", "")
 	text = text.replace("\n", "")
 	text = text.replace(chr(0xA0), " ")
@@ -216,6 +231,9 @@ def checkUppercaseMissingAndStrayOrUnSpacedPunctuation(info, unit, errorPosition
 	symbolsAndSpaceDic = _NVDAConfigManager.getSymbolsAndSpaceDic()
 	for index in range(0, len(text)):
 		ch = text[index]
+		if (index > 0 and index < len(text) - 1) and ch in [decimalSymbol, digitGroupingSymbol]:
+			if text[index - 1].isdigit() and text[index + 1].isdigit():
+				continue
 		position = index + 1
 		if ch not in symbols.getSymbols_all():
 			if _NVDAConfigManager.uppercaseMissingAnomalyOption():
@@ -244,7 +262,7 @@ def checkUppercaseMissingAndStrayOrUnSpacedPunctuation(info, unit, errorPosition
 			if ch in symbolsAndSpaceDic["NeedSpaceAfter"] and (
 				index != len(text) - 1) and not text[index + 1].isspace():
 				if text[index + 1] not in [".", ","]:
-					if position + 1not in errorPositions:
+					if (position + 1) not in errorPositions:
 						errorPositions[position + 1] = []
 					errorPositions[position + 1].append(("neededSpace", None))
 			if ch in symbolsAndSpaceDic["NoSpaceBefore"] and index and text[index - 1].isspace():
@@ -252,7 +270,7 @@ def checkUppercaseMissingAndStrayOrUnSpacedPunctuation(info, unit, errorPosition
 					errorPositions[position - 1] = []
 				errorPositions[position - 1].append(("unexpectedSpace", None))
 			if ch in symbolsAndSpaceDic["NoSpaceAfter"] and (index < len(text) - 1) and text[index + 1].isspace():
-				if position + 1not in errorPositions:
+				if (position + 1) not in errorPositions:
 					errorPositions[position + 1] = []
 				errorPositions[position + 1].append(("unexpectedSpace", None))
 
@@ -286,6 +304,8 @@ def getReportText(errorPositions):
 				tempList.add(_("space at end"))
 			elif errorType == "formatChange":
 				tempList.add(_("change in %s") % ", ".join(errorValue))
+			elif errorType == "spellingError":
+				tempList.add(NVDAString("spelling error"))
 		text = ", ".join(tempList)
 		if pos == 0:
 			textList.append(text)
@@ -305,7 +325,7 @@ def reportAnalysis(count, textList, description=False):
 	elif _NVDAConfigManager.reportBySound():
 		fileName = _NVDAConfigManager.getSoundFileName()
 		path = addonHandler.getCodeAddon().path
-		file = os.path.join(path, "sounds", "text analyzer alerts", fileName)
+		file = os.path.join(path, "sounds", "textAnalyzerAlerts", fileName)
 		nvwave.playWaveFile(file)
 	elif _NVDAConfigManager.reportByAlertMessage():
 		msg = _NVDAConfigManager.getAlertMessage()
@@ -326,8 +346,8 @@ def getAlertCount(errorPositions):
 	return count
 
 
-def getAnalyze(textInfo, unit):
-	log.info("getAnalyse: %s, %s" % (unit, textInfo.text))
+def getAnalyze(textInfo, unit, reportFormatted=True):
+	log.debug("getAnalyse: unit= %s, text=%s" % (unit, textInfo.text))
 	errorPositions = {}
 	if _NVDAConfigManager.toggleReportSymbolMismatchAnalysisOption(False):
 		checkSymbolsDiscrepancies(textInfo, errorPositions)
@@ -335,20 +355,30 @@ def getAnalyze(textInfo, unit):
 		checkAnomalies(textInfo, unit, errorPositions)
 	if _NVDAConfigManager.toggleReportFormattingChangesOption(False):
 		checkFormatingChanges(textInfo, unit, errorPositions)
+	if _NVDAConfigManager.toggleReportSpellingErrorsOption(False):
+		findSpellingErrors(textInfo, unit, errorPositions)
+
+	log.debug("errorPositions: %s" % errorPositions)
 	alertCount = getAlertCount(errorPositions)
+	if not reportFormatted:
+		return (alertCount, errorPositions)
 	textList = getReportText(errorPositions)
 	return (alertCount, textList)
 
 
 def analyzeText(info, unit):
 	global _previousAnalyzedText
+	from ..settings.addonConfig import C_DoNotInstall, FCT_TextAnalysis
+	from ..settings import getInstallFeatureOption
+	if getInstallFeatureOption(FCT_TextAnalysis) == C_DoNotInstall:
+		return
 	if not _NVDAConfigManager.toggleTextAnalyzerActivationOption(False):
 		return
 	if unit in [None, textInfos.UNIT_CHARACTER]:
 		return
 	textInfo = info.copy()
 	textInfo.expand(unit)
-	log.info("analyzeText: %s, %s" % (unit, info.text))
+	log.debug("analyzeText: %s, %s" % (unit, info.text))
 	if textInfo.text == _previousAnalyzedText:
 		return
 	alertCount, textList = getAnalyze(textInfo, unit)
@@ -357,13 +387,16 @@ def analyzeText(info, unit):
 	_previousAnalyzedText = info.text
 
 
-# code from Javi Dominguez
-blacklistKeys = {"_startOfNode", "_endOfNode"}
-whitelistKeys = "color,font-name, font-family,font-size,bold,italic,strikethrough,underline".split(",")
+_formatFieldList = [
+	"color", "font-name", "font-family",
+	"font-size", "bold", "italic", "strikethrough",
+	"underline", "hidden"
+]
 
 
+# parts of code originaly written by Tony Malik for  browserNav add-on.
 def compareFormatFields(f1, f2):
-	for key in whitelistKeys:
+	for key in _formatFieldList:
 		if key not in f1 and key not in f2:
 			continue
 		try:
@@ -532,3 +565,224 @@ def findFormatingChanges(info, unit, errorPositions):
 			previousFieldCommandField = lastFieldCommandField
 		else:
 			raise Exception("Impossible!")
+
+
+_maxNumberOfLinesToScan = 100
+
+
+def askToContinueSearching(textInfo, next):
+	textInfo.updateCaret()
+	if confirm_YesNo(
+		# Translators: message to indicate the no alert found by scanning 1000 lines
+		_(
+			"No irregularities were found on %s lines scanned."
+			" Do you want to continue the analysis?") % _maxNumberOfLinesToScan,
+		# Translators: dialog title.
+		_("Text analysis"),
+	) != ReturnCode.YES:
+		return
+
+	def callback(textInfo, next):
+		speech.cancelSpeech()
+		wx.CallLater(50, moveToAlert, next)
+	wx.CallLater(500, callback, textInfo, next)
+
+
+_newLine = False
+
+
+def getLineText(textInfo):
+	tempInfo = textInfo.copy()
+	tempInfo.expand(textInfos.UNIT_LINE)
+	lineText = tempInfo.text
+	lineText = lineText.replace("\n", "")
+	lineText = lineText.replace("\r", "")
+	del tempInfo
+	return lineText
+
+
+def moveToAlert(next=True):
+	log.debug("moveToLineWithAlert: next= %s" % next)
+	focus = api.getFocusObject()
+	try:
+		info = focus.makeTextInfo(textInfos.POSITION_CARET)
+	except Exception:
+		return
+	from ..utils import runInThread
+	textInfo = info.copy()
+	direction = 1 if next else -1
+	i = _maxNumberOfLinesToScan
+	th = runInThread.RepeatBeep(delay=2.0, beep=(200, 200))
+	th.start()
+	global _newLine
+	_newLine = False
+	while i:
+		log.debug("newLine: % s" % i)
+		i -= 1
+		# check if no character on the line
+		lineText = getLineText(textInfo)
+		if len(lineText) == 0:
+			log.debug("Line is empty")
+			res = None
+		else:
+			res = findAlertOnTheLine(textInfo, next)
+		if res is not None:
+			# an alert is found
+			th.stop()
+			del th
+			offset, positionMsg = res
+			textInfo.collapse()
+			# offset can be 0 when an alert is found on first character and cursor is on this character
+			if offset:
+				result = textInfo.move(textInfos.UNIT_CHARACTER, offset)
+				if result == 0:
+					log.debug("Cannot move to alert: offset: %s" % offset)
+					return
+			textInfo.collapse()
+			log.debug("Moved to alert: position= %s" % (getStartOffset(textInfo)))
+			textInfo.updateCaret()
+			from ..utils.textInfo import getLineInfoMessage
+			lineNumberMsg = getLineInfoMessage(textInfo)
+			textInfo.collapse()
+			textInfo.expand(textInfos.UNIT_WORD)
+			ui.message("%s%s %s" % (lineNumberMsg, positionMsg, textInfo.text))
+			return
+		# not alert found, so  go to next or prior line
+		log.debug("No error on the line, go to next or prior line")
+		textInfo.collapse()
+		origLine = textInfo.copy()
+		origLine.expand(textInfos.UNIT_LINE)
+		log.debug("curLine: %s" % origLine.text)
+		origLine.collapse()
+		info = origLine.copy()
+		if direction == 1:
+			info.expand(textInfos.UNIT_LINE)
+			# with Word , if cursor is at the end of document, a runTime error occurs
+			try:
+				info.collapse(True)
+				info.move(textInfos.UNIT_CHARACTER, -1)
+			except RuntimeError:
+				pass
+		result = info.move(textInfos.UNIT_LINE, direction)
+		log.debug("result on moving: %s" % result)
+		newLine = info.copy()
+		newLine.expand(textInfos.UNIT_LINE)
+		log.debug("newLine: %s" % newLine.text)
+		log.debug("after move to line:result= %s, direction= %s,  newStart= %s, oldStart= %s" % (
+			result, direction, getStartOffset(newLine), getStartOffset(origLine)))
+		# with word, move don't return 0. So checks start of textinfo.
+		lineHasChanged = (newLine.start > origLine.start) if direction == 1 else (newLine.start < origLine.start)
+		if result == 0 or not lineHasChanged:
+			# on first or last line of document, so stop search
+			log.debug("end of search, no more line")
+			break
+		#  we are on new line
+		log.debug("we are on new line")
+		textInfo = info.copy()
+		textInfo.collapse()
+		curPos = getStartOffset(textInfo)
+		info = textInfo.copy()
+		info.expand(textInfos.UNIT_LINE)
+		lineStart = getStartOffset(info)
+		lineEnd = getEndOffset(info)
+		log.debug("On new line: curPos: %s, start: %s, end: %s" % (curPos, lineStart, lineEnd))
+		lineText = info.text.replace("\n", "")
+		lineText = info.text.replace("\r", "")
+		if len(lineText) != 0 and not next:
+			# move to last character of line
+			offset = len(lineText) - 1
+			log.debug("lineText: %s, %s" % (len(lineText), lineText))
+			textInfo.collapse()
+			result = textInfo.move(textInfos.UNIT_CHARACTER, offset)
+			log.debug("after going to last charatter of the line:  result= %s, position= %s" % (
+				result, getStartOffset(textInfo)))
+		_newLine = True
+		# continue the loop
+
+	th.stop()
+	del th
+	if i == 0:
+		wx.CallAfter(askToContinueSearching, textInfo, next)
+		return
+	ui.message(_("No more irregularity"))
+
+
+def findAlertOnTheLine(info, next=True):
+	log.debug("findAlertOnTheLine: direction= %s, %s" % (next, info.text))
+	textInfo = info.copy()
+	from ..utils.textInfo import getRealPosition
+	curPosition = getRealPosition(info)
+	if curPosition is None:
+		# end of document
+		return None
+	lineText = getLineText(textInfo)
+	log.debug("findAlertOnTheLine: next= %s, curPosition= %s" % (next, curPosition))
+	global _newLine
+	textInfo.expand(textInfos.UNIT_LINE)
+	lineStart = getStartOffset(textInfo)
+	lineEnd = getEndOffset(textInfo)
+	log.debug("line: Start: %s, end: %s" % (lineStart, lineEnd))
+	# find alerts
+	(alertCount, alerts) = getAnalyze(textInfo, textInfos.UNIT_LINE, reportFormatted=False)
+	log.debug("allerts: %s" % alerts)
+	if alertCount == 0:
+		# no alerts
+		log.debug("no alert")
+		return None
+	# prepare alert messages
+	alertPositions = sorted(list(alerts))
+	textList = getReportText(alerts)
+	alertMessages = {}
+	for alert in alertPositions:
+		alertMessages[alert] = textList[alertPositions.index(alert)]
+	if not next:
+		alertPositions.reverse()
+	# now search for next alert on the line from current position
+	log.debug("alertPositions: %s" % alertPositions)
+	lastPosition = len(lineText) - 1
+	for position in alertPositions:
+		newPosition = position - 1
+		if _newLine and newPosition == 0 and curPosition == 0:
+			offset = 0
+			log.debug("alert found: curPosition= %s, newPosition= %s, offset= %s" % (curPosition, newPosition, offset))
+			_newLine = False
+			return (offset, alertMessages[position])
+		if _newLine and curPosition == lastPosition:
+			# cursor is on an alert at the end of line.
+			offset = 0
+			log.debug("alert found: curPosition= %s, newPosition= %s, offset= %s" % (curPosition, newPosition, offset))
+			_newLine = False
+			return (offset, alertMessages[position])
+		if next and newPosition > curPosition:
+			offset = newPosition - curPosition if curPosition >= 0 else 0
+			log.debug("alert found: curPosition= %s, newPosition= %s, offset= %s" % (curPosition, newPosition, offset))
+			_newLine = False
+			return (offset, alertMessages[position])
+		elif not next and curPosition > newPosition:
+			offset = newPosition - curPosition
+			log.debug("alert found: curPosition= %s, newPosition= %s, offset= %s" % (curPosition, newPosition, offset))
+			return (offset, alertMessages[position])
+	log.debug("no alert")
+	return None
+
+
+def findSpellingErrors(info, unit, errorPositions):
+	log.debug("findSpellingErrorOnTheLine")
+	textList = []
+	textInfo = info.copy()
+	formatConfig = config.conf["documentFormatting"].copy()
+	formatConfig["reportSpellingErrors"] = True
+	fields = textInfo.getTextWithFields(formatConfig=formatConfig)
+	for command in fields:
+		if isinstance(command, str):
+			textList.append(command)
+			continue
+		if not isinstance(command, textInfos.FieldCommand):
+			continue
+		field = command.field
+		if "invalid-spelling" in field and field["invalid-spelling"]:
+			text = "".join(textList)
+			position = len(text) + 1
+			if position not in errorPositions:
+				errorPositions[position] = []
+			errorPositions[position].append(("spellingError", None))

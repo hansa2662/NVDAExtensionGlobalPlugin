@@ -1,6 +1,6 @@
 # updateCheck.py
 # common Part of all of my add-on
-# Copyright 2019-2022 Paulber19
+# Copyright 2019-2025 Paulber19
 # some parts of code comes from others add-ons:
 # add-on Updater (author Joseph Lee)
 # brailleExtender (author Andre-Abush )
@@ -11,11 +11,9 @@ import os
 import globalVars
 import time
 import api
-import sys
 import gui
 import config
 import wx
-from .NVDAStrings import NVDAString
 import core
 import hashlib
 try:
@@ -26,53 +24,41 @@ from updateCheck import UpdateDownloader
 import tempfile
 import threading
 import addonAPIVersion
+from .NVDAStrings import NVDAString
+try:
+	# for nvda versions < 2026.1
+	from versionInfo import version_year, version_major
+except ImportError:
+	# for nvda versions >= 2026.1
+	from buildVersion import version_year, version_major
+
+from .messages import confirm_YesNo, alert, warn, inform, ReturnCode
 
 addonHandler.initTranslation()
 
-
 _curAddon = addonHandler.getCodeAddon()
-_curAddonName = _curAddon.manifest["name"]
+_checkForUpdate = False
 
 
-def checkCompatibility(addonName, minimumNVDAVersion=None, lastTestedVersion=None, auto=True):
-	def isCompatible(minimumNVDAVersion, lastTestedNVDAVersion):
-		currentAPIVersion = addonAPIVersion.CURRENT
-		hasAddonGotRequiredSupport = minimumNVDAVersion <= currentAPIVersion
-		backwardsCompatToVersion = addonAPIVersion.BACK_COMPAT_TO
-		return hasAddonGotRequiredSupport and (
-			lastTestedNVDAVersion >= backwardsCompatToVersion)
+def setCheckForUpdate(check):
+	global _checkForUpdate
+	_checkForUpdate = check
 
-	def checkNVDACompatibility(minimumNVDAVersion, lastTestedNVDAVersion, auto):
-		# Check compatibility with NVDA
-		import versionInfo
-		if minimumNVDAVersion is None:
-			minimumNVDAVersion = [versionInfo.version_year, versionInfo.version_major]
-		if lastTestedNVDAVersion is None:
-			lastTestedNVDAVersion = [versionInfo.version_year, versionInfo.version_major]
-		# For NVDA version, only version_year.version_major will be checked.
-		minimumYear, minimumMajor = minimumNVDAVersion[:2]
-		lastTestedYear, lastTestedMajor = lastTestedNVDAVersion[:2]
 
-		if isCompatible(minimumNVDAVersion, lastTestedNVDAVersion):
-			return True
-		if not auto:
-			# Translators: The message displayed  when trying to update an add-on
-			# that is not going to be compatible with the current version of NVDA.
-			gui.messageBox(
-				_(
-					"The update is not compatible with this version of NVDA. "
-					"Minimum NVDA version: {minYear}.{minMajor}, last tested: {testedYear}.{testedMajor}.").format(
-					minYear=minimumYear, minMajor=minimumMajor, testedYear=lastTestedYear, testedMajor=lastTestedMajor),
-				makeAddonWindowTitle(NVDAString("Error")),
-				wx.OK | wx.ICON_ERROR)
-		return False
-	res = checkNVDACompatibility(minimumNVDAVersion, lastTestedVersion, auto)
-	return res
+def shouldCheckForUpdate():
+	return _checkForUpdate
+
+
+def isCompatible(minimumNVDAVersion, lastTestedNVDAVersion):
+	currentAPIVersion = addonAPIVersion.CURRENT
+	hasAddonGotRequiredSupport = minimumNVDAVersion <= currentAPIVersion
+	backwardsCompatToVersion = addonAPIVersion.BACK_COMPAT_TO
+	return hasAddonGotRequiredSupport and (
+		lastTestedNVDAVersion >= backwardsCompatToVersion)
 
 
 def makeAddonWindowTitle(dialogTitle):
-	curAddon = addonHandler.getCodeAddon()
-	addonSummary = curAddon.manifest['summary']
+	addonSummary = _curAddon.manifest['summary']
 	return "%s - %s" % (addonSummary, dialogTitle)
 
 
@@ -81,17 +67,18 @@ class AddonUpdateDownloader(UpdateDownloader):
 	No hash checking for now, and URL's and temp file paths are different.
 	"""
 
-	def __init__(self, url, addonName, fileHash=None, autoUpdate=True):
+	def __init__(self, url, addon, fileHash=None, autoUpdate=True):
 		"""Constructor.
 		@param url: URLs to try for the update file.
 		@type url: str
-		@param addonName: Name of the add-on being downloaded.
+		@param addon: the add-on being downloaded.
 		@type addonName: str
 		@param fileHash: The SHA-1 hash of the file as a hex string.
 		@type fileHash: basestring
 		"""
 		self.urls = [url, ]
-		self.addonName = addonName
+		self.addon = addon
+		self.addonName = addon.manifest["name"]
 		self.destPath = tempfile.mktemp(
 			prefix="nvda_addonUpdate-", suffix=".nvda-addon")
 		self.fileHash = fileHash
@@ -124,12 +111,12 @@ class AddonUpdateDownloader(UpdateDownloader):
 
 	def _error(self):
 		self._stopped()
-		gui.messageBox(
+		alert(
 			# Translators: A message indicating that an error occurred
 			# while downloading an update to NVDA.
 			_("Error downloading update for {name}.").format(name=self.addonName),
 			makeAddonWindowTitle(NVDAString("Error")),
-			wx.OK | wx.ICON_ERROR)
+		)
 		self.continueUpdatingAddons()
 
 	def _download(self, url):
@@ -140,11 +127,6 @@ class AddonUpdateDownloader(UpdateDownloader):
 			raise RuntimeError("URL Download failed: %s url cannot be opened" % url)
 		if remote.code != 200:
 			raise RuntimeError("Download failed with code %d" % remote.code)
-		# #2352: Some security scanners such as Eset NOD32 HTTP Scanner
-		# cause huge read delays while downloading.
-		# Therefore, set a higher timeout.
-		if sys.version_info.major == 2:
-			remote.fp._sock.settimeout(120)
 		size = int(remote.headers["content-length"])
 		with open(self.destPath, "wb") as local:
 			if self.fileHash:
@@ -184,12 +166,12 @@ class AddonUpdateDownloader(UpdateDownloader):
 					"Error opening addon bundle from %s" % self.destPath, exc_info=True)
 				# Translators: The message displayed when an error occurs
 				# when trying to update an add-on package due to package problems.
-				gui.messageBox(
+				alert(
 					# Translators: message to user
 					_("Cannot update {name} - missing file or invalid file format").format(
 						name=self.addonName),
 					makeAddonWindowTitle(NVDAString("Error")),
-					wx.OK | wx.ICON_ERROR)
+				)
 				return None
 			return bundle
 
@@ -199,25 +181,6 @@ class AddonUpdateDownloader(UpdateDownloader):
 			if bundle is None:
 				self.continueUpdatingAddons()
 				return
-			minimumNVDAVersion = bundle.manifest.get("minimumNVDAVersion", None)
-			lastTestedNVDAVersion = bundle.manifest.get("lastTestedNVDAVersion", None)
-			bundleName = bundle.manifest['name']
-			if not checkCompatibility(
-				bundleName, minimumNVDAVersion, lastTestedNVDAVersion):
-				self.continueUpdatingAddons()
-				return
-			isDisabled = False
-			# Optimization (future):
-			# it is better to remove would-be add-ons all at once
-			# instead of doing it each time a bundle is opened.
-			for addon in addonHandler.getAvailableAddons():
-				# Check for disabled state first.
-				if bundleName == addon.manifest['name']:
-					if addon.isDisabled:
-						isDisabled = True
-					if not addon.isPendingRemove:
-						addon.requestRemove()
-					break
 			progressDialog = gui.IndeterminateProgressDialog(
 				gui.mainFrame,
 				# Translators: The title of the dialog
@@ -227,10 +190,13 @@ class AddonUpdateDownloader(UpdateDownloader):
 				_("Please wait while the add-on is being updated."))
 			try:
 				if self.autoUpdate:
+					# installTask must be inform that it's an autoUpdate
+					# in this case, the current add-on configuration is automaticaly conserved
 					extraAppArgs = globalVars.appArgsExtra if hasattr(
 						globalVars, "appArgsExtra") else globalVars.unknownAppArgs
 					extraAppArgs.append("addon-auto-update")
-				gui.ExecAndPump(addonHandler.installAddonBundle, bundle)
+				from systemUtils import ExecAndPump
+				ExecAndPump(addonHandler.installAddonBundle, bundle)
 				if self.autoUpdate:
 					extraAppArgs.remove("addon-auto-update")
 			except Exception:
@@ -240,36 +206,28 @@ class AddonUpdateDownloader(UpdateDownloader):
 					"Error installing addon bundle from %s" % self.destPath,
 					exc_info=True)
 				progressDialog.done()
-				gui.messageBox(
+				alert(
 					# Translators: The message displayed when an error occurs
 					# when installing an add-on package.
 					_("Failed to update {name} add-on").format(name=self.addonName),
 					makeAddonWindowTitle(NVDAString("Error")),
-					wx.OK | wx.ICON_ERROR)
+				)
 				self.continueUpdatingAddons()
 				return
 			else:
 				progressDialog.done()
 				self.addonHasBeenUpdated = True
-				if isDisabled:
-					for addon in addonHandler.getAvailableAddons():
-						if bundleName == addon.manifest['name'] and addon.isPendingInstall:
-							addon.enable(False)
-							break
 		finally:
-			try:
-				os.remove(self.destPath)
-			except OSError:
-				pass
+			if not self.addon.isPendingRemove:
+				self.addon.requestRemove()
 			if self.addonHasBeenUpdated:
-				if gui.messageBox(
+				if confirm_YesNo(
 					NVDAString(
 						"Changes were made to add-ons. "
 						"You must restart NVDA for these changes to take effect. Would you like to restart now?"),
 					NVDAString("Restart NVDA"),
-					wx.YES | wx.NO | wx.ICON_WARNING) == wx.YES:
+				) == ReturnCode.YES:
 					wx.CallAfter(core.restart)
-				return
 		self.continueUpdatingAddons()
 
 	def continueUpdatingAddons(self):
@@ -282,21 +240,13 @@ class AddonUpdateDownloader(UpdateDownloader):
 
 class CheckForAddonUpdate(object):
 	def __init__(
-		self, addonName=None, updateInfosFile=None,
+		self, updateInfosFile=None,
 		auto=True, releaseToDev=False):
-		self.addon = None
-		if addonName is None:
-			# get current add-on
-			self.addon = addonHandler.getCodeAddon()
-		else:
-			# find add-on in available add-ons
-			for addon in addonHandler.getAvailableAddons():
-				if addon.manifest["name"] == addonName:
-					self.addon = addon
-					break
-		if self.addon is None:
-			log.warning("CheckForAddonUpdate: no add-on")
+		log.debug("CheckForAddonUpdate")
+		if auto and not shouldCheckForUpdate():
 			return
+
+		self.addon = addonHandler.getCodeAddon()
 		log.warning("Check for %s add-on update" % self.addon.manifest["name"])
 		self.addonSummary = self.addon.manifest["summary"]
 		self.auto = auto
@@ -309,13 +259,16 @@ class CheckForAddonUpdate(object):
 		if latestUpdateInfos is None:
 			return
 		# check if service is in maintenance
-		if latestUpdateInfos .get("inMaintenance") and latestUpdateInfos["inMaintenance"]:
+		if latestUpdateInfos .get(
+			"inMaintenance") and latestUpdateInfos["inMaintenance"] and not self.shouldByPassSiteInMaintenance():
+			log.debug("service in maintenance")
 			if auto:
 				return
-			gui.messageBox(
+			warn(
+				# Translators: message to user that the update service is temporarily in maintenance
 				_("The service is temporarily under maintenance. Please, try again later."),
 				self.title,
-				wx.OK | wx.ICON_INFORMATION)
+			)
 			return
 		addonUpdateInfos = latestUpdateInfos.get(self.addon.manifest["name"])
 		if addonUpdateInfos is None:
@@ -327,46 +280,87 @@ class CheckForAddonUpdate(object):
 			self.upToDateDialog(self.auto)
 			return
 		(version, url, minimumNVDAVersion, lastTestedNVDAVersion) = newUpdate
-		if not checkCompatibility(
-			self.addon.manifest["summary"],
-			minimumNVDAVersion, lastTestedNVDAVersion,
-			auto):
+		if minimumNVDAVersion is None:
+			minimumNVDAVersion = [version_year, version_major]
+		if lastTestedNVDAVersion is None:
+			lastTestedNVDAVersion = [version_year, version_major]
+		# For NVDA version, only version_year.version_major will be checked.
+		minimumYear, minimumMajor = minimumNVDAVersion[:2]
+		lastTestedYear, lastTestedMajor = lastTestedNVDAVersion[:2]
+		isVersionCompatible = isCompatible(minimumNVDAVersion, lastTestedNVDAVersion)
+		if [version_year, version_major] <= [2023, 2] and not isVersionCompatible:
+			if not auto:
+				# Translators: The message displayed  when trying to update an add-on
+				# that is not going to be compatible with the current version of NVDA.
+				incompatibleAddonMsg = _(
+					"The update is not compatible with this version of NVDA. "
+					"Minimum NVDA version: {minYear}.{minMajor}, last tested: {testedYear}.{testedMajor}.").format(
+						minYear=minimumYear, minMajor=minimumMajor, testedYear=lastTestedYear, testedMajor=lastTestedMajor)
+				alert(
+					incompatibleAddonMsg,
+					makeAddonWindowTitle(NVDAString("Error")),
+				)
 			return
 		url = "{baseURL}/{url}/{addonName}-{version}.nvda-addon".format(
 			baseURL=latestUpdateInfos["baseURL"],
 			addonName=self.addon.manifest["name"],
 			url=url,
 			version=version)
-		self.availableUpdateDialog(version, url)
+		compatibilityRange = ("%s.%s" % (minimumYear, minimumMajor), "%s.%s" % (lastTestedYear, lastTestedMajor))
+		self.availableUpdateDialog(version, url, isVersionCompatible, compatibilityRange)
 
-	def getreleaseNoteURL(self):
+	def shouldByPassSiteInMaintenance(self):
+		byPassMaintenanceFile = "paulber007AllMyAddons-maintenance.bypass"
+		userConfigPath = globalVars.appArgs.configPath
+		path = os.path.join(userConfigPath, byPassMaintenanceFile)
+		if os.path.exists(path):
+			log.debug("update service is in maintenance")
+
+			return True
+		return False
+
+	def getreleaseNoteURL(self, stable=True):
 		baseURL = "https://rawgit.com/paulber007/AllMyNVDAAddons/master"
-		basereleaseNoteURL = "{baseURL}/{addonName}/{releaseNotes}".format(
-			baseURL=baseURL,
-			addonName=self.addon.manifest["name"],
-			releaseNotes="releaseNotes")
-		from languageHandler import getLanguage
-		url = "{url}/{language}/changes.html".format(
-			url=basereleaseNoteURL,
-			language=getLanguage())
-		try:
-			urlopen(url)
-		except IOError:
-			lang = getLanguage().split("_")[0]
+		if stable:
+			basereleaseNoteURL = "{baseURL}/{addonName}/{releaseNotes}".format(
+				baseURL=baseURL,
+				addonName=self.addon.manifest["name"],
+				releaseNotes="releaseNotes")
+			from languageHandler import getLanguage
 			url = "{url}/{language}/changes.html".format(
 				url=basereleaseNoteURL,
-				language=lang)
+				language=getLanguage())
 			try:
 				urlopen(url)
 			except IOError:
+				lang = getLanguage().split("_")[0]
 				url = "{url}/{language}/changes.html".format(
 					url=basereleaseNoteURL,
-					language="en")
+					language=lang)
+				try:
+					urlopen(url)
+				except IOError:
+					url = "{url}/{language}/changes.html".format(
+						url=basereleaseNoteURL,
+						language="en")
+		else:
+			# dev url
+			url = "{baseURL}/{addonName}/dev/changes.html".format(
+				baseURL=baseURL,
+				addonName=self.addon.manifest["name"])
 		return url
 
-	def availableUpdateDialog(self, version, url):
-		# Translators: message to user to report a new version.
-		msg = _("New version%s is available. Do you want to download it now?") % version
+	def availableUpdateDialog(self, version, url, versionCompatible=True, compatibilityRange=("1", "2")):
+		if versionCompatible:
+			# Translators: message to user to report a new version.
+			msg = _("New version%s is available. Do you want to download it now?") % version
+		else:
+			# Translators: message to user to report a new incompatible version.
+			msg = _(
+				"""New version{0} is available.
+But it is not compatible with this version of NVDA: minimum version requred = {1}, last version tested  = {2}.
+Do you want to ignore this incompatibility and still download it now?""") .format(
+					version, compatibilityRange[0], compatibilityRange[1])
 		with UpdateCheckResultDialog(
 			gui.mainFrame, self.title, msg, auto=self.auto, releaseNoteURL=self.releaseNoteURL) as d:
 			res = d.ShowModal()
@@ -382,17 +376,18 @@ class CheckForAddonUpdate(object):
 	def upToDateDialog(self, auto):
 		if auto:
 			return
-		gui.messageBox(
+		inform(
+			# Translators: message to user that add-on is up to date
 			_("You are up-to-date. %s is the latest version.") % (
 				self.addon.manifest["version"]),
 			self.title,
-			wx.OK | wx.ICON_INFORMATION)
+		)
 
 	def errorUpdateDialog(self):
-		gui.messageBox(
+		alert(
 			_("Oops! There was a problem checking for updates. Please retry later"),
 			self.title,
-			wx.OK | wx.ICON_ERROR)
+		)
 
 	def getLatestUpdateInfos(self, updateInfosFile=None):
 		def importCode(fileName, moduleName):
@@ -517,7 +512,7 @@ class CheckForAddonUpdate(object):
 		else:
 			url = "{url}/{channel}".format(
 				channel=updateChannel, url=addonUpdateInfos["localURL"])
-			self.releaseNoteURL = None
+			self.releaseNoteURL = self.getreleaseNoteURL(False)
 		minimumVersion = addonUpdateInfos[updateChannel].get(
 			"minimumNVDAVersion", None)
 		minimumNVDAVersion = addonAPIVersion .getAPIVersionTupleFromString(
@@ -529,7 +524,7 @@ class CheckForAddonUpdate(object):
 		return (latestVersion, url, minimumNVDAVersion, lastTestedNVDAVersion)
 
 	def processUpdate(self, url):
-		downloader = AddonUpdateDownloader(url, _curAddonName, autoUpdate=self.auto)
+		downloader = AddonUpdateDownloader(url, _curAddon, autoUpdate=self.auto)
 		downloader.start()
 
 

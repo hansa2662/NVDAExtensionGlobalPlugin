@@ -1,20 +1,15 @@
 # globalPlugins\NVDAExtensionGlobalPlugin\speechHistory\__init__.py
 # A part of NVDAExtensionGlobalPlugin add-on
-# Copyright (C) 2016 - 2022 paulber19
+# Copyright (C) 2016 - 2025 paulber19
 # This file is covered by the GNU General Public License.
 # See the file COPYING for more details.
 
 import addonHandler
-from logHandler import log
-try:
-	# for nvda version >= 2021.1
-	from speech import speech as speech
-except ImportError:
-	import speech
 import tones
 import ui
 import api
 from ..utils.informationDialog import InformationDialog
+from ..utils.NVDAStrings import NVDAString
 from ..settings import toggleSpeechRecordWithNumberOption, toggleSpeechRecordInAscendingOrderOption
 
 addonHandler.initTranslation()
@@ -23,40 +18,8 @@ addonHandler.initTranslation()
 MAX_RECORD = 200
 # global variables
 _speechRecorder = None
-_oldSpeak = None
-_oldSpeakSpelling = None
-
-
-def mySpeak(sequence, *args, **kwargs):
-	_oldSpeak(sequence, *args, **kwargs)
-	text = " ".join([x for x in sequence if isinstance(x, str)])
-	_speechRecorder.record(text)
-
-
-def mySpeakSpelling(text, *args, **kwargs):
-	_oldSpeakSpelling(text, *args, **kwargs)
-	_speechRecorder.record(text)
-
-
-def initialize():
-	global _speechRecorder, _oldSpeak, _oldSpeakSpelling
-	if _speechRecorder is not None:
-		return
-	_speechRecorder = SpeechRecorderManager()
-	_oldSpeak = speech.speak
-	_oldSpeakSpelling = speech.speakSpelling
-	speech.speak = mySpeak
-	speech.speakSpelling = mySpeakSpelling
-	log.warning("speechHistory initialized")
-
-
-def terminate():
-	global _speechRecorder
-	if _speechRecorder is None:
-		return
-	speech.speak = _oldSpeak
-	speech.speakSpelling = _oldSpeakSpelling
-	_speechRecorder = None
+_NVDASpeak = None
+_NVDASpeakSpelling = None
 
 
 def getSpeechRecorder():
@@ -76,8 +39,11 @@ class SpeechRecorderManager(object):
 	def record(self, text):
 		if not text or not self._onMonitoring:
 			return
-		text = text.replace("\r", "")
-		text = text.replace("\n", "")
+		while len(text):
+			if text[-1] not in ["\n", "\r"]:
+				break
+			text = text[:-1]
+
 		if len(text.strip()) == 0:
 			return
 		self._speechHistory.append(text)
@@ -86,9 +52,11 @@ class SpeechRecorderManager(object):
 		self._lastSpeechHistoryReportIndex = len(self._speechHistory) - 1
 
 	def reportSpeechHistory(self, position, toClip=False):
+		index = self._lastSpeechHistoryReportIndex
+		if index is None:
+			return
 		oldOnMonitoring = self._onMonitoring
 		self._onMonitoring = False
-		index = self._lastSpeechHistoryReportIndex
 		if position == "previous" and index > 0:
 			index -= 1
 		elif position == "next" and index < len(self._speechHistory) - 1:
@@ -97,8 +65,15 @@ class SpeechRecorderManager(object):
 			tones.beep(100, 40)
 		self._lastSpeechHistoryReportIndex = index
 		text = self._speechHistory[index]
-		ui.message(text)
-		api.copyToClip(text)
+		if not toClip:
+			ui.message(text)
+			self._onMonitoring = oldOnMonitoring
+			return
+		if not api.copyToClip(text):
+			# Translators: Presented when unable to copy to the clipboard because of an error.
+			ui.message(NVDAString("Unable to copy"))
+		# Translators: message to user to report copy to clipboard
+		ui.message(_("{0} copied to clipboard") .format(text))
 		self._onMonitoring = oldOnMonitoring
 
 	def displaySpeechHistory(self):
@@ -113,7 +88,6 @@ class SpeechRecorderManager(object):
 		if not toggleSpeechRecordInAscendingOrderOption(False):
 			text.reverse()
 		text = "\r\n".join(text)
-
 		# Translators: title of informations dialog.
 		dialogTitle = _("Speech history")
 		if toggleSpeechRecordInAscendingOrderOption(False):
@@ -124,3 +98,26 @@ class SpeechRecorderManager(object):
 		informationLabel = _("Records:")
 		InformationDialog.run(
 			None, dialogTitle, informationLabel, text, insertionPointOnLastLine)
+
+
+def initialize():
+	from . import speechHistoryPatches
+	from ..settings import isInstall
+	from ..settings.addonConfig import FCT_SpeechHistory, FCT_TemporaryAudioDevice
+	global _NVDASpeak, _NVDASpeakSpelling
+	global _speechRecorder
+	if _speechRecorder is not None:
+		return
+	if not isInstall(FCT_SpeechHistory) and not isInstall(FCT_TemporaryAudioDevice):
+		return
+	_speechRecorder = SpeechRecorderManager()
+	speechHistoryPatches.patche(install=True)
+
+
+def terminate():
+	global _speechRecorder
+	if _speechRecorder is None:
+		return
+	from . import speechHistoryPatches
+	speechHistoryPatches.patche(install=False)
+	_speechRecorder = None

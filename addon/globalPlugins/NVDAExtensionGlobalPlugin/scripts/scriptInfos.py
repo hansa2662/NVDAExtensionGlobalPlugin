@@ -6,7 +6,7 @@
 import addonHandler
 import globalCommands
 import inputCore
-
+from ..utils.NVDAStrings import NVDAString
 addonHandler.initTranslation()
 
 # Translators: The name of a category of NVDA commands.
@@ -22,15 +22,15 @@ systrayIconsDoc = _("Shows the list of buttons on the System Tray")
 # Translators: The name of a category of NVDA commands.
 SCRCAT_VOLUME_CONTROL = _("Volume control")
 # Translators: Input help mode message
-# for setting to x percent  the volume of current focused application command.
+# for setting to x percent the volume of current focused application command.
 _setFocusedAppVolumeToMsg = _(
 	"Set the volume of current focused application to %s percent of speakers volume")
 # Translators: Input help mode message
 # for setting to x the main volume.
 _setSpeakersVolumeToMsg = _("Set the main volume to %s")
 # Translators: Input help mode message
-# for setting to x percent  the volume of NVDA command
-_setNVDAVolumeToMsg = _("Set the NVDA volume to %s percent of  speakers volume")
+# for setting to x percent the volume of NVDA command
+_setNVDAVolumeToMsg = _("Set the NVDA volume to %s percent of speakers volume")
 
 scriptsToDocInformations = {
 	# Translators: Input help mode message
@@ -74,7 +74,8 @@ scriptsToDocInformations = {
 	# Translators: Input help mode message
 	# for report current application name and version command.
 	"reportAppProductNameAndVersion": (
-		_("Report the application 's name and version"), globalCommands.SCRCAT_TOOLS, None),
+		_("Report the application 's name and version. Twice: copy these informations to clipboard"),
+		globalCommands.SCRCAT_TOOLS, None),
 	# Translators: Input help mode message
 	# for report current program name and app module name or current configuration profile name command.
 	"reportAppModuleInfoEx": (
@@ -116,16 +117,16 @@ scriptsToDocInformations = {
 	# Translators: Input help mode message
 	# for report current folder command in open or save dialog box.
 	"reportCurrentFolder": (
-		_("report the name of current selected folder in the open or Save dialog box. Twice: report full path"),
+		_("Report the name of current selected folder in the open or Save dialog box. Twice: report full path"),
 		None, None),
 	# Translators: Input help mode message
 	# for report current folder name command in open or save dialog box.
 	"reportCurrentFolderName": (
-		_("report the name of current selected folder in the open or Save dialog box"), None, "hdr8"),
+		_("Report the name of current selected folder in the open or Save dialog box"), None, "hdr8"),
 	# Translators: Input help mode message
 	# for report current folder path command in open or save dialog box.
 	"reportCurrentFolderFullPath": (
-		_("report the full path of current selected folder in the open or Save dialog box"), None, "hdr8"),
+		_("Report the full path of current selected folder in the open or Save dialog box"), None, "hdr8"),
 	# Translators: Input help mode message
 	# for open user config folder command.
 	"exploreUserConfigFolder": (_("Explore my user configuration's folder"), None, "hdr202"),
@@ -139,18 +140,18 @@ scriptsToDocInformations = {
 	# Translators: Input help mode message
 	# for report previous speech history record command.
 	"reportPreviousSpeechHistoryRecord": (
-		_("Report previous record of the speech history and copy it to clipboard"),
+		_("Report previous record of the speech history"),
 		globalCommands.SCRCAT_SPEECH, "hdr10"),
 	# Translators: Input help mode message
 	# for report current speech history record command.
 	"reportCurrentSpeechHistoryRecord": (
 		_(
-			"Report current record of the speech history and copy it to clipboard. "
-			"Twice: display speech history"), globalCommands.SCRCAT_SPEECH, "hdr10"),
+			"Report current record of the speech history.Pressing Twice: copy it to clipboard. "
+			"Pressing three: display speech history"), globalCommands.SCRCAT_SPEECH, "hdr10"),
 	# Translators: Input help mode message
 	# for report next speech history record command.
 	"reportNextSpeechHistoryRecord": (
-		_("Report next record of the speech history and copy it to clipboard"),
+		_("Report next record of the speech history"),
 		globalCommands.SCRCAT_SPEECH, "hdr10"),
 	# Translators: Input help mode message
 	# for restart NVDA in default or debug log level command.
@@ -256,7 +257,7 @@ scriptsToDocInformations = {
 		_("Displays the dialog to manage the input gestures configured by user"), None, "hdr20"),
 	# Translators: Input help mode message
 	# for tools for add-on command.
-	"toolsForAddon": (_("Display tools for add-on development dialog "), globalCommands.SCRCAT_TOOLS, "hdr22"),
+	"toolsForAddon": (_("Display tools for add-on development dialog"), globalCommands.SCRCAT_TOOLS, "hdr22"),
 	# Translators: Input help mode message
 	# for leftclick mouse button at navigator cursor position script command.
 	"leftClickAtNavigatorObjectPosition": (
@@ -300,7 +301,7 @@ scriptsToDocInformations = {
 		_("Display current speech settings"), globalCommands.SCRCAT_SPEECH, "hdr17-6"),
 	# Translators: Input help mode message
 	# for toggleTextAnalyzer script commands.
-	"toggleTextAnalyzer": (_("activate or desactivate text analyzer"), None, "hdr31-1"),
+	"toggleTextAnalyzer": (_("Activate or desactivate text analyzer"), None, "hdr31-1"),
 	# Translators: Input help mode message
 	# for analyzeCurrentWord script commands.
 	"analyzeCurrentWord": (_("Analyze the word under system cursor"), None, "hdr31-3"),
@@ -314,6 +315,16 @@ scriptsToDocInformations = {
 	# for analyzeCurrentParagraph script commands.
 	"analyzeCurrentParagraph": (_("Analyze the paragraph under system cursor"), None, "hdr31-3"),
 	# Translators: Input help mode message
+	# for find and move to next line with textanalyzer irregularity
+	"findNextTextAnalyzerAlert": (
+		_("Move to next irregularity detected by text analyzer"),
+		None, "hdr31-3"),
+	# Translators: Input help mode message
+	# for find and move to previous line with textanalyzer irregularitiy
+	"findPreviousTextAnalyzerAlert": (
+		_("Move to previous irregularity detected by text analyzer"),
+		None, "hdr31-3"),
+	# Translators: Input help mode message
 	# for manageUserConfigurations script commands.
 	"manageUserConfigurations": (_("Display the dialog to manage user configurations"), None, "hdr30"),
 	# Translators: Input help mode message
@@ -321,8 +332,25 @@ scriptsToDocInformations = {
 	"toggleReportCurrentCaretPosition": (
 		_("Toggle reporting of current caret position in edit box"), None, "hdr32"),
 	# Translators: Input help mode message
+	# for reportClipboardTextEx script commands.
+	"reportClipboardTextEx": (
+		NVDAString(
+			"Reports the text on the Windows clipboard. "
+			"Pressing twice spells this information. "
+			"Pressing three times spells it using character descriptions."
+		),
+		globalCommands.SCRCAT_SYSTEM,
+		"hdr7-2"),
+	# Translators: Input help mode message
 	# for addToClip script commands.
-	"addToClip": (_("Add, to  clipboard,  the selected text "), None, "hdr7-1"),
+	"addToClip": (_("Add, to clipboard, the selected text"), None, "hdr7-1"),
+	# Translators: Input help mode message
+	# for clearClipboard script commands.
+	"emptyClipboard": (_("Empty the clipboard"), globalCommands.SCRCAT_SYSTEM, "hdr7-3"),
+	# Translators: Input help mode message
+	# for displayClipboardText script commands.
+	"displayClipboardText": (
+		_("Display clipboard text in a information windows"), globalCommands.SCRCAT_SYSTEM, "hdr7-3"),
 	# Translators: Input help mode message
 	# for temporary audio device manager script commands.
 	"temporaryAudioOutputDeviceManager": (
@@ -403,7 +431,7 @@ scriptsToDocInformations = {
 	"maximizeNVDAVolume": (_("Maximize NVDA volume"), SCRCAT_VOLUME_CONTROL, "hdr21-3"),
 	# Translators: Input help mode message
 	# for minimize NVDA volume command.
-	"minimizeNVDAVolume": (_("Minimize NVDA volume "), SCRCAT_VOLUME_CONTROL, "hdr21-3"),
+	"minimizeNVDAVolume": (_("Minimize NVDA volume"), SCRCAT_VOLUME_CONTROL, "hdr21-3"),
 	# Translators: Input help mode message
 	# for set NVDA volume to x percent commands
 	"setNVDAVolumeTo10Percent": (_setNVDAVolumeToMsg % 10, SCRCAT_VOLUME_CONTROL, "hdr21-8"),
@@ -481,5 +509,5 @@ scriptsToDocInformations = {
 	# Translators: Input help mode message
 	# for displayNVDAAndApplicationsAudioChannelsManagerDialog script command
 	"displayNVDAAndApplicationsAudioManager": (
-		_("Display NVDA and active Applications's audio manager"), SCRCAT_VOLUME_CONTROL, "hdr34"),
+		_("Display NVDA 's audio sources manager"), SCRCAT_VOLUME_CONTROL, "hdr34"),
 }
